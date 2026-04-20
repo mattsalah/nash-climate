@@ -1,0 +1,180 @@
+GAMS 53.3.1  1ba4c1ad Apr 2, 2026           DAX-DAC arm 64bit/macOS - 04/11/26 14:45:01 Page 1
+RICE50+
+C o m p i l a t i o n
+
+
+                _           __________
+          _____(_)_______  / ____/ __ \  __
+         / ___/ / ___/ _ \/___ \/ / / /_/ /_
+        / /  / / /__/  __/___/ / /_/ /_ x__/
+       /_/  /_/\___/\___/_____/\____/ /_/
+       
+      This is an extension of the DICE-2016 model, with 57 regions.
+      The model includes SSP-based scenarios, alternative and interchangeable damage
+      functions, cooperation options, climate modules, etc.
+  17  scalar starttime; starttime = jnow;
+  18   
+  19  *=========================================================================
+  20  *   ///////////////////////       SETTINGS      ///////////////////////
+  21  *=========================================================================
+  22  * REGION DEFINITION
+  23  *| ed58 | maxiso3 | witch17 | r5 | global |
+  25   
+  26  * BASELINE SCENARIO
+  27  *| ssp1 | ssp2 | ssp3 | ssp4 | ssp5 |
+  29   
+  30  * POLICY
+  31  * | bau | bau_impact | cba | cbudget | cbudget_regional | ctax | simulation | simulation_tatm_exogen | simulation_climate_regional_exogen |
+  33   
+  34  * COOPERATION
+  35  * | coop | noncoop | coalitions
+  37   
+  38  * IMPACT SPECIFICATION
+  39  * | off | dice | burke | dell | kalkuhl | howard | climcost | coacch |
+  41   
+  42  * CLIMATE MODULE
+  43  * | dice2016 | cbsimple | witchco2 | witchoghg |
+  45   
+  46  * SAVINGS RATE
+  47  * | fixed | flexible |
+  49   
+  50  * DEFAULT RESULTS FILENAME if nameout is not set
+  52   
+  53   
+  54  *=========================================================================
+  55  **  DATA PATH DEFINITION
+  58  ** Results path
+  62  ** DEBUG OPTIONS
+  63  *$setglobal onlysolve usa
+  64  *$setglobal all_data_temp #to create an all_data_temp_%nameout%.gdx file after each iteration
+  65   
+  66  *=========================================================================
+  67  *   ///////////////////////     SETUP    ///////////////////////
+  68  *=========================================================================
+  69   
+  70  * Model configuration across all modules
+  71  $batinclude "modules" "conf"
+****                       $282
+**** LINE     74 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+**** 282  Unable to open include file
+****         Hint: Does the filename need to be quoted?
+  72   
+  73  ** Results filename
+  75   
+  76  * Model definition through phases
+  77  $batinclude "modules" "sets"
+****                       $282
+**** LINE     80 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+**** 282  Unable to open include file
+****         Hint: Does the filename need to be quoted?
+  78  $batinclude "modules" "include_data"
+****                       $282
+**** LINE     81 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+**** 282  Unable to open include file
+****         Hint: Does the filename need to be quoted?
+  79  $batinclude "modules" "compute_data"
+****                       $282
+**** LINE     82 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+**** 282  Unable to open include file
+****         Hint: Does the filename need to be quoted?
+  80  $batinclude "modules" "declare_vars"
+****                       $282
+**** LINE     83 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+**** 282  Unable to open include file
+****         Hint: Does the filename need to be quoted?
+  81   
+  82  * Fixing model bounds
+  83  $batinclude "modules" "compute_vars"
+****                       $282
+**** LINE     86 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+**** 282  Unable to open include file
+****         Hint: Does the filename need to be quoted?
+  84   
+  85   
+  86   
+  87  *=========================================================================
+  88  *   /////////////////////////     EXECUTION    ///////////////////////
+  89  *=========================================================================
+  90   
+  91  $batinclude "algorithm"
+****                        $282
+**** LINE     94 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+**** 282  Unable to open include file
+****         Hint: Does the filename need to be quoted?
+  92   
+  93  *===============================================================================
+  94  *     ///////////////////////     REPORTING     ///////////////////////
+  95  *===============================================================================
+  96   
+  97  * Evaluate reporting measures
+  98  $batinclude "modules" "report";
+****                       $282
+**** LINE    101 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+**** 282  Unable to open include file
+****         Hint: Does the filename need to be quoted?
+  99   
+ 100  * Time elapsed for execution
+ 101  scalar elapsed; elapsed = (jnow - starttime)*24*3600;
+ 102  #Just for quick analysis display a few values
+ 103  Parameters tatm2100, world_damfrac2100, gdp2100;
+ 104  tatm2100          = valuein(2100, TATM.l(tt));
+****                            $140 $145    $120,124,149,8,409
+**** LINE    107 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+****   8  ')' expected
+**** 120  Unknown identifier entered as set
+**** 124  Suffix for a set not allowed
+**** 140  Unknown symbol
+**** 145  Set identifier or quoted element expected
+**** 149  Uncontrolled set entered as constant
+**** 409  Unrecognizable item - skip to find a new statement
+****        looking for a ';' or a key word to get started again
+ 105  world_damfrac2100 = valuein(2100, world_damfrac(tt));
+****                                 $145           $120,149,8,409
+**** LINE    108 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+****   8  ')' expected
+**** 120  Unknown identifier entered as set
+**** 145  Set identifier or quoted element expected
+**** 149  Uncontrolled set entered as constant
+**** 409  Unrecognizable item - skip to find a new statement
+****        looking for a ';' or a key word to get started again
+ 106  gdp2100           = valuein(2100, sum(n,YNET.l(tt,n)));
+****                                 $145 $145,120,149,120,124,149,148,8,300
+**** LINE    109 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+****   8  ')' expected
+**** 120  Unknown identifier entered as set
+**** 124  Suffix for a set not allowed
+**** 145  Set identifier or quoted element expected
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 149  Uncontrolled set entered as constant
+**** 300  Remaining errors not printed for this line
+**** 409  Unrecognizable item - skip to find a new statement
+****        looking for a ';' or a key word to get started again
+ 107  display tatm2100,gdp2100,world_damfrac2100,elapsed;
+ 108   
+ 109  * PRODUCE RESULTS GDX
+ 110  execute_unload "/Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code//results_ssp2_bau.gdx"
+ 111  $batinclude "modules" "gdx_items"
+****                       $282
+**** LINE    114 INPUT       /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+**** 282  Unable to open include file
+****         Hint: Does the filename need to be quoted?
+ 112  ;
+
+**** 32 ERROR(S)   0 WARNING(S)
+
+
+COMPILATION TIME     =        0.003 SECONDS      3 MB  53.3.1 1ba4c1ad DAX-DAC
+
+
+USER: Matthew Salah                                  G260411+0003Ac-GEN
+      mjs2460@columbia.edu                                    CLA118257
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/run_rice50x.gms
+Output     /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/run_rice50x.lst
+
+**** USER ERROR(S) ENCOUNTERED

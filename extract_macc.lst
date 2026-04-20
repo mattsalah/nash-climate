@@ -1,0 +1,2207 @@
+GAMS 53.3.1  1ba4c1ad Apr 2, 2026           DAX-DAC arm 64bit/macOS - 04/11/26 14:43:39 Page 1
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+   1  * ------------------------------------------------
+   2  * Standalone MACC parameter extractor for RICE50+
+   3  * ------------------------------------------------
+   4   
+  12   
+  13  * --- SETS ---
+  14  SET t;
+  15  ALIAS(t, tp1);
+  16  SET pre(t,tp1);
+  17  SET n /
+  18      arg, aus, aut, bel, bgr, blt, bra, can, chl, chn, cor, cro,
+  19      dnk, egy, esp, fin, fra, gbr, golf57, grc, hun, idn, irl, ita,
+  20      jpn, meme, mex, mys, nde, nld, noan, noap, nor, oeu, osea, pol,
+  21      prt, rcam, rcz, rfa, ris, rjan57, rom, rsaf, rsam, rsas, rsl,
+  22      rus, sau, slo, sui, swe, tha, tur, ukr, usa, vnm, zaf /;
+  23   
+  24  SET sector 'EnerData sectors' /
+  25      "Electricity"
+  26      "Other_energy_transformation"
+  27      "Total_buildings_agriculture"
+  28      "Total_industry_processes"
+  29      "Total_industry_fuelcombustion"
+  30      "Total_CO2"
+  31      "Total_transport" /;
+  32  SET quant  'AR6 quantiles' / "prob25","prob33","prob50","prob66","prob75" /;
+  33  SET coef   'Polynomial coefficients' / c0*c4 /;
+  34  SET ghg    'Greenhouse gases' / co2, ch4, n2o /;
+  35  SET coefact(coef,*) / c1.co2, c4.co2 /;
+  36   
+  37  * --- TIME PARAMETERS (must be declared before include) ---
+  38  PARAMETER tperiod(t);
+  39  PARAMETER year(t);
+  40  PARAMETER tlen(t);
+  41  PARAMETER begyear(t);
+  42  PARAMETER preds(t,t);
+  43   
+INCLUDE    /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/data_ed58/time.inc
+  45  set t /
+  46  1
+  47  2
+  48  3
+  49  4
+  50  5
+  51  6
+  52  7
+  53  8
+  54  9
+  55  10
+  56  11
+  57  12
+  58  13
+  59  14
+  60  15
+  61  16
+  62  17
+  63  18
+  64  19
+  65  20
+  66  21
+  67  22
+  68  23
+  69  24
+  70  25
+  71  26
+  72  27
+  73  28
+  74  29
+  75  30
+  76  31
+  77  32
+  78  33
+  79  34
+  80  35
+  81  36
+  82  37
+  83  38
+  84  39
+  85  40
+  86  41
+  87  42
+  88  43
+  89  44
+  90  45
+  91  46
+  92  47
+  93  48
+  94  49
+  95  50
+  96  51
+  97  52
+  98  53
+  99  54
+ 100  55
+ 101  56
+ 102  57
+ 103  58
+ 104  /;
+ 105  set pre(t,tp1) /
+ 106  1.2
+ 107  2.3
+ 108  3.4
+ 109  4.5
+ 110  5.6
+ 111  6.7
+ 112  7.8
+ 113  8.9
+ 114  9.10
+ 115  10.11
+ 116  11.12
+ 117  12.13
+ 118  13.14
+ 119  14.15
+ 120  15.16
+ 121  16.17
+ 122  17.18
+ 123  18.19
+ 124  19.20
+ 125  20.21
+ 126  21.22
+ 127  22.23
+ 128  23.24
+ 129  24.25
+ 130  25.26
+ 131  26.27
+ 132  27.28
+ 133  28.29
+ 134  29.30
+ 135  30.31
+ 136  31.32
+ 137  32.33
+ 138  33.34
+ 139  34.35
+ 140  35.36
+ 141  36.37
+ 142  37.38
+ 143  38.39
+ 144  39.40
+ 145  40.41
+ 146  41.42
+ 147  42.43
+ 148  43.44
+ 149  44.45
+ 150  45.46
+ 151  46.47
+ 152  47.48
+ 153  48.49
+ 154  49.50
+ 155  50.51
+ 156  51.52
+ 157  52.53
+ 158  53.54
+ 159  54.55
+ 160  55.56
+ 161  56.57
+ 162  57.58
+ 163  /;
+ 164  tperiod('1')=1;
+ 165  tperiod('2')=2;
+ 166  tperiod('3')=3;
+ 167  tperiod('4')=4;
+ 168  tperiod('5')=5;
+ 169  tperiod('6')=6;
+ 170  tperiod('7')=7;
+ 171  tperiod('8')=8;
+ 172  tperiod('9')=9;
+ 173  tperiod('10')=10;
+ 174  tperiod('11')=11;
+ 175  tperiod('12')=12;
+ 176  tperiod('13')=13;
+ 177  tperiod('14')=14;
+ 178  tperiod('15')=15;
+ 179  tperiod('16')=16;
+ 180  tperiod('17')=17;
+ 181  tperiod('18')=18;
+ 182  tperiod('19')=19;
+ 183  tperiod('20')=20;
+ 184  tperiod('21')=21;
+ 185  tperiod('22')=22;
+ 186  tperiod('23')=23;
+ 187  tperiod('24')=24;
+ 188  tperiod('25')=25;
+ 189  tperiod('26')=26;
+ 190  tperiod('27')=27;
+ 191  tperiod('28')=28;
+ 192  tperiod('29')=29;
+ 193  tperiod('30')=30;
+ 194  tperiod('31')=31;
+ 195  tperiod('32')=32;
+ 196  tperiod('33')=33;
+ 197  tperiod('34')=34;
+ 198  tperiod('35')=35;
+ 199  tperiod('36')=36;
+ 200  tperiod('37')=37;
+ 201  tperiod('38')=38;
+ 202  tperiod('39')=39;
+ 203  tperiod('40')=40;
+ 204  tperiod('41')=41;
+ 205  tperiod('42')=42;
+ 206  tperiod('43')=43;
+ 207  tperiod('44')=44;
+ 208  tperiod('45')=45;
+ 209  tperiod('46')=46;
+ 210  tperiod('47')=47;
+ 211  tperiod('48')=48;
+ 212  tperiod('49')=49;
+ 213  tperiod('50')=50;
+ 214  tperiod('51')=51;
+ 215  tperiod('52')=52;
+ 216  tperiod('53')=53;
+ 217  tperiod('54')=54;
+ 218  tperiod('55')=55;
+ 219  tperiod('56')=56;
+ 220  tperiod('57')=57;
+ 221  tperiod('58')=58;
+ 222  year('1')=2015;
+ 223  year('2')=2020;
+ 224  year('3')=2025;
+ 225  year('4')=2030;
+ 226  year('5')=2035;
+ 227  year('6')=2040;
+ 228  year('7')=2045;
+ 229  year('8')=2050;
+ 230  year('9')=2055;
+ 231  year('10')=2060;
+ 232  year('11')=2065;
+ 233  year('12')=2070;
+ 234  year('13')=2075;
+ 235  year('14')=2080;
+ 236  year('15')=2085;
+ 237  year('16')=2090;
+ 238  year('17')=2095;
+ 239  year('18')=2100;
+ 240  year('19')=2105;
+ 241  year('20')=2110;
+ 242  year('21')=2115;
+ 243  year('22')=2120;
+ 244  year('23')=2125;
+ 245  year('24')=2130;
+ 246  year('25')=2135;
+ 247  year('26')=2140;
+ 248  year('27')=2145;
+ 249  year('28')=2150;
+ 250  year('29')=2155;
+ 251  year('30')=2160;
+ 252  year('31')=2165;
+ 253  year('32')=2170;
+ 254  year('33')=2175;
+ 255  year('34')=2180;
+ 256  year('35')=2185;
+ 257  year('36')=2190;
+ 258  year('37')=2195;
+ 259  year('38')=2200;
+ 260  year('39')=2205;
+ 261  year('40')=2210;
+ 262  year('41')=2215;
+ 263  year('42')=2220;
+ 264  year('43')=2225;
+ 265  year('44')=2230;
+ 266  year('45')=2235;
+ 267  year('46')=2240;
+ 268  year('47')=2245;
+ 269  year('48')=2250;
+ 270  year('49')=2255;
+ 271  year('50')=2260;
+ 272  year('51')=2265;
+ 273  year('52')=2270;
+ 274  year('53')=2275;
+ 275  year('54')=2280;
+ 276  year('55')=2285;
+ 277  year('56')=2290;
+ 278  year('57')=2295;
+ 279  year('58')=2300;
+ 280  tlen('1')=5;
+ 281  tlen('2')=5;
+ 282  tlen('3')=5;
+ 283  tlen('4')=5;
+ 284  tlen('5')=5;
+ 285  tlen('6')=5;
+ 286  tlen('7')=5;
+ 287  tlen('8')=5;
+ 288  tlen('9')=5;
+ 289  tlen('10')=5;
+ 290  tlen('11')=5;
+ 291  tlen('12')=5;
+ 292  tlen('13')=5;
+ 293  tlen('14')=5;
+ 294  tlen('15')=5;
+ 295  tlen('16')=5;
+ 296  tlen('17')=5;
+ 297  tlen('18')=5;
+ 298  tlen('19')=5;
+ 299  tlen('20')=5;
+ 300  tlen('21')=5;
+ 301  tlen('22')=5;
+ 302  tlen('23')=5;
+ 303  tlen('24')=5;
+ 304  tlen('25')=5;
+ 305  tlen('26')=5;
+ 306  tlen('27')=5;
+ 307  tlen('28')=5;
+ 308  tlen('29')=5;
+ 309  tlen('30')=5;
+ 310  tlen('31')=5;
+ 311  tlen('32')=5;
+ 312  tlen('33')=5;
+ 313  tlen('34')=5;
+ 314  tlen('35')=5;
+ 315  tlen('36')=5;
+ 316  tlen('37')=5;
+ 317  tlen('38')=5;
+ 318  tlen('39')=5;
+ 319  tlen('40')=5;
+ 320  tlen('41')=5;
+ 321  tlen('42')=5;
+ 322  tlen('43')=5;
+ 323  tlen('44')=5;
+ 324  tlen('45')=5;
+ 325  tlen('46')=5;
+ 326  tlen('47')=5;
+ 327  tlen('48')=5;
+ 328  tlen('49')=5;
+ 329  tlen('50')=5;
+ 330  tlen('51')=5;
+ 331  tlen('52')=5;
+ 332  tlen('53')=5;
+ 333  tlen('54')=5;
+ 334  tlen('55')=5;
+ 335  tlen('56')=5;
+ 336  tlen('57')=5;
+ 337  tlen('58')=5;
+ 338  begyear('1')=2013;
+ 339  begyear('2')=2018;
+ 340  begyear('3')=2023;
+ 341  begyear('4')=2028;
+ 342  begyear('5')=2033;
+ 343  begyear('6')=2038;
+ 344  begyear('7')=2043;
+ 345  begyear('8')=2048;
+ 346  begyear('9')=2053;
+ 347  begyear('10')=2058;
+ 348  begyear('11')=2063;
+ 349  begyear('12')=2068;
+ 350  begyear('13')=2073;
+ 351  begyear('14')=2078;
+ 352  begyear('15')=2083;
+ 353  begyear('16')=2088;
+ 354  begyear('17')=2093;
+ 355  begyear('18')=2098;
+ 356  begyear('19')=2103;
+ 357  begyear('20')=2108;
+ 358  begyear('21')=2113;
+ 359  begyear('22')=2118;
+ 360  begyear('23')=2123;
+ 361  begyear('24')=2128;
+ 362  begyear('25')=2133;
+ 363  begyear('26')=2138;
+ 364  begyear('27')=2143;
+ 365  begyear('28')=2148;
+ 366  begyear('29')=2153;
+ 367  begyear('30')=2158;
+ 368  begyear('31')=2163;
+ 369  begyear('32')=2168;
+ 370  begyear('33')=2173;
+ 371  begyear('34')=2178;
+ 372  begyear('35')=2183;
+ 373  begyear('36')=2188;
+ 374  begyear('37')=2193;
+ 375  begyear('38')=2198;
+ 376  begyear('39')=2203;
+ 377  begyear('40')=2208;
+ 378  begyear('41')=2213;
+ 379  begyear('42')=2218;
+ 380  begyear('43')=2223;
+ 381  begyear('44')=2228;
+ 382  begyear('45')=2233;
+ 383  begyear('46')=2238;
+ 384  begyear('47')=2243;
+ 385  begyear('48')=2248;
+ 386  begyear('49')=2253;
+ 387  begyear('50')=2258;
+ 388  begyear('51')=2263;
+ 389  begyear('52')=2268;
+ 390  begyear('53')=2273;
+ 391  begyear('54')=2278;
+ 392  begyear('55')=2283;
+ 393  begyear('56')=2288;
+ 394  begyear('57')=2293;
+ 395  begyear('58')=2298;
+ 396  preds('2','1')=yes;
+ 397  preds('3','1')=yes;
+ 398  preds('3','2')=yes;
+ 399  preds('4','1')=yes;
+ 400  preds('4','2')=yes;
+ 401  preds('4','3')=yes;
+ 402  preds('5','1')=yes;
+ 403  preds('5','2')=yes;
+ 404  preds('5','3')=yes;
+ 405  preds('5','4')=yes;
+ 406  preds('6','1')=yes;
+ 407  preds('6','2')=yes;
+ 408  preds('6','3')=yes;
+ 409  preds('6','4')=yes;
+ 410  preds('6','5')=yes;
+ 411  preds('7','1')=yes;
+ 412  preds('7','2')=yes;
+ 413  preds('7','3')=yes;
+ 414  preds('7','4')=yes;
+ 415  preds('7','5')=yes;
+ 416  preds('7','6')=yes;
+ 417  preds('8','1')=yes;
+ 418  preds('8','2')=yes;
+ 419  preds('8','3')=yes;
+ 420  preds('8','4')=yes;
+ 421  preds('8','5')=yes;
+ 422  preds('8','6')=yes;
+ 423  preds('8','7')=yes;
+ 424  preds('9','1')=yes;
+ 425  preds('9','2')=yes;
+ 426  preds('9','3')=yes;
+ 427  preds('9','4')=yes;
+ 428  preds('9','5')=yes;
+ 429  preds('9','6')=yes;
+ 430  preds('9','7')=yes;
+ 431  preds('9','8')=yes;
+ 432  preds('10','1')=yes;
+ 433  preds('10','2')=yes;
+ 434  preds('10','3')=yes;
+ 435  preds('10','4')=yes;
+ 436  preds('10','5')=yes;
+ 437  preds('10','6')=yes;
+ 438  preds('10','7')=yes;
+ 439  preds('10','8')=yes;
+ 440  preds('10','9')=yes;
+ 441  preds('11','1')=yes;
+ 442  preds('11','2')=yes;
+ 443  preds('11','3')=yes;
+ 444  preds('11','4')=yes;
+ 445  preds('11','5')=yes;
+ 446  preds('11','6')=yes;
+ 447  preds('11','7')=yes;
+ 448  preds('11','8')=yes;
+ 449  preds('11','9')=yes;
+ 450  preds('11','10')=yes;
+ 451  preds('12','1')=yes;
+ 452  preds('12','2')=yes;
+ 453  preds('12','3')=yes;
+ 454  preds('12','4')=yes;
+ 455  preds('12','5')=yes;
+ 456  preds('12','6')=yes;
+ 457  preds('12','7')=yes;
+ 458  preds('12','8')=yes;
+ 459  preds('12','9')=yes;
+ 460  preds('12','10')=yes;
+ 461  preds('12','11')=yes;
+ 462  preds('13','1')=yes;
+ 463  preds('13','2')=yes;
+ 464  preds('13','3')=yes;
+ 465  preds('13','4')=yes;
+ 466  preds('13','5')=yes;
+ 467  preds('13','6')=yes;
+ 468  preds('13','7')=yes;
+ 469  preds('13','8')=yes;
+ 470  preds('13','9')=yes;
+ 471  preds('13','10')=yes;
+ 472  preds('13','11')=yes;
+ 473  preds('13','12')=yes;
+ 474  preds('14','1')=yes;
+ 475  preds('14','2')=yes;
+ 476  preds('14','3')=yes;
+ 477  preds('14','4')=yes;
+ 478  preds('14','5')=yes;
+ 479  preds('14','6')=yes;
+ 480  preds('14','7')=yes;
+ 481  preds('14','8')=yes;
+ 482  preds('14','9')=yes;
+ 483  preds('14','10')=yes;
+ 484  preds('14','11')=yes;
+ 485  preds('14','12')=yes;
+ 486  preds('14','13')=yes;
+ 487  preds('15','1')=yes;
+ 488  preds('15','2')=yes;
+ 489  preds('15','3')=yes;
+ 490  preds('15','4')=yes;
+ 491  preds('15','5')=yes;
+ 492  preds('15','6')=yes;
+ 493  preds('15','7')=yes;
+ 494  preds('15','8')=yes;
+ 495  preds('15','9')=yes;
+ 496  preds('15','10')=yes;
+ 497  preds('15','11')=yes;
+ 498  preds('15','12')=yes;
+ 499  preds('15','13')=yes;
+ 500  preds('15','14')=yes;
+ 501  preds('16','1')=yes;
+ 502  preds('16','2')=yes;
+ 503  preds('16','3')=yes;
+ 504  preds('16','4')=yes;
+ 505  preds('16','5')=yes;
+ 506  preds('16','6')=yes;
+ 507  preds('16','7')=yes;
+ 508  preds('16','8')=yes;
+ 509  preds('16','9')=yes;
+ 510  preds('16','10')=yes;
+ 511  preds('16','11')=yes;
+ 512  preds('16','12')=yes;
+ 513  preds('16','13')=yes;
+ 514  preds('16','14')=yes;
+ 515  preds('16','15')=yes;
+ 516  preds('17','1')=yes;
+ 517  preds('17','2')=yes;
+ 518  preds('17','3')=yes;
+ 519  preds('17','4')=yes;
+ 520  preds('17','5')=yes;
+ 521  preds('17','6')=yes;
+ 522  preds('17','7')=yes;
+ 523  preds('17','8')=yes;
+ 524  preds('17','9')=yes;
+ 525  preds('17','10')=yes;
+ 526  preds('17','11')=yes;
+ 527  preds('17','12')=yes;
+ 528  preds('17','13')=yes;
+ 529  preds('17','14')=yes;
+ 530  preds('17','15')=yes;
+ 531  preds('17','16')=yes;
+ 532  preds('18','1')=yes;
+ 533  preds('18','2')=yes;
+ 534  preds('18','3')=yes;
+ 535  preds('18','4')=yes;
+ 536  preds('18','5')=yes;
+ 537  preds('18','6')=yes;
+ 538  preds('18','7')=yes;
+ 539  preds('18','8')=yes;
+ 540  preds('18','9')=yes;
+ 541  preds('18','10')=yes;
+ 542  preds('18','11')=yes;
+ 543  preds('18','12')=yes;
+ 544  preds('18','13')=yes;
+ 545  preds('18','14')=yes;
+ 546  preds('18','15')=yes;
+ 547  preds('18','16')=yes;
+ 548  preds('18','17')=yes;
+ 549  preds('19','1')=yes;
+ 550  preds('19','2')=yes;
+ 551  preds('19','3')=yes;
+ 552  preds('19','4')=yes;
+ 553  preds('19','5')=yes;
+ 554  preds('19','6')=yes;
+ 555  preds('19','7')=yes;
+ 556  preds('19','8')=yes;
+ 557  preds('19','9')=yes;
+ 558  preds('19','10')=yes;
+ 559  preds('19','11')=yes;
+ 560  preds('19','12')=yes;
+ 561  preds('19','13')=yes;
+ 562  preds('19','14')=yes;
+ 563  preds('19','15')=yes;
+ 564  preds('19','16')=yes;
+ 565  preds('19','17')=yes;
+ 566  preds('19','18')=yes;
+ 567  preds('20','1')=yes;
+ 568  preds('20','2')=yes;
+ 569  preds('20','3')=yes;
+ 570  preds('20','4')=yes;
+ 571  preds('20','5')=yes;
+ 572  preds('20','6')=yes;
+ 573  preds('20','7')=yes;
+ 574  preds('20','8')=yes;
+ 575  preds('20','9')=yes;
+ 576  preds('20','10')=yes;
+ 577  preds('20','11')=yes;
+ 578  preds('20','12')=yes;
+ 579  preds('20','13')=yes;
+ 580  preds('20','14')=yes;
+ 581  preds('20','15')=yes;
+ 582  preds('20','16')=yes;
+ 583  preds('20','17')=yes;
+ 584  preds('20','18')=yes;
+ 585  preds('20','19')=yes;
+ 586  preds('21','1')=yes;
+ 587  preds('21','2')=yes;
+ 588  preds('21','3')=yes;
+ 589  preds('21','4')=yes;
+ 590  preds('21','5')=yes;
+ 591  preds('21','6')=yes;
+ 592  preds('21','7')=yes;
+ 593  preds('21','8')=yes;
+ 594  preds('21','9')=yes;
+ 595  preds('21','10')=yes;
+ 596  preds('21','11')=yes;
+ 597  preds('21','12')=yes;
+ 598  preds('21','13')=yes;
+ 599  preds('21','14')=yes;
+ 600  preds('21','15')=yes;
+ 601  preds('21','16')=yes;
+ 602  preds('21','17')=yes;
+ 603  preds('21','18')=yes;
+ 604  preds('21','19')=yes;
+ 605  preds('21','20')=yes;
+ 606  preds('22','1')=yes;
+ 607  preds('22','2')=yes;
+ 608  preds('22','3')=yes;
+ 609  preds('22','4')=yes;
+ 610  preds('22','5')=yes;
+ 611  preds('22','6')=yes;
+ 612  preds('22','7')=yes;
+ 613  preds('22','8')=yes;
+ 614  preds('22','9')=yes;
+ 615  preds('22','10')=yes;
+ 616  preds('22','11')=yes;
+ 617  preds('22','12')=yes;
+ 618  preds('22','13')=yes;
+ 619  preds('22','14')=yes;
+ 620  preds('22','15')=yes;
+ 621  preds('22','16')=yes;
+ 622  preds('22','17')=yes;
+ 623  preds('22','18')=yes;
+ 624  preds('22','19')=yes;
+ 625  preds('22','20')=yes;
+ 626  preds('22','21')=yes;
+ 627  preds('23','1')=yes;
+ 628  preds('23','2')=yes;
+ 629  preds('23','3')=yes;
+ 630  preds('23','4')=yes;
+ 631  preds('23','5')=yes;
+ 632  preds('23','6')=yes;
+ 633  preds('23','7')=yes;
+ 634  preds('23','8')=yes;
+ 635  preds('23','9')=yes;
+ 636  preds('23','10')=yes;
+ 637  preds('23','11')=yes;
+ 638  preds('23','12')=yes;
+ 639  preds('23','13')=yes;
+ 640  preds('23','14')=yes;
+ 641  preds('23','15')=yes;
+ 642  preds('23','16')=yes;
+ 643  preds('23','17')=yes;
+ 644  preds('23','18')=yes;
+ 645  preds('23','19')=yes;
+ 646  preds('23','20')=yes;
+ 647  preds('23','21')=yes;
+ 648  preds('23','22')=yes;
+ 649  preds('24','1')=yes;
+ 650  preds('24','2')=yes;
+ 651  preds('24','3')=yes;
+ 652  preds('24','4')=yes;
+ 653  preds('24','5')=yes;
+ 654  preds('24','6')=yes;
+ 655  preds('24','7')=yes;
+ 656  preds('24','8')=yes;
+ 657  preds('24','9')=yes;
+ 658  preds('24','10')=yes;
+ 659  preds('24','11')=yes;
+ 660  preds('24','12')=yes;
+ 661  preds('24','13')=yes;
+ 662  preds('24','14')=yes;
+ 663  preds('24','15')=yes;
+ 664  preds('24','16')=yes;
+ 665  preds('24','17')=yes;
+ 666  preds('24','18')=yes;
+ 667  preds('24','19')=yes;
+ 668  preds('24','20')=yes;
+ 669  preds('24','21')=yes;
+ 670  preds('24','22')=yes;
+ 671  preds('24','23')=yes;
+ 672  preds('25','1')=yes;
+ 673  preds('25','2')=yes;
+ 674  preds('25','3')=yes;
+ 675  preds('25','4')=yes;
+ 676  preds('25','5')=yes;
+ 677  preds('25','6')=yes;
+ 678  preds('25','7')=yes;
+ 679  preds('25','8')=yes;
+ 680  preds('25','9')=yes;
+ 681  preds('25','10')=yes;
+ 682  preds('25','11')=yes;
+ 683  preds('25','12')=yes;
+ 684  preds('25','13')=yes;
+ 685  preds('25','14')=yes;
+ 686  preds('25','15')=yes;
+ 687  preds('25','16')=yes;
+ 688  preds('25','17')=yes;
+ 689  preds('25','18')=yes;
+ 690  preds('25','19')=yes;
+ 691  preds('25','20')=yes;
+ 692  preds('25','21')=yes;
+ 693  preds('25','22')=yes;
+ 694  preds('25','23')=yes;
+ 695  preds('25','24')=yes;
+ 696  preds('26','1')=yes;
+ 697  preds('26','2')=yes;
+ 698  preds('26','3')=yes;
+ 699  preds('26','4')=yes;
+ 700  preds('26','5')=yes;
+ 701  preds('26','6')=yes;
+ 702  preds('26','7')=yes;
+ 703  preds('26','8')=yes;
+ 704  preds('26','9')=yes;
+ 705  preds('26','10')=yes;
+ 706  preds('26','11')=yes;
+ 707  preds('26','12')=yes;
+ 708  preds('26','13')=yes;
+ 709  preds('26','14')=yes;
+ 710  preds('26','15')=yes;
+ 711  preds('26','16')=yes;
+ 712  preds('26','17')=yes;
+ 713  preds('26','18')=yes;
+ 714  preds('26','19')=yes;
+ 715  preds('26','20')=yes;
+ 716  preds('26','21')=yes;
+ 717  preds('26','22')=yes;
+ 718  preds('26','23')=yes;
+ 719  preds('26','24')=yes;
+ 720  preds('26','25')=yes;
+ 721  preds('27','1')=yes;
+ 722  preds('27','2')=yes;
+ 723  preds('27','3')=yes;
+ 724  preds('27','4')=yes;
+ 725  preds('27','5')=yes;
+ 726  preds('27','6')=yes;
+ 727  preds('27','7')=yes;
+ 728  preds('27','8')=yes;
+ 729  preds('27','9')=yes;
+ 730  preds('27','10')=yes;
+ 731  preds('27','11')=yes;
+ 732  preds('27','12')=yes;
+ 733  preds('27','13')=yes;
+ 734  preds('27','14')=yes;
+ 735  preds('27','15')=yes;
+ 736  preds('27','16')=yes;
+ 737  preds('27','17')=yes;
+ 738  preds('27','18')=yes;
+ 739  preds('27','19')=yes;
+ 740  preds('27','20')=yes;
+ 741  preds('27','21')=yes;
+ 742  preds('27','22')=yes;
+ 743  preds('27','23')=yes;
+ 744  preds('27','24')=yes;
+ 745  preds('27','25')=yes;
+ 746  preds('27','26')=yes;
+ 747  preds('28','1')=yes;
+ 748  preds('28','2')=yes;
+ 749  preds('28','3')=yes;
+ 750  preds('28','4')=yes;
+ 751  preds('28','5')=yes;
+ 752  preds('28','6')=yes;
+ 753  preds('28','7')=yes;
+ 754  preds('28','8')=yes;
+ 755  preds('28','9')=yes;
+ 756  preds('28','10')=yes;
+ 757  preds('28','11')=yes;
+ 758  preds('28','12')=yes;
+ 759  preds('28','13')=yes;
+ 760  preds('28','14')=yes;
+ 761  preds('28','15')=yes;
+ 762  preds('28','16')=yes;
+ 763  preds('28','17')=yes;
+ 764  preds('28','18')=yes;
+ 765  preds('28','19')=yes;
+ 766  preds('28','20')=yes;
+ 767  preds('28','21')=yes;
+ 768  preds('28','22')=yes;
+ 769  preds('28','23')=yes;
+ 770  preds('28','24')=yes;
+ 771  preds('28','25')=yes;
+ 772  preds('28','26')=yes;
+ 773  preds('28','27')=yes;
+ 774  preds('29','1')=yes;
+ 775  preds('29','2')=yes;
+ 776  preds('29','3')=yes;
+ 777  preds('29','4')=yes;
+ 778  preds('29','5')=yes;
+ 779  preds('29','6')=yes;
+ 780  preds('29','7')=yes;
+ 781  preds('29','8')=yes;
+ 782  preds('29','9')=yes;
+ 783  preds('29','10')=yes;
+ 784  preds('29','11')=yes;
+ 785  preds('29','12')=yes;
+ 786  preds('29','13')=yes;
+ 787  preds('29','14')=yes;
+ 788  preds('29','15')=yes;
+ 789  preds('29','16')=yes;
+ 790  preds('29','17')=yes;
+ 791  preds('29','18')=yes;
+ 792  preds('29','19')=yes;
+ 793  preds('29','20')=yes;
+ 794  preds('29','21')=yes;
+ 795  preds('29','22')=yes;
+ 796  preds('29','23')=yes;
+ 797  preds('29','24')=yes;
+ 798  preds('29','25')=yes;
+ 799  preds('29','26')=yes;
+ 800  preds('29','27')=yes;
+ 801  preds('29','28')=yes;
+ 802  preds('30','1')=yes;
+ 803  preds('30','2')=yes;
+ 804  preds('30','3')=yes;
+ 805  preds('30','4')=yes;
+ 806  preds('30','5')=yes;
+ 807  preds('30','6')=yes;
+ 808  preds('30','7')=yes;
+ 809  preds('30','8')=yes;
+ 810  preds('30','9')=yes;
+ 811  preds('30','10')=yes;
+ 812  preds('30','11')=yes;
+ 813  preds('30','12')=yes;
+ 814  preds('30','13')=yes;
+ 815  preds('30','14')=yes;
+ 816  preds('30','15')=yes;
+ 817  preds('30','16')=yes;
+ 818  preds('30','17')=yes;
+ 819  preds('30','18')=yes;
+ 820  preds('30','19')=yes;
+ 821  preds('30','20')=yes;
+ 822  preds('30','21')=yes;
+ 823  preds('30','22')=yes;
+ 824  preds('30','23')=yes;
+ 825  preds('30','24')=yes;
+ 826  preds('30','25')=yes;
+ 827  preds('30','26')=yes;
+ 828  preds('30','27')=yes;
+ 829  preds('30','28')=yes;
+ 830  preds('30','29')=yes;
+ 831  preds('31','1')=yes;
+ 832  preds('31','2')=yes;
+ 833  preds('31','3')=yes;
+ 834  preds('31','4')=yes;
+ 835  preds('31','5')=yes;
+ 836  preds('31','6')=yes;
+ 837  preds('31','7')=yes;
+ 838  preds('31','8')=yes;
+ 839  preds('31','9')=yes;
+ 840  preds('31','10')=yes;
+ 841  preds('31','11')=yes;
+ 842  preds('31','12')=yes;
+ 843  preds('31','13')=yes;
+ 844  preds('31','14')=yes;
+ 845  preds('31','15')=yes;
+ 846  preds('31','16')=yes;
+ 847  preds('31','17')=yes;
+ 848  preds('31','18')=yes;
+ 849  preds('31','19')=yes;
+ 850  preds('31','20')=yes;
+ 851  preds('31','21')=yes;
+ 852  preds('31','22')=yes;
+ 853  preds('31','23')=yes;
+ 854  preds('31','24')=yes;
+ 855  preds('31','25')=yes;
+ 856  preds('31','26')=yes;
+ 857  preds('31','27')=yes;
+ 858  preds('31','28')=yes;
+ 859  preds('31','29')=yes;
+ 860  preds('31','30')=yes;
+ 861  preds('32','1')=yes;
+ 862  preds('32','2')=yes;
+ 863  preds('32','3')=yes;
+ 864  preds('32','4')=yes;
+ 865  preds('32','5')=yes;
+ 866  preds('32','6')=yes;
+ 867  preds('32','7')=yes;
+ 868  preds('32','8')=yes;
+ 869  preds('32','9')=yes;
+ 870  preds('32','10')=yes;
+ 871  preds('32','11')=yes;
+ 872  preds('32','12')=yes;
+ 873  preds('32','13')=yes;
+ 874  preds('32','14')=yes;
+ 875  preds('32','15')=yes;
+ 876  preds('32','16')=yes;
+ 877  preds('32','17')=yes;
+ 878  preds('32','18')=yes;
+ 879  preds('32','19')=yes;
+ 880  preds('32','20')=yes;
+ 881  preds('32','21')=yes;
+ 882  preds('32','22')=yes;
+ 883  preds('32','23')=yes;
+ 884  preds('32','24')=yes;
+ 885  preds('32','25')=yes;
+ 886  preds('32','26')=yes;
+ 887  preds('32','27')=yes;
+ 888  preds('32','28')=yes;
+ 889  preds('32','29')=yes;
+ 890  preds('32','30')=yes;
+ 891  preds('32','31')=yes;
+ 892  preds('33','1')=yes;
+ 893  preds('33','2')=yes;
+ 894  preds('33','3')=yes;
+ 895  preds('33','4')=yes;
+ 896  preds('33','5')=yes;
+ 897  preds('33','6')=yes;
+ 898  preds('33','7')=yes;
+ 899  preds('33','8')=yes;
+ 900  preds('33','9')=yes;
+ 901  preds('33','10')=yes;
+ 902  preds('33','11')=yes;
+ 903  preds('33','12')=yes;
+ 904  preds('33','13')=yes;
+ 905  preds('33','14')=yes;
+ 906  preds('33','15')=yes;
+ 907  preds('33','16')=yes;
+ 908  preds('33','17')=yes;
+ 909  preds('33','18')=yes;
+ 910  preds('33','19')=yes;
+ 911  preds('33','20')=yes;
+ 912  preds('33','21')=yes;
+ 913  preds('33','22')=yes;
+ 914  preds('33','23')=yes;
+ 915  preds('33','24')=yes;
+ 916  preds('33','25')=yes;
+ 917  preds('33','26')=yes;
+ 918  preds('33','27')=yes;
+ 919  preds('33','28')=yes;
+ 920  preds('33','29')=yes;
+ 921  preds('33','30')=yes;
+ 922  preds('33','31')=yes;
+ 923  preds('33','32')=yes;
+ 924  preds('34','1')=yes;
+ 925  preds('34','2')=yes;
+ 926  preds('34','3')=yes;
+ 927  preds('34','4')=yes;
+ 928  preds('34','5')=yes;
+ 929  preds('34','6')=yes;
+ 930  preds('34','7')=yes;
+ 931  preds('34','8')=yes;
+ 932  preds('34','9')=yes;
+ 933  preds('34','10')=yes;
+ 934  preds('34','11')=yes;
+ 935  preds('34','12')=yes;
+ 936  preds('34','13')=yes;
+ 937  preds('34','14')=yes;
+ 938  preds('34','15')=yes;
+ 939  preds('34','16')=yes;
+ 940  preds('34','17')=yes;
+ 941  preds('34','18')=yes;
+ 942  preds('34','19')=yes;
+ 943  preds('34','20')=yes;
+ 944  preds('34','21')=yes;
+ 945  preds('34','22')=yes;
+ 946  preds('34','23')=yes;
+ 947  preds('34','24')=yes;
+ 948  preds('34','25')=yes;
+ 949  preds('34','26')=yes;
+ 950  preds('34','27')=yes;
+ 951  preds('34','28')=yes;
+ 952  preds('34','29')=yes;
+ 953  preds('34','30')=yes;
+ 954  preds('34','31')=yes;
+ 955  preds('34','32')=yes;
+ 956  preds('34','33')=yes;
+ 957  preds('35','1')=yes;
+ 958  preds('35','2')=yes;
+ 959  preds('35','3')=yes;
+ 960  preds('35','4')=yes;
+ 961  preds('35','5')=yes;
+ 962  preds('35','6')=yes;
+ 963  preds('35','7')=yes;
+ 964  preds('35','8')=yes;
+ 965  preds('35','9')=yes;
+ 966  preds('35','10')=yes;
+ 967  preds('35','11')=yes;
+ 968  preds('35','12')=yes;
+ 969  preds('35','13')=yes;
+ 970  preds('35','14')=yes;
+ 971  preds('35','15')=yes;
+ 972  preds('35','16')=yes;
+ 973  preds('35','17')=yes;
+ 974  preds('35','18')=yes;
+ 975  preds('35','19')=yes;
+ 976  preds('35','20')=yes;
+ 977  preds('35','21')=yes;
+ 978  preds('35','22')=yes;
+ 979  preds('35','23')=yes;
+ 980  preds('35','24')=yes;
+ 981  preds('35','25')=yes;
+ 982  preds('35','26')=yes;
+ 983  preds('35','27')=yes;
+ 984  preds('35','28')=yes;
+ 985  preds('35','29')=yes;
+ 986  preds('35','30')=yes;
+ 987  preds('35','31')=yes;
+ 988  preds('35','32')=yes;
+ 989  preds('35','33')=yes;
+ 990  preds('35','34')=yes;
+ 991  preds('36','1')=yes;
+ 992  preds('36','2')=yes;
+ 993  preds('36','3')=yes;
+ 994  preds('36','4')=yes;
+ 995  preds('36','5')=yes;
+ 996  preds('36','6')=yes;
+ 997  preds('36','7')=yes;
+ 998  preds('36','8')=yes;
+ 999  preds('36','9')=yes;
+1000  preds('36','10')=yes;
+1001  preds('36','11')=yes;
+1002  preds('36','12')=yes;
+1003  preds('36','13')=yes;
+1004  preds('36','14')=yes;
+1005  preds('36','15')=yes;
+1006  preds('36','16')=yes;
+1007  preds('36','17')=yes;
+1008  preds('36','18')=yes;
+1009  preds('36','19')=yes;
+1010  preds('36','20')=yes;
+1011  preds('36','21')=yes;
+1012  preds('36','22')=yes;
+1013  preds('36','23')=yes;
+1014  preds('36','24')=yes;
+1015  preds('36','25')=yes;
+1016  preds('36','26')=yes;
+1017  preds('36','27')=yes;
+1018  preds('36','28')=yes;
+1019  preds('36','29')=yes;
+1020  preds('36','30')=yes;
+1021  preds('36','31')=yes;
+1022  preds('36','32')=yes;
+1023  preds('36','33')=yes;
+1024  preds('36','34')=yes;
+1025  preds('36','35')=yes;
+1026  preds('37','1')=yes;
+1027  preds('37','2')=yes;
+1028  preds('37','3')=yes;
+1029  preds('37','4')=yes;
+1030  preds('37','5')=yes;
+1031  preds('37','6')=yes;
+1032  preds('37','7')=yes;
+1033  preds('37','8')=yes;
+1034  preds('37','9')=yes;
+1035  preds('37','10')=yes;
+1036  preds('37','11')=yes;
+1037  preds('37','12')=yes;
+1038  preds('37','13')=yes;
+1039  preds('37','14')=yes;
+1040  preds('37','15')=yes;
+1041  preds('37','16')=yes;
+1042  preds('37','17')=yes;
+1043  preds('37','18')=yes;
+1044  preds('37','19')=yes;
+1045  preds('37','20')=yes;
+1046  preds('37','21')=yes;
+1047  preds('37','22')=yes;
+1048  preds('37','23')=yes;
+1049  preds('37','24')=yes;
+1050  preds('37','25')=yes;
+1051  preds('37','26')=yes;
+1052  preds('37','27')=yes;
+1053  preds('37','28')=yes;
+1054  preds('37','29')=yes;
+1055  preds('37','30')=yes;
+1056  preds('37','31')=yes;
+1057  preds('37','32')=yes;
+1058  preds('37','33')=yes;
+1059  preds('37','34')=yes;
+1060  preds('37','35')=yes;
+1061  preds('37','36')=yes;
+1062  preds('38','1')=yes;
+1063  preds('38','2')=yes;
+1064  preds('38','3')=yes;
+1065  preds('38','4')=yes;
+1066  preds('38','5')=yes;
+1067  preds('38','6')=yes;
+1068  preds('38','7')=yes;
+1069  preds('38','8')=yes;
+1070  preds('38','9')=yes;
+1071  preds('38','10')=yes;
+1072  preds('38','11')=yes;
+1073  preds('38','12')=yes;
+1074  preds('38','13')=yes;
+1075  preds('38','14')=yes;
+1076  preds('38','15')=yes;
+1077  preds('38','16')=yes;
+1078  preds('38','17')=yes;
+1079  preds('38','18')=yes;
+1080  preds('38','19')=yes;
+1081  preds('38','20')=yes;
+1082  preds('38','21')=yes;
+1083  preds('38','22')=yes;
+1084  preds('38','23')=yes;
+1085  preds('38','24')=yes;
+1086  preds('38','25')=yes;
+1087  preds('38','26')=yes;
+1088  preds('38','27')=yes;
+1089  preds('38','28')=yes;
+1090  preds('38','29')=yes;
+1091  preds('38','30')=yes;
+1092  preds('38','31')=yes;
+1093  preds('38','32')=yes;
+1094  preds('38','33')=yes;
+1095  preds('38','34')=yes;
+1096  preds('38','35')=yes;
+1097  preds('38','36')=yes;
+1098  preds('38','37')=yes;
+1099  preds('39','1')=yes;
+1100  preds('39','2')=yes;
+1101  preds('39','3')=yes;
+1102  preds('39','4')=yes;
+1103  preds('39','5')=yes;
+1104  preds('39','6')=yes;
+1105  preds('39','7')=yes;
+1106  preds('39','8')=yes;
+1107  preds('39','9')=yes;
+1108  preds('39','10')=yes;
+1109  preds('39','11')=yes;
+1110  preds('39','12')=yes;
+1111  preds('39','13')=yes;
+1112  preds('39','14')=yes;
+1113  preds('39','15')=yes;
+1114  preds('39','16')=yes;
+1115  preds('39','17')=yes;
+1116  preds('39','18')=yes;
+1117  preds('39','19')=yes;
+1118  preds('39','20')=yes;
+1119  preds('39','21')=yes;
+1120  preds('39','22')=yes;
+1121  preds('39','23')=yes;
+1122  preds('39','24')=yes;
+1123  preds('39','25')=yes;
+1124  preds('39','26')=yes;
+1125  preds('39','27')=yes;
+1126  preds('39','28')=yes;
+1127  preds('39','29')=yes;
+1128  preds('39','30')=yes;
+1129  preds('39','31')=yes;
+1130  preds('39','32')=yes;
+1131  preds('39','33')=yes;
+1132  preds('39','34')=yes;
+1133  preds('39','35')=yes;
+1134  preds('39','36')=yes;
+1135  preds('39','37')=yes;
+1136  preds('39','38')=yes;
+1137  preds('40','1')=yes;
+1138  preds('40','2')=yes;
+1139  preds('40','3')=yes;
+1140  preds('40','4')=yes;
+1141  preds('40','5')=yes;
+1142  preds('40','6')=yes;
+1143  preds('40','7')=yes;
+1144  preds('40','8')=yes;
+1145  preds('40','9')=yes;
+1146  preds('40','10')=yes;
+1147  preds('40','11')=yes;
+1148  preds('40','12')=yes;
+1149  preds('40','13')=yes;
+1150  preds('40','14')=yes;
+1151  preds('40','15')=yes;
+1152  preds('40','16')=yes;
+1153  preds('40','17')=yes;
+1154  preds('40','18')=yes;
+1155  preds('40','19')=yes;
+1156  preds('40','20')=yes;
+1157  preds('40','21')=yes;
+1158  preds('40','22')=yes;
+1159  preds('40','23')=yes;
+1160  preds('40','24')=yes;
+1161  preds('40','25')=yes;
+1162  preds('40','26')=yes;
+1163  preds('40','27')=yes;
+1164  preds('40','28')=yes;
+1165  preds('40','29')=yes;
+1166  preds('40','30')=yes;
+1167  preds('40','31')=yes;
+1168  preds('40','32')=yes;
+1169  preds('40','33')=yes;
+1170  preds('40','34')=yes;
+1171  preds('40','35')=yes;
+1172  preds('40','36')=yes;
+1173  preds('40','37')=yes;
+1174  preds('40','38')=yes;
+1175  preds('40','39')=yes;
+1176  preds('41','1')=yes;
+1177  preds('41','2')=yes;
+1178  preds('41','3')=yes;
+1179  preds('41','4')=yes;
+1180  preds('41','5')=yes;
+1181  preds('41','6')=yes;
+1182  preds('41','7')=yes;
+1183  preds('41','8')=yes;
+1184  preds('41','9')=yes;
+1185  preds('41','10')=yes;
+1186  preds('41','11')=yes;
+1187  preds('41','12')=yes;
+1188  preds('41','13')=yes;
+1189  preds('41','14')=yes;
+1190  preds('41','15')=yes;
+1191  preds('41','16')=yes;
+1192  preds('41','17')=yes;
+1193  preds('41','18')=yes;
+1194  preds('41','19')=yes;
+1195  preds('41','20')=yes;
+1196  preds('41','21')=yes;
+1197  preds('41','22')=yes;
+1198  preds('41','23')=yes;
+1199  preds('41','24')=yes;
+1200  preds('41','25')=yes;
+1201  preds('41','26')=yes;
+1202  preds('41','27')=yes;
+1203  preds('41','28')=yes;
+1204  preds('41','29')=yes;
+1205  preds('41','30')=yes;
+1206  preds('41','31')=yes;
+1207  preds('41','32')=yes;
+1208  preds('41','33')=yes;
+1209  preds('41','34')=yes;
+1210  preds('41','35')=yes;
+1211  preds('41','36')=yes;
+1212  preds('41','37')=yes;
+1213  preds('41','38')=yes;
+1214  preds('41','39')=yes;
+1215  preds('41','40')=yes;
+1216  preds('42','1')=yes;
+1217  preds('42','2')=yes;
+1218  preds('42','3')=yes;
+1219  preds('42','4')=yes;
+1220  preds('42','5')=yes;
+1221  preds('42','6')=yes;
+1222  preds('42','7')=yes;
+1223  preds('42','8')=yes;
+1224  preds('42','9')=yes;
+1225  preds('42','10')=yes;
+1226  preds('42','11')=yes;
+1227  preds('42','12')=yes;
+1228  preds('42','13')=yes;
+1229  preds('42','14')=yes;
+1230  preds('42','15')=yes;
+1231  preds('42','16')=yes;
+1232  preds('42','17')=yes;
+1233  preds('42','18')=yes;
+1234  preds('42','19')=yes;
+1235  preds('42','20')=yes;
+1236  preds('42','21')=yes;
+1237  preds('42','22')=yes;
+1238  preds('42','23')=yes;
+1239  preds('42','24')=yes;
+1240  preds('42','25')=yes;
+1241  preds('42','26')=yes;
+1242  preds('42','27')=yes;
+1243  preds('42','28')=yes;
+1244  preds('42','29')=yes;
+1245  preds('42','30')=yes;
+1246  preds('42','31')=yes;
+1247  preds('42','32')=yes;
+1248  preds('42','33')=yes;
+1249  preds('42','34')=yes;
+1250  preds('42','35')=yes;
+1251  preds('42','36')=yes;
+1252  preds('42','37')=yes;
+1253  preds('42','38')=yes;
+1254  preds('42','39')=yes;
+1255  preds('42','40')=yes;
+1256  preds('42','41')=yes;
+1257  preds('43','1')=yes;
+1258  preds('43','2')=yes;
+1259  preds('43','3')=yes;
+1260  preds('43','4')=yes;
+1261  preds('43','5')=yes;
+1262  preds('43','6')=yes;
+1263  preds('43','7')=yes;
+1264  preds('43','8')=yes;
+1265  preds('43','9')=yes;
+1266  preds('43','10')=yes;
+1267  preds('43','11')=yes;
+1268  preds('43','12')=yes;
+1269  preds('43','13')=yes;
+1270  preds('43','14')=yes;
+1271  preds('43','15')=yes;
+1272  preds('43','16')=yes;
+1273  preds('43','17')=yes;
+1274  preds('43','18')=yes;
+1275  preds('43','19')=yes;
+1276  preds('43','20')=yes;
+1277  preds('43','21')=yes;
+1278  preds('43','22')=yes;
+1279  preds('43','23')=yes;
+1280  preds('43','24')=yes;
+1281  preds('43','25')=yes;
+1282  preds('43','26')=yes;
+1283  preds('43','27')=yes;
+1284  preds('43','28')=yes;
+1285  preds('43','29')=yes;
+1286  preds('43','30')=yes;
+1287  preds('43','31')=yes;
+1288  preds('43','32')=yes;
+1289  preds('43','33')=yes;
+1290  preds('43','34')=yes;
+1291  preds('43','35')=yes;
+1292  preds('43','36')=yes;
+1293  preds('43','37')=yes;
+1294  preds('43','38')=yes;
+1295  preds('43','39')=yes;
+1296  preds('43','40')=yes;
+1297  preds('43','41')=yes;
+1298  preds('43','42')=yes;
+1299  preds('44','1')=yes;
+1300  preds('44','2')=yes;
+1301  preds('44','3')=yes;
+1302  preds('44','4')=yes;
+1303  preds('44','5')=yes;
+1304  preds('44','6')=yes;
+1305  preds('44','7')=yes;
+1306  preds('44','8')=yes;
+1307  preds('44','9')=yes;
+1308  preds('44','10')=yes;
+1309  preds('44','11')=yes;
+1310  preds('44','12')=yes;
+1311  preds('44','13')=yes;
+1312  preds('44','14')=yes;
+1313  preds('44','15')=yes;
+1314  preds('44','16')=yes;
+1315  preds('44','17')=yes;
+1316  preds('44','18')=yes;
+1317  preds('44','19')=yes;
+1318  preds('44','20')=yes;
+1319  preds('44','21')=yes;
+1320  preds('44','22')=yes;
+1321  preds('44','23')=yes;
+1322  preds('44','24')=yes;
+1323  preds('44','25')=yes;
+1324  preds('44','26')=yes;
+1325  preds('44','27')=yes;
+1326  preds('44','28')=yes;
+1327  preds('44','29')=yes;
+1328  preds('44','30')=yes;
+1329  preds('44','31')=yes;
+1330  preds('44','32')=yes;
+1331  preds('44','33')=yes;
+1332  preds('44','34')=yes;
+1333  preds('44','35')=yes;
+1334  preds('44','36')=yes;
+1335  preds('44','37')=yes;
+1336  preds('44','38')=yes;
+1337  preds('44','39')=yes;
+1338  preds('44','40')=yes;
+1339  preds('44','41')=yes;
+1340  preds('44','42')=yes;
+1341  preds('44','43')=yes;
+1342  preds('45','1')=yes;
+1343  preds('45','2')=yes;
+1344  preds('45','3')=yes;
+1345  preds('45','4')=yes;
+1346  preds('45','5')=yes;
+1347  preds('45','6')=yes;
+1348  preds('45','7')=yes;
+1349  preds('45','8')=yes;
+1350  preds('45','9')=yes;
+1351  preds('45','10')=yes;
+1352  preds('45','11')=yes;
+1353  preds('45','12')=yes;
+1354  preds('45','13')=yes;
+1355  preds('45','14')=yes;
+1356  preds('45','15')=yes;
+1357  preds('45','16')=yes;
+1358  preds('45','17')=yes;
+1359  preds('45','18')=yes;
+1360  preds('45','19')=yes;
+1361  preds('45','20')=yes;
+1362  preds('45','21')=yes;
+1363  preds('45','22')=yes;
+1364  preds('45','23')=yes;
+1365  preds('45','24')=yes;
+1366  preds('45','25')=yes;
+1367  preds('45','26')=yes;
+1368  preds('45','27')=yes;
+1369  preds('45','28')=yes;
+1370  preds('45','29')=yes;
+1371  preds('45','30')=yes;
+1372  preds('45','31')=yes;
+1373  preds('45','32')=yes;
+1374  preds('45','33')=yes;
+1375  preds('45','34')=yes;
+1376  preds('45','35')=yes;
+1377  preds('45','36')=yes;
+1378  preds('45','37')=yes;
+1379  preds('45','38')=yes;
+1380  preds('45','39')=yes;
+1381  preds('45','40')=yes;
+1382  preds('45','41')=yes;
+1383  preds('45','42')=yes;
+1384  preds('45','43')=yes;
+1385  preds('45','44')=yes;
+1386  preds('46','1')=yes;
+1387  preds('46','2')=yes;
+1388  preds('46','3')=yes;
+1389  preds('46','4')=yes;
+1390  preds('46','5')=yes;
+1391  preds('46','6')=yes;
+1392  preds('46','7')=yes;
+1393  preds('46','8')=yes;
+1394  preds('46','9')=yes;
+1395  preds('46','10')=yes;
+1396  preds('46','11')=yes;
+1397  preds('46','12')=yes;
+1398  preds('46','13')=yes;
+1399  preds('46','14')=yes;
+1400  preds('46','15')=yes;
+1401  preds('46','16')=yes;
+1402  preds('46','17')=yes;
+1403  preds('46','18')=yes;
+1404  preds('46','19')=yes;
+1405  preds('46','20')=yes;
+1406  preds('46','21')=yes;
+1407  preds('46','22')=yes;
+1408  preds('46','23')=yes;
+1409  preds('46','24')=yes;
+1410  preds('46','25')=yes;
+1411  preds('46','26')=yes;
+1412  preds('46','27')=yes;
+1413  preds('46','28')=yes;
+1414  preds('46','29')=yes;
+1415  preds('46','30')=yes;
+1416  preds('46','31')=yes;
+1417  preds('46','32')=yes;
+1418  preds('46','33')=yes;
+1419  preds('46','34')=yes;
+1420  preds('46','35')=yes;
+1421  preds('46','36')=yes;
+1422  preds('46','37')=yes;
+1423  preds('46','38')=yes;
+1424  preds('46','39')=yes;
+1425  preds('46','40')=yes;
+1426  preds('46','41')=yes;
+1427  preds('46','42')=yes;
+1428  preds('46','43')=yes;
+1429  preds('46','44')=yes;
+1430  preds('46','45')=yes;
+1431  preds('47','1')=yes;
+1432  preds('47','2')=yes;
+1433  preds('47','3')=yes;
+1434  preds('47','4')=yes;
+1435  preds('47','5')=yes;
+1436  preds('47','6')=yes;
+1437  preds('47','7')=yes;
+1438  preds('47','8')=yes;
+1439  preds('47','9')=yes;
+1440  preds('47','10')=yes;
+1441  preds('47','11')=yes;
+1442  preds('47','12')=yes;
+1443  preds('47','13')=yes;
+1444  preds('47','14')=yes;
+1445  preds('47','15')=yes;
+1446  preds('47','16')=yes;
+1447  preds('47','17')=yes;
+1448  preds('47','18')=yes;
+1449  preds('47','19')=yes;
+1450  preds('47','20')=yes;
+1451  preds('47','21')=yes;
+1452  preds('47','22')=yes;
+1453  preds('47','23')=yes;
+1454  preds('47','24')=yes;
+1455  preds('47','25')=yes;
+1456  preds('47','26')=yes;
+1457  preds('47','27')=yes;
+1458  preds('47','28')=yes;
+1459  preds('47','29')=yes;
+1460  preds('47','30')=yes;
+1461  preds('47','31')=yes;
+1462  preds('47','32')=yes;
+1463  preds('47','33')=yes;
+1464  preds('47','34')=yes;
+1465  preds('47','35')=yes;
+1466  preds('47','36')=yes;
+1467  preds('47','37')=yes;
+1468  preds('47','38')=yes;
+1469  preds('47','39')=yes;
+1470  preds('47','40')=yes;
+1471  preds('47','41')=yes;
+1472  preds('47','42')=yes;
+1473  preds('47','43')=yes;
+1474  preds('47','44')=yes;
+1475  preds('47','45')=yes;
+1476  preds('47','46')=yes;
+1477  preds('48','1')=yes;
+1478  preds('48','2')=yes;
+1479  preds('48','3')=yes;
+1480  preds('48','4')=yes;
+1481  preds('48','5')=yes;
+1482  preds('48','6')=yes;
+1483  preds('48','7')=yes;
+1484  preds('48','8')=yes;
+1485  preds('48','9')=yes;
+1486  preds('48','10')=yes;
+1487  preds('48','11')=yes;
+1488  preds('48','12')=yes;
+1489  preds('48','13')=yes;
+1490  preds('48','14')=yes;
+1491  preds('48','15')=yes;
+1492  preds('48','16')=yes;
+1493  preds('48','17')=yes;
+1494  preds('48','18')=yes;
+1495  preds('48','19')=yes;
+1496  preds('48','20')=yes;
+1497  preds('48','21')=yes;
+1498  preds('48','22')=yes;
+1499  preds('48','23')=yes;
+1500  preds('48','24')=yes;
+1501  preds('48','25')=yes;
+1502  preds('48','26')=yes;
+1503  preds('48','27')=yes;
+1504  preds('48','28')=yes;
+1505  preds('48','29')=yes;
+1506  preds('48','30')=yes;
+1507  preds('48','31')=yes;
+1508  preds('48','32')=yes;
+1509  preds('48','33')=yes;
+1510  preds('48','34')=yes;
+1511  preds('48','35')=yes;
+1512  preds('48','36')=yes;
+1513  preds('48','37')=yes;
+1514  preds('48','38')=yes;
+1515  preds('48','39')=yes;
+1516  preds('48','40')=yes;
+1517  preds('48','41')=yes;
+1518  preds('48','42')=yes;
+1519  preds('48','43')=yes;
+1520  preds('48','44')=yes;
+1521  preds('48','45')=yes;
+1522  preds('48','46')=yes;
+1523  preds('48','47')=yes;
+1524  preds('49','1')=yes;
+1525  preds('49','2')=yes;
+1526  preds('49','3')=yes;
+1527  preds('49','4')=yes;
+1528  preds('49','5')=yes;
+1529  preds('49','6')=yes;
+1530  preds('49','7')=yes;
+1531  preds('49','8')=yes;
+1532  preds('49','9')=yes;
+1533  preds('49','10')=yes;
+1534  preds('49','11')=yes;
+1535  preds('49','12')=yes;
+1536  preds('49','13')=yes;
+1537  preds('49','14')=yes;
+1538  preds('49','15')=yes;
+1539  preds('49','16')=yes;
+1540  preds('49','17')=yes;
+1541  preds('49','18')=yes;
+1542  preds('49','19')=yes;
+1543  preds('49','20')=yes;
+1544  preds('49','21')=yes;
+1545  preds('49','22')=yes;
+1546  preds('49','23')=yes;
+1547  preds('49','24')=yes;
+1548  preds('49','25')=yes;
+1549  preds('49','26')=yes;
+1550  preds('49','27')=yes;
+1551  preds('49','28')=yes;
+1552  preds('49','29')=yes;
+1553  preds('49','30')=yes;
+1554  preds('49','31')=yes;
+1555  preds('49','32')=yes;
+1556  preds('49','33')=yes;
+1557  preds('49','34')=yes;
+1558  preds('49','35')=yes;
+1559  preds('49','36')=yes;
+1560  preds('49','37')=yes;
+1561  preds('49','38')=yes;
+1562  preds('49','39')=yes;
+1563  preds('49','40')=yes;
+1564  preds('49','41')=yes;
+1565  preds('49','42')=yes;
+1566  preds('49','43')=yes;
+1567  preds('49','44')=yes;
+1568  preds('49','45')=yes;
+1569  preds('49','46')=yes;
+1570  preds('49','47')=yes;
+1571  preds('49','48')=yes;
+1572  preds('50','1')=yes;
+1573  preds('50','2')=yes;
+1574  preds('50','3')=yes;
+1575  preds('50','4')=yes;
+1576  preds('50','5')=yes;
+1577  preds('50','6')=yes;
+1578  preds('50','7')=yes;
+1579  preds('50','8')=yes;
+1580  preds('50','9')=yes;
+1581  preds('50','10')=yes;
+1582  preds('50','11')=yes;
+1583  preds('50','12')=yes;
+1584  preds('50','13')=yes;
+1585  preds('50','14')=yes;
+1586  preds('50','15')=yes;
+1587  preds('50','16')=yes;
+1588  preds('50','17')=yes;
+1589  preds('50','18')=yes;
+1590  preds('50','19')=yes;
+1591  preds('50','20')=yes;
+1592  preds('50','21')=yes;
+1593  preds('50','22')=yes;
+1594  preds('50','23')=yes;
+1595  preds('50','24')=yes;
+1596  preds('50','25')=yes;
+1597  preds('50','26')=yes;
+1598  preds('50','27')=yes;
+1599  preds('50','28')=yes;
+1600  preds('50','29')=yes;
+1601  preds('50','30')=yes;
+1602  preds('50','31')=yes;
+1603  preds('50','32')=yes;
+1604  preds('50','33')=yes;
+1605  preds('50','34')=yes;
+1606  preds('50','35')=yes;
+1607  preds('50','36')=yes;
+1608  preds('50','37')=yes;
+1609  preds('50','38')=yes;
+1610  preds('50','39')=yes;
+1611  preds('50','40')=yes;
+1612  preds('50','41')=yes;
+1613  preds('50','42')=yes;
+1614  preds('50','43')=yes;
+1615  preds('50','44')=yes;
+1616  preds('50','45')=yes;
+1617  preds('50','46')=yes;
+1618  preds('50','47')=yes;
+1619  preds('50','48')=yes;
+1620  preds('50','49')=yes;
+1621  preds('51','1')=yes;
+1622  preds('51','2')=yes;
+1623  preds('51','3')=yes;
+1624  preds('51','4')=yes;
+1625  preds('51','5')=yes;
+1626  preds('51','6')=yes;
+1627  preds('51','7')=yes;
+1628  preds('51','8')=yes;
+1629  preds('51','9')=yes;
+1630  preds('51','10')=yes;
+1631  preds('51','11')=yes;
+1632  preds('51','12')=yes;
+1633  preds('51','13')=yes;
+1634  preds('51','14')=yes;
+1635  preds('51','15')=yes;
+1636  preds('51','16')=yes;
+1637  preds('51','17')=yes;
+1638  preds('51','18')=yes;
+1639  preds('51','19')=yes;
+1640  preds('51','20')=yes;
+1641  preds('51','21')=yes;
+1642  preds('51','22')=yes;
+1643  preds('51','23')=yes;
+1644  preds('51','24')=yes;
+1645  preds('51','25')=yes;
+1646  preds('51','26')=yes;
+1647  preds('51','27')=yes;
+1648  preds('51','28')=yes;
+1649  preds('51','29')=yes;
+1650  preds('51','30')=yes;
+1651  preds('51','31')=yes;
+1652  preds('51','32')=yes;
+1653  preds('51','33')=yes;
+1654  preds('51','34')=yes;
+1655  preds('51','35')=yes;
+1656  preds('51','36')=yes;
+1657  preds('51','37')=yes;
+1658  preds('51','38')=yes;
+1659  preds('51','39')=yes;
+1660  preds('51','40')=yes;
+1661  preds('51','41')=yes;
+1662  preds('51','42')=yes;
+1663  preds('51','43')=yes;
+1664  preds('51','44')=yes;
+1665  preds('51','45')=yes;
+1666  preds('51','46')=yes;
+1667  preds('51','47')=yes;
+1668  preds('51','48')=yes;
+1669  preds('51','49')=yes;
+1670  preds('51','50')=yes;
+1671  preds('52','1')=yes;
+1672  preds('52','2')=yes;
+1673  preds('52','3')=yes;
+1674  preds('52','4')=yes;
+1675  preds('52','5')=yes;
+1676  preds('52','6')=yes;
+1677  preds('52','7')=yes;
+1678  preds('52','8')=yes;
+1679  preds('52','9')=yes;
+1680  preds('52','10')=yes;
+1681  preds('52','11')=yes;
+1682  preds('52','12')=yes;
+1683  preds('52','13')=yes;
+1684  preds('52','14')=yes;
+1685  preds('52','15')=yes;
+1686  preds('52','16')=yes;
+1687  preds('52','17')=yes;
+1688  preds('52','18')=yes;
+1689  preds('52','19')=yes;
+1690  preds('52','20')=yes;
+1691  preds('52','21')=yes;
+1692  preds('52','22')=yes;
+1693  preds('52','23')=yes;
+1694  preds('52','24')=yes;
+1695  preds('52','25')=yes;
+1696  preds('52','26')=yes;
+1697  preds('52','27')=yes;
+1698  preds('52','28')=yes;
+1699  preds('52','29')=yes;
+1700  preds('52','30')=yes;
+1701  preds('52','31')=yes;
+1702  preds('52','32')=yes;
+1703  preds('52','33')=yes;
+1704  preds('52','34')=yes;
+1705  preds('52','35')=yes;
+1706  preds('52','36')=yes;
+1707  preds('52','37')=yes;
+1708  preds('52','38')=yes;
+1709  preds('52','39')=yes;
+1710  preds('52','40')=yes;
+1711  preds('52','41')=yes;
+1712  preds('52','42')=yes;
+1713  preds('52','43')=yes;
+1714  preds('52','44')=yes;
+1715  preds('52','45')=yes;
+1716  preds('52','46')=yes;
+1717  preds('52','47')=yes;
+1718  preds('52','48')=yes;
+1719  preds('52','49')=yes;
+1720  preds('52','50')=yes;
+1721  preds('52','51')=yes;
+1722  preds('53','1')=yes;
+1723  preds('53','2')=yes;
+1724  preds('53','3')=yes;
+1725  preds('53','4')=yes;
+1726  preds('53','5')=yes;
+1727  preds('53','6')=yes;
+1728  preds('53','7')=yes;
+1729  preds('53','8')=yes;
+1730  preds('53','9')=yes;
+1731  preds('53','10')=yes;
+1732  preds('53','11')=yes;
+1733  preds('53','12')=yes;
+1734  preds('53','13')=yes;
+1735  preds('53','14')=yes;
+1736  preds('53','15')=yes;
+1737  preds('53','16')=yes;
+1738  preds('53','17')=yes;
+1739  preds('53','18')=yes;
+1740  preds('53','19')=yes;
+1741  preds('53','20')=yes;
+1742  preds('53','21')=yes;
+1743  preds('53','22')=yes;
+1744  preds('53','23')=yes;
+1745  preds('53','24')=yes;
+1746  preds('53','25')=yes;
+1747  preds('53','26')=yes;
+1748  preds('53','27')=yes;
+1749  preds('53','28')=yes;
+1750  preds('53','29')=yes;
+1751  preds('53','30')=yes;
+1752  preds('53','31')=yes;
+1753  preds('53','32')=yes;
+1754  preds('53','33')=yes;
+1755  preds('53','34')=yes;
+1756  preds('53','35')=yes;
+1757  preds('53','36')=yes;
+1758  preds('53','37')=yes;
+1759  preds('53','38')=yes;
+1760  preds('53','39')=yes;
+1761  preds('53','40')=yes;
+1762  preds('53','41')=yes;
+1763  preds('53','42')=yes;
+1764  preds('53','43')=yes;
+1765  preds('53','44')=yes;
+1766  preds('53','45')=yes;
+1767  preds('53','46')=yes;
+1768  preds('53','47')=yes;
+1769  preds('53','48')=yes;
+1770  preds('53','49')=yes;
+1771  preds('53','50')=yes;
+1772  preds('53','51')=yes;
+1773  preds('53','52')=yes;
+1774  preds('54','1')=yes;
+1775  preds('54','2')=yes;
+1776  preds('54','3')=yes;
+1777  preds('54','4')=yes;
+1778  preds('54','5')=yes;
+1779  preds('54','6')=yes;
+1780  preds('54','7')=yes;
+1781  preds('54','8')=yes;
+1782  preds('54','9')=yes;
+1783  preds('54','10')=yes;
+1784  preds('54','11')=yes;
+1785  preds('54','12')=yes;
+1786  preds('54','13')=yes;
+1787  preds('54','14')=yes;
+1788  preds('54','15')=yes;
+1789  preds('54','16')=yes;
+1790  preds('54','17')=yes;
+1791  preds('54','18')=yes;
+1792  preds('54','19')=yes;
+1793  preds('54','20')=yes;
+1794  preds('54','21')=yes;
+1795  preds('54','22')=yes;
+1796  preds('54','23')=yes;
+1797  preds('54','24')=yes;
+1798  preds('54','25')=yes;
+1799  preds('54','26')=yes;
+1800  preds('54','27')=yes;
+1801  preds('54','28')=yes;
+1802  preds('54','29')=yes;
+1803  preds('54','30')=yes;
+1804  preds('54','31')=yes;
+1805  preds('54','32')=yes;
+1806  preds('54','33')=yes;
+1807  preds('54','34')=yes;
+1808  preds('54','35')=yes;
+1809  preds('54','36')=yes;
+1810  preds('54','37')=yes;
+1811  preds('54','38')=yes;
+1812  preds('54','39')=yes;
+1813  preds('54','40')=yes;
+1814  preds('54','41')=yes;
+1815  preds('54','42')=yes;
+1816  preds('54','43')=yes;
+1817  preds('54','44')=yes;
+1818  preds('54','45')=yes;
+1819  preds('54','46')=yes;
+1820  preds('54','47')=yes;
+1821  preds('54','48')=yes;
+1822  preds('54','49')=yes;
+1823  preds('54','50')=yes;
+1824  preds('54','51')=yes;
+1825  preds('54','52')=yes;
+1826  preds('54','53')=yes;
+1827  preds('55','1')=yes;
+1828  preds('55','2')=yes;
+1829  preds('55','3')=yes;
+1830  preds('55','4')=yes;
+1831  preds('55','5')=yes;
+1832  preds('55','6')=yes;
+1833  preds('55','7')=yes;
+1834  preds('55','8')=yes;
+1835  preds('55','9')=yes;
+1836  preds('55','10')=yes;
+1837  preds('55','11')=yes;
+1838  preds('55','12')=yes;
+1839  preds('55','13')=yes;
+1840  preds('55','14')=yes;
+1841  preds('55','15')=yes;
+1842  preds('55','16')=yes;
+1843  preds('55','17')=yes;
+1844  preds('55','18')=yes;
+1845  preds('55','19')=yes;
+1846  preds('55','20')=yes;
+1847  preds('55','21')=yes;
+1848  preds('55','22')=yes;
+1849  preds('55','23')=yes;
+1850  preds('55','24')=yes;
+1851  preds('55','25')=yes;
+1852  preds('55','26')=yes;
+1853  preds('55','27')=yes;
+1854  preds('55','28')=yes;
+1855  preds('55','29')=yes;
+1856  preds('55','30')=yes;
+1857  preds('55','31')=yes;
+1858  preds('55','32')=yes;
+1859  preds('55','33')=yes;
+1860  preds('55','34')=yes;
+1861  preds('55','35')=yes;
+1862  preds('55','36')=yes;
+1863  preds('55','37')=yes;
+1864  preds('55','38')=yes;
+1865  preds('55','39')=yes;
+1866  preds('55','40')=yes;
+1867  preds('55','41')=yes;
+1868  preds('55','42')=yes;
+1869  preds('55','43')=yes;
+1870  preds('55','44')=yes;
+1871  preds('55','45')=yes;
+1872  preds('55','46')=yes;
+1873  preds('55','47')=yes;
+1874  preds('55','48')=yes;
+1875  preds('55','49')=yes;
+1876  preds('55','50')=yes;
+1877  preds('55','51')=yes;
+1878  preds('55','52')=yes;
+1879  preds('55','53')=yes;
+1880  preds('55','54')=yes;
+1881  preds('56','1')=yes;
+1882  preds('56','2')=yes;
+1883  preds('56','3')=yes;
+1884  preds('56','4')=yes;
+1885  preds('56','5')=yes;
+1886  preds('56','6')=yes;
+1887  preds('56','7')=yes;
+1888  preds('56','8')=yes;
+1889  preds('56','9')=yes;
+1890  preds('56','10')=yes;
+1891  preds('56','11')=yes;
+1892  preds('56','12')=yes;
+1893  preds('56','13')=yes;
+1894  preds('56','14')=yes;
+1895  preds('56','15')=yes;
+1896  preds('56','16')=yes;
+1897  preds('56','17')=yes;
+1898  preds('56','18')=yes;
+1899  preds('56','19')=yes;
+1900  preds('56','20')=yes;
+1901  preds('56','21')=yes;
+1902  preds('56','22')=yes;
+1903  preds('56','23')=yes;
+1904  preds('56','24')=yes;
+1905  preds('56','25')=yes;
+1906  preds('56','26')=yes;
+1907  preds('56','27')=yes;
+1908  preds('56','28')=yes;
+1909  preds('56','29')=yes;
+1910  preds('56','30')=yes;
+1911  preds('56','31')=yes;
+1912  preds('56','32')=yes;
+1913  preds('56','33')=yes;
+1914  preds('56','34')=yes;
+1915  preds('56','35')=yes;
+1916  preds('56','36')=yes;
+1917  preds('56','37')=yes;
+1918  preds('56','38')=yes;
+1919  preds('56','39')=yes;
+1920  preds('56','40')=yes;
+1921  preds('56','41')=yes;
+1922  preds('56','42')=yes;
+1923  preds('56','43')=yes;
+1924  preds('56','44')=yes;
+1925  preds('56','45')=yes;
+1926  preds('56','46')=yes;
+1927  preds('56','47')=yes;
+1928  preds('56','48')=yes;
+1929  preds('56','49')=yes;
+1930  preds('56','50')=yes;
+1931  preds('56','51')=yes;
+1932  preds('56','52')=yes;
+1933  preds('56','53')=yes;
+1934  preds('56','54')=yes;
+1935  preds('56','55')=yes;
+1936  preds('57','1')=yes;
+1937  preds('57','2')=yes;
+1938  preds('57','3')=yes;
+1939  preds('57','4')=yes;
+1940  preds('57','5')=yes;
+1941  preds('57','6')=yes;
+1942  preds('57','7')=yes;
+1943  preds('57','8')=yes;
+1944  preds('57','9')=yes;
+1945  preds('57','10')=yes;
+1946  preds('57','11')=yes;
+1947  preds('57','12')=yes;
+1948  preds('57','13')=yes;
+1949  preds('57','14')=yes;
+1950  preds('57','15')=yes;
+1951  preds('57','16')=yes;
+1952  preds('57','17')=yes;
+1953  preds('57','18')=yes;
+1954  preds('57','19')=yes;
+1955  preds('57','20')=yes;
+1956  preds('57','21')=yes;
+1957  preds('57','22')=yes;
+1958  preds('57','23')=yes;
+1959  preds('57','24')=yes;
+1960  preds('57','25')=yes;
+1961  preds('57','26')=yes;
+1962  preds('57','27')=yes;
+1963  preds('57','28')=yes;
+1964  preds('57','29')=yes;
+1965  preds('57','30')=yes;
+1966  preds('57','31')=yes;
+1967  preds('57','32')=yes;
+1968  preds('57','33')=yes;
+1969  preds('57','34')=yes;
+1970  preds('57','35')=yes;
+1971  preds('57','36')=yes;
+1972  preds('57','37')=yes;
+1973  preds('57','38')=yes;
+1974  preds('57','39')=yes;
+1975  preds('57','40')=yes;
+1976  preds('57','41')=yes;
+1977  preds('57','42')=yes;
+1978  preds('57','43')=yes;
+1979  preds('57','44')=yes;
+1980  preds('57','45')=yes;
+1981  preds('57','46')=yes;
+1982  preds('57','47')=yes;
+1983  preds('57','48')=yes;
+1984  preds('57','49')=yes;
+1985  preds('57','50')=yes;
+1986  preds('57','51')=yes;
+1987  preds('57','52')=yes;
+1988  preds('57','53')=yes;
+1989  preds('57','54')=yes;
+1990  preds('57','55')=yes;
+1991  preds('57','56')=yes;
+1992  preds('58','1')=yes;
+1993  preds('58','2')=yes;
+1994  preds('58','3')=yes;
+1995  preds('58','4')=yes;
+1996  preds('58','5')=yes;
+1997  preds('58','6')=yes;
+1998  preds('58','7')=yes;
+1999  preds('58','8')=yes;
+2000  preds('58','9')=yes;
+2001  preds('58','10')=yes;
+2002  preds('58','11')=yes;
+2003  preds('58','12')=yes;
+2004  preds('58','13')=yes;
+2005  preds('58','14')=yes;
+2006  preds('58','15')=yes;
+2007  preds('58','16')=yes;
+2008  preds('58','17')=yes;
+2009  preds('58','18')=yes;
+2010  preds('58','19')=yes;
+2011  preds('58','20')=yes;
+2012  preds('58','21')=yes;
+2013  preds('58','22')=yes;
+2014  preds('58','23')=yes;
+2015  preds('58','24')=yes;
+2016  preds('58','25')=yes;
+2017  preds('58','26')=yes;
+2018  preds('58','27')=yes;
+2019  preds('58','28')=yes;
+2020  preds('58','29')=yes;
+2021  preds('58','30')=yes;
+2022  preds('58','31')=yes;
+2023  preds('58','32')=yes;
+2024  preds('58','33')=yes;
+2025  preds('58','34')=yes;
+2026  preds('58','35')=yes;
+2027  preds('58','36')=yes;
+2028  preds('58','37')=yes;
+2029  preds('58','38')=yes;
+2030  preds('58','39')=yes;
+2031  preds('58','40')=yes;
+2032  preds('58','41')=yes;
+2033  preds('58','42')=yes;
+2034  preds('58','43')=yes;
+2035  preds('58','44')=yes;
+2036  preds('58','45')=yes;
+2037  preds('58','46')=yes;
+2038  preds('58','47')=yes;
+2039  preds('58','48')=yes;
+2040  preds('58','49')=yes;
+2041  preds('58','50')=yes;
+2042  preds('58','51')=yes;
+2043  preds('58','52')=yes;
+2044  preds('58','53')=yes;
+2045  preds('58','54')=yes;
+2046  preds('58','55')=yes;
+2047  preds('58','56')=yes;
+2048  preds('58','57')=yes;
+2049   
+2050  * --- SCALAR PARAMETERS ---
+2051  PARAMETERS
+2052      expcost2  / 2.8 /
+2053      pback     / 550    /
+2054      gback     / 0.025    /
+2055  ;
+2056   
+2057  PARAMETER coefn(coef) / c0 0, c1 1, c2 2, c3 3, c4 4 /;
+2058   
+2059   
+2060  **********************************************
+2061  * ----------- MACC CALCULATIONS ---------------
+2062  **********************************************
+2063   
+2064  * --- LOAD RAW DATA ---
+2065  PARAMETER macc_ed_coef(sector,*,t,n);
+GDXIN   /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/data_ed58/data_mod_macc.gdx
+--- LOAD  macc_ed_coef = 1:macc_ed_coef
+2069   
+2070  PARAMETER mx_correction_factor(sector,quant,t,n);
+GDXIN   /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/data_ed58/data_mod_macc.gdx
+--- LOAD  mx_correction_factor = 3:mx_correction_factor
+2074   
+2075  * --- COMPUTED PARAMETERS ---
+2076  PARAMETERS
+2077      pbacktime(t)
+2078      macc_coef(t,n,*,coef)
+2079      mx(t,n,ghg)
+2080      MXpback(t,n,ghg)
+2081      MXstart(t,n,ghg)
+2082      MXdiff(t,n,ghg)
+2083      alpha(t)
+2084  ;
+2085   
+2086  * Map raw enerdata coefficients
+2087  macc_coef(t,n,'co2','c1') = macc_ed_coef('Total_CO2','a',t,n);
+2088  macc_coef(t,n,'co2','c4') = macc_ed_coef('Total_CO2','d',t,n);
+2089  macc_coef(t,n,'co2',coef)$(macc_coef(t,n,'co2',coef) < 0) = 0;
+2090   
+2091  * Backstop price path
+2092  pbacktime(t) = pback * (1-gback)**(tperiod(t)-1);
+2093   
+2094  * Logistic transition to backstop
+2095  SCALAR x0;
+2096  x0 = 7 + ((28-7)/2);
+2097  alpha(t) = 1 / (1 + exp(-0.25 * (tperiod(t) - x0)));
+2098   
+2099  * MX starting value (SSP2 default = prob50)
+2100  MXstart(t,n,'co2') = mx_correction_factor('Total_CO2','prob50',t,n);
+2101   
+2102  * Backstop multiplier
+2103  MXpback(t,n,'co2')$(macc_ed_coef('Total_CO2','a',t,n) + macc_ed_coef('Total_CO2','d',t,n) > 0)
+2104      = pbacktime(t) / (macc_ed_coef('Total_CO2','a',t,n) + macc_ed_coef('Total_CO2','d',t,n));
+2105   
+2106  MXdiff(t,n,'co2') = max(MXstart(t,n,'co2') - MXpback(t,n,'co2'), 0);
+2107   
+2108  * Final mx
+2109  mx(t,n,'co2') = MXstart(t,n,'co2') - alpha(t) * MXdiff(t,n,'co2');
+2110   
+2111  * Apply mx to get final scaled coefficients
+2112  macc_coef(t,n,'co2','c1') = mx(t,n,'co2') * macc_ed_coef('Total_CO2','a',t,n);
+2113  macc_coef(t,n,'co2','c4') = mx(t,n,'co2') * macc_ed_coef('Total_CO2','d',t,n);
+2114   
+2115   
+2116  * --- OUTPUT ---
+2117  execute_unload 'output/data/macc_extract.gdx',
+2118      macc_ed_coef,
+2119      macc_coef,
+2120      mx_correction_factor,
+2121      mx,
+2122      alpha,
+2123      pbacktime,
+2124      tperiod,
+2125      year;
+2126   
+2127  SET t_early(t) / 1, 2, 3 /;
+2128   
+2129  FILE fout / 'output/data/macc_ed_early.csv' /;
+2130  PUT fout;
+2131  PUT '"sector","Dim2","t","n","Val"' /;
+2132   
+2133  LOOP((t_early(t), n),
+2134      PUT '"Total_CO2","a","' t.tl '","' n.tl '",' macc_ed_coef('Total_CO2','a',t,n):0:12 /;
+2135      PUT '"Total_CO2","d","' t.tl '","' n.tl '",' macc_ed_coef('Total_CO2','d',t,n):0:12 /;
+2136  );
+2137   
+2138  PUTCLOSE fout;
+2139   
+2140   
+2141   
+2142  **********************************************
+2143  * ----------- BAU CALCULATIONS ---------------
+2144  **********************************************
+2145   
+2146  *** * --- LOAD BASELINE DATA ---
+2147  *** SET ssp / SSP1, SSP2, SSP3, SSP4, SSP5 /;
+2148  *** SET ghg2 / co2, ch4, n2o /;
+2149  ***
+2150  *** PARAMETER ssp_ci(ssp,t,n,ghg2);
+2151  *** PARAMETER ssp_ykali(ssp,t,n);
+2152  *** PARAMETER convq_ghg(ghg2) / co2 1, ch4 1e-3, n2o 1e-3 /;
+2153  ***
+2154  *** $gdxin '%datapath%data_baseline'
+2155  *** $load ssp_ci
+2156  *** $load ssp_ykali
+2157  *** $gdxin
+2158  ***
+2159  *** * --- COMPUTE EMI_BAU FOR SSP2, CO2, t=1,2,3 ---
+2160  *** PARAMETER emi_bau_early(t,n);
+2161  ***
+2162  *** emi_bau_early(t_early,n) = convq_ghg('co2')
+2163  ***                           * ssp_ci('SSP2', t_early, n, 'co2')
+2164  ***                           * ssp_ykali('SSP2', t_early, n);
+2165  ***
+2166  *** * --- WRITE TO CSV ---
+2167  *** FILE fout2 / 'output/data/emi_bau_early.csv' /;
+2168  *** PUT fout2;
+2169  *** PUT '"t","n","emi_bau_GtCO2yr"' /;
+2170  ***
+2171  *** LOOP((t_early(t), n),
+2172  ***     PUT '"' t.tl '","' n.tl '",' emi_bau_early(t,n):0:12 /;
+2173  *** );
+2174  ***
+2175  *** PUTCLOSE fout2;
+GAMS 53.3.1  1ba4c1ad Apr 2, 2026           DAX-DAC arm 64bit/macOS - 04/11/26 14:43:39 Page 2
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Include File Summary
+
+
+   SEQ   GLOBAL TYPE      PARENT   LOCAL  INCLVL  FILENAME
+
+     1        1 INPUT          0       0       0  /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/extract_macc.gms
+     2       44 INCLUDE        1      44       1  /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/data_ed58/time.inc
+     3     2066 GDXIN          1      62       0  /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/data_ed58/data_mod_macc.gdx
+     4     2071 GDXIN          1      67       0  /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/RICE50xmodel/data_ed58/data_mod_macc.gdx
+
+
+COMPILATION TIME     =        0.013 SECONDS      4 MB  53.3.1 1ba4c1ad DAX-DAC
+GAMS 53.3.1  1ba4c1ad Apr 2, 2026           DAX-DAC arm 64bit/macOS - 04/11/26 14:43:39 Page 3
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+E x e c u t i o n
+
+
+**** REPORT FILE SUMMARY
+
+fout /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/output/data/macc_ed_early.csv
+
+
+EXECUTION TIME       =        0.008 SECONDS      9 MB  53.3.1 1ba4c1ad DAX-DAC
+
+
+USER: Matthew Salah                                  G260411+0003Ac-GEN
+      mjs2460@columbia.edu                                    CLA118257
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/extract_macc.gms
+Output     /Users/matthewsalah/Documents/Columbia/2026S/Collective Action/Final Paper/code/extract_macc.lst
