@@ -1,6 +1,6 @@
 .DS_Store
 .env
-annual-c02-emissions/
+annual-co2-emissions/
 policy_intensity/
 RICE50xmodel/
 structural_breaks/
