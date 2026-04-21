@@ -29,23 +29,23 @@ if year == 2020:
         'Canada': 'can',
         'Chile': 'chl',
         'China': 'chn',
-        'Colombia': 'col',  # Assuming 'col' if present, but check
-        'Czech Republic': 'cze',
+        'Colombia': 'col',
+        'Czech Republic': 'rcz', # not standard
         'Denmark': 'dnk',
         'Estonia': 'est',
         'Finland': 'fin',
         'France': 'fra',
-        'Germany': 'deu',
+        'Germany': 'rfa',
         'Greece': 'grc',
         'Hungary': 'hun',
         'Iceland': 'isl',
-        'India': 'nde',
+        'India': 'nde',  # not standard
         'Indonesia': 'idn',
         'Ireland': 'irl',
         'Israel': 'isr',
         'Italy': 'ita',
         'Japan': 'jpn',
-        'Korea': 'kor',
+        'Korea': 'cor',  # not standard
         'Latvia': 'lva',
         'Lithuania': 'ltu',
         'Luxembourg': 'lux',
@@ -56,16 +56,15 @@ if year == 2020:
         'Poland': 'pol',
         'Portugal': 'prt',
         'Russia': 'rus',
-        'Slovak Republic': 'svk',
-        'Slovenia': 'svn',
+        'Slovak Republic': 'rsl', # not standard
+        'Slovenia': 'slo', # not standard
         'South Africa': 'zaf',
         'Spain': 'esp',
-        'Sweden': 'swe',
+        'Sweden': 'sui', # not standard
         'Switzerland': 'che',
         'Turkey': 'tur',
         'United Kingdom': 'gbr',
         'United States of America': 'usa',
-        # Add or correct mappings as needed
     }
 
     # Read the pct_diff CSV
