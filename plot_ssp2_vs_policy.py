@@ -63,7 +63,7 @@ plt.text(max_val - 0.1 * (max_val - min_val), min_val + 0.1 * (max_val - min_val
          color='red', fontsize=10, ha='right', va='bottom')
 
 # Label key countries by region code
-for code, label in [('usa', 'US'), ('chn', 'China'), ('nde', 'India')]:
+for code, label in [('usa', 'US'), ('chn', 'China'), ('nde', 'India'), ('aus', 'Australia')]:
     row = plot_df[plot_df['n'] == code]
     if not row.empty:
         x_val = row['mean_outcome'].values[0]
