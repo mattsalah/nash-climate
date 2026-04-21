@@ -39,7 +39,7 @@ if year == 2020:
         'Greece': 'grc',
         'Hungary': 'hun',
         'Iceland': 'isl',
-        'India': 'ind',
+        'India': 'nde',
         'Indonesia': 'idn',
         'Ireland': 'irl',
         'Israel': 'isr',
