@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Read the CSV file
 df = pd.read_csv('output/data/transformed_emi_ind_2020_with_policy_int_cntfc.csv')
@@ -15,6 +16,16 @@ df['mean_outcome'] = outcomes.mean(axis=1)
 
 # Sort by policy_int_cntfc for nicer plotting
 plot_df = df.sort_values('policy_int_cntfc')
+plot_df = plot_df[['n', 'min_outcome', 'max_outcome', 'mean_outcome', 'policy_int_cntfc']].dropna()
+
+# Fit a line of best fit
+slope, intercept = np.polyfit(plot_df['mean_outcome'], plot_df['policy_int_cntfc'], 1)
+
+# Calculate R^2
+pred = slope * plot_df['mean_outcome'] + intercept
+ss_res = np.sum((plot_df['policy_int_cntfc'] - pred)**2)
+ss_tot = np.sum((plot_df['policy_int_cntfc'] - np.mean(plot_df['policy_int_cntfc']))**2)
+r_squared = 1 - (ss_res / ss_tot)
 
 # Create the plot using horizontal interval bars
 plt.figure(figsize=(10, 8))
@@ -32,6 +43,18 @@ plt.errorbar(
 min_val = min(plot_df['mean_outcome'].min(), plot_df['policy_int_cntfc'].min())
 max_val = max(plot_df['mean_outcome'].max(), plot_df['policy_int_cntfc'].max())
 plt.plot([min_val, max_val], [min_val, max_val], 'r--', label='45-degree line')
+
+# Calculate R^2
+pred = slope * plot_df['mean_outcome'] + intercept
+ss_res = np.sum((plot_df['policy_int_cntfc'] - pred)**2)
+ss_tot = np.sum((plot_df['policy_int_cntfc'] - np.mean(plot_df['policy_int_cntfc']))**2)
+r_squared = 1 - (ss_res / ss_tot)
+
+# Plot the best fit line
+plt.plot(plot_df['mean_outcome'], pred, 'b-', label=f'Best fit (slope={slope:.2f}, R²={r_squared:.2f})')
+
+# Add text label
+plt.text(0.05, 0.95, f'Slope: {slope:.2f}\nR²: {r_squared:.2f}', transform=plt.gca().transAxes, fontsize=12, verticalalignment='top')
 
 # Add region labels for over/under abatement
 plt.text(min_val + 0.1 * (max_val - min_val), max_val - 0.1 * (max_val - min_val), 'over abatement',
