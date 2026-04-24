@@ -70,7 +70,7 @@ The total abatement cost is the integral of this curve:
   important only at high abatement rates (μ > 0.5).
 - Zero values should be treated as missing, not as zero cost.
 
-## Visualizing MACCs
+### Visualizing MACCs
 
 At low levels of abatement, the `a` term dominates, so for our purposes, we are mainly interested in the dispersion of `a` across the countries / regions. We can use the following script to make a simple bar chart showing these values for different years:
 
@@ -78,26 +78,35 @@ At low levels of abatement, the `a` term dominates, so for our purposes, we are 
 Rscript plot_macc.R
 ```
 
+## Results from Gazotti 2021
+
+These come straight from the replication package, which prevents me having to re-run RICE from scratch.
+
 ## Counterfactual 1: Policy Intensity
 
 Run `policy_intensity_counterfactuals.do' in STATA.
 
-## Using Results from Gazotti 2021
+## Combining Counterfactuals and RICE Outputs
 
-The `transform_regional_data.py` script processes the `CBA_regional_data.csv` file from the NC2021 results dataset. It filters the data for a specified year (default 2020), policy 'CBA', and cooperation 'noncoop-pop', then pivots the table to create one row per country (region) with columns for each combination of baseline (ssp1-ssp5), impacts (BHM-LR, BHM-LRdiff, BHM-SR, BHM-SRdiff, DJO, KAHN), and prstp (0.001, 0.015, 0.03). The values in these columns are the `emi_ind` (industrial emissions per capita) for each specification.
+The `generate_dataset.py` script processes the `CBA_regional_data.csv` file from the NC2021 results dataset. It filters the data for a specified year (default 2022), policy 'CBA', and cooperation 'noncoop-pop' and 'coop-pop', then pivots the table to create one row per country (region) with columns for each combination of baseline (ssp1-ssp5), impacts (BHM-LR, BHM-LRdiff, BHM-SR, BHM-SRdiff, DJO, KAHN), and prstp (0.001, 0.015, 0.03) for noncoop, and additionally disnt for coop. The values in these columns are the `mitigation` (abatement rate) for each specification.
 
-For the year 2020, it additionally merges the `pct_diff` values from `output/data/country_year_counterfactual_CO2.csv`, renamed to `policy_int_cntfc`.
+It additionally merges the policy intensity counterfactuals from the processed STATA output (`output/data/country_year_counterfactual_CO2.csv`), and structural breaks data.
 
 To run the script (change the year variable inside the script as needed):
 ```
-python transform_regional_data.py
+python generate_dataset.py
 ```
 
-This produces `output/data/transformed_emi_ind_{year}.csv` (or with `_with_policy_int_cntfc` for 2020), which can be used for further analysis of emissions under different scenarios.
+This produces `output/data/mitigation_rice_v_cntfc_{year}.csv`, which can be used for further analysis of abatement under different scenarios.
 
 ## Charts
 
-The `plot_ssp2_vs_policy.py` script now visualizes the range of all non-`policy_int_cntfc` outcomes for each region as a horizontal interval bar, plotted against `policy_int_cntfc` on the y axis. The plot summarizes each region's minimum-to-maximum outcome span with a center point at the row mean, and saves the result as `output/data/policy_int_range_vs_outcomes_plot.png`.
+The `plot_pred_vs_policy.py` script visualizes the relationship between predicted abatement from RICE model scenarios and policy intensity counterfactuals. It reads `output/data/mitigation_rice_v_cntfc_{year}.csv`, and creates scatter plots with error bars comparing abatement outcomes against policy intensity measures, including best-fit lines and R-squared values. It saves plots such as `output/charts/policy_int_scenario_vs_cntfc_noncoop_plot_{year}.png` and bar charts comparing coop vs noncoop scenarios.
+
+To run the script:
+```
+python plot_pred_vs_policy.py
+```
 
 To run:
 ```
