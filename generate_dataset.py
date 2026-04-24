@@ -1,9 +1,16 @@
 import pandas as pd
+import argparse
+import json
+
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='Generate dataset for a specific year.')
+parser.add_argument('year', type=int, help='The year to process (e.g., 2022)')
+args = parser.parse_args()
 
 # RICE: 2015-2100
 # Policy Intensity: 2015-2022
 # Structural Breaks: ??
-year = 2022
+year = args.year
 
 ###### RICE PREDICTED ABATEMENT #########
 
@@ -79,52 +86,7 @@ pivoted_df = pd.merge(pivoted_noncoop, pivoted_coop, on='n', how='outer')
 ###### POLICY INTENSITY COUNTERFACUTALS #########
 
 # Mapping from full country names to region codes
-country_mapping = {
-    'Australia': 'aus',
-    'Argentina': 'arg',
-    'Austria': 'aut',
-    'Belgium': 'bel',
-    'Brazil': 'bra',
-    'Canada': 'can',
-    'Chile': 'chl',
-    'China': 'chn',
-    'Colombia': 'col',
-    'Czech Republic': 'rcz', # not standard
-    'Denmark': 'dnk',
-    'Estonia': 'est',
-    'Finland': 'fin',
-    'France': 'fra',
-    'Germany': 'rfa',
-    'Greece': 'grc',
-    'Hungary': 'hun',
-    'Iceland': 'isl',
-    'India': 'nde',  # not standard
-    'Indonesia': 'idn',
-    'Ireland': 'irl',
-    'Israel': 'isr',
-    'Italy': 'ita',
-    'Japan': 'jpn',
-    'Korea': 'cor',  # not standard
-    'Latvia': 'lva',
-    'Lithuania': 'ltu',
-    'Luxembourg': 'lux',
-    'Mexico': 'mex',
-    'Netherlands': 'nld',
-    'New Zealand': 'nzl',
-    'Norway': 'nor',
-    'Poland': 'pol',
-    'Portugal': 'prt',
-    'Russia': 'rus',
-    'Slovak Republic': 'rsl', # not standard
-    'Slovenia': 'slo', # not standard
-    'South Africa': 'zaf',
-    'Spain': 'esp',
-    'Sweden': 'sui', # not standard
-    'Switzerland': 'che',
-    'Turkey': 'tur',
-    'United Kingdom': 'gbr',
-    'United States of America': 'usa',
-}
+country_mapping = json.load(open('policy_int_to_rice_country_map.json'))
 
 # Read the pct_diff CSV
 pct_diff_df = pd.read_csv('output/data/country_year_counterfactual_CO2.csv')

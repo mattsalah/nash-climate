@@ -1,13 +1,24 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import argparse
+import json
 
-year = 2022
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='Generate dataset for a specific year.')
+parser.add_argument('year', type=int, help='The year to process (e.g., 2022)')
+args = parser.parse_args()
+
+# RICE: 2015-2100
+# Policy Intensity: 2015-2022
+# Structural Breaks: ??
+year = args.year
 
 # Read the CSV file
 df = pd.read_csv(f'output/data/mitigation_rice_v_cntfc_{year}.csv')
-# only keep countries that have counterfactuals
-df = df[df['policy_int_cntfc_low'].notna()]
+# only keep countries that have counterfactuals if any do
+country_mapping = json.load(open('policy_int_to_rice_country_map.json'))
+df = df[df['n'].isin(country_mapping.values())]
 
 
 # Separate outcome columns
@@ -148,7 +159,9 @@ def create_scenario_bar_chart(scenario, filename):
 
 # Create scenario-specific NONCOOP scatter plot
 scenario_choice = 'ssp2_BHM-LR_0.015'
-create_plot([f'NONCOOP_{scenario_choice}'], f'Noncoop scenario {scenario_choice} vs policy_int_cntfc ({year})', f'output/charts/policy_int_scenario_vs_cntfc_noncoop_plot_{year}.png')
+
+if year<=2022:
+    create_plot([f'NONCOOP_{scenario_choice}'], f'Noncoop scenario {scenario_choice} vs policy_int_cntfc ({year})', f'output/charts/policy_int_scenario_vs_cntfc_noncoop_plot_{year}.png')
 
 # Create a scenario-specific COOP vs NONCOOP bar chart
 create_scenario_bar_chart(scenario_choice, f'output/charts/coop_vs_noncoop_{scenario_choice}_bar_{year}.png')
