@@ -92,9 +92,9 @@ The `generate_dataset.py` script processes the `CBA_regional_data.csv` file from
 
 It additionally merges the policy intensity counterfactuals from the processed STATA output (`output/data/country_year_counterfactual_CO2.csv`), and structural breaks data.
 
-To run the script (change the year variable inside the script as needed):
+To run the script (for 2020):
 ```
-python generate_dataset.py
+python generate_dataset.py 2020
 ```
 
 This produces `output/data/mitigation_rice_v_cntfc_{year}.csv`, which can be used for further analysis of abatement under different scenarios.
@@ -103,16 +103,10 @@ This produces `output/data/mitigation_rice_v_cntfc_{year}.csv`, which can be use
 
 The `plot_pred_vs_policy.py` script visualizes the relationship between predicted abatement from RICE model scenarios and policy intensity counterfactuals. It reads `output/data/mitigation_rice_v_cntfc_{year}.csv`, and creates scatter plots with error bars comparing abatement outcomes against policy intensity measures, including best-fit lines and R-squared values. It saves plots such as `output/charts/policy_int_scenario_vs_cntfc_noncoop_plot_{year}.png` and bar charts comparing coop vs noncoop scenarios.
 
-To run the script:
+To run the script (for 2020):
 ```
-python plot_pred_vs_policy.py
+python plot_pred_vs_policy.py 2020
 ```
-
-To run:
-```
-python plot_ssp2_vs_policy.py
-``` 
-
 
 ## Running BAU
 
