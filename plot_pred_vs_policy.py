@@ -88,7 +88,7 @@ def create_plot(outcome_cols, title, filename):
     plt.text(0.05, 0.95, f'Slope: {slope:.2f}\nR²: {r_squared:.2f}', transform=plt.gca().transAxes, fontsize=12, verticalalignment='top')
 
     # Label key countries
-    for code, label in [('usa', 'US'), ('chn', 'China'), ('nde', 'India')]:
+    for code, label in [('usa', 'US'), ('chn', 'China'), ('ind', 'India')]:
         row = plot_df[plot_df['n'] == code]
         if not row.empty:
             x_val = row['x_value'].values[0]

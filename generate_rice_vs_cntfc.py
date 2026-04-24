@@ -82,11 +82,15 @@ else:
 # Merge the two pivoted dataframes on 'n'
 pivoted_df = pd.merge(pivoted_noncoop, pivoted_coop, on='n', how='outer')
 
+# rename 'n' to the iso3 codes
+rice_to_iso3 = json.load(open('rice_to_iso3.json'))
+pivoted_df['n'] = pivoted_df['n'].apply(lambda x: rice_to_iso3[x] if x in rice_to_iso3 else x)
+
 
 ###### POLICY INTENSITY COUNTERFACUTALS #########
 
 # Mapping from full country names to region codes
-country_mapping = json.load(open('policy_int_to_rice_country_map.json'))
+country_mapping = json.load(open('policy_int_to_iso3.json'))
 
 # Read the pct_diff CSV
 pct_diff_df = pd.read_csv('output/data/country_year_counterfactual_CO2.csv')

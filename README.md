@@ -12,8 +12,8 @@ source setup.sh
 6. Download annual-co2-emissions from Our World in Data (https://ourworldindata.org/explorers/co2)
 - Settings: CO2, Territorial, All fossil emissions, Per country
 7. Download replication package for (https://www.nature.com/articles/s41467-026-68577-z#Sec9) and place it in a folder called "policy_intensity".
-8. Downlaod replication package for (https://pmc.ncbi.nlm.nih.gov/articles/PMC11717907) and place it in a folder called "structural_breaks".
-
+8. Download replication package for (https://pmc.ncbi.nlm.nih.gov/articles/PMC11717907) and place it in a folder called "structural_breaks".
+9. Download results dataset for (https://www.nature.com/articles/s41558-018-0282-y#MOESM1) and place it in "country_scc"
 
 # Usage
 
