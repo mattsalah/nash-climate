@@ -5,5 +5,6 @@ policy_intensity/
 RICE50xmodel/
 structural_breaks/
 NC2021_results_dataset/
-country_scc/41558_2018_282_MOESM2_ESM.csv
-country_scc/41558_2018_282_MOESM3_ESM.txt
+country_scc/
+country_scc/
+output/*

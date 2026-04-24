@@ -7,25 +7,33 @@ import json
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Generate dataset for a specific year.')
 parser.add_argument('year', type=int, help='The year to process (e.g., 2022)')
+parser.add_argument('--dataset', choices=['rice', 'cscc'], default='rice', help='Dataset to use: rice or cscc')
+parser.add_argument('--exclude', nargs='*', default=[], help='List of country codes to exclude from the plot (e.g., usa chn ind)')
 args = parser.parse_args()
 
-# RICE: 2015-2100
-# Policy Intensity: 2015-2022
-# Structural Breaks: ??
 year = args.year
+dataset = args.dataset
+exclude_countries = args.exclude
 
-# Read the CSV file
-df = pd.read_csv(f'output/data/mitigation_rice_v_cntfc_{year}.csv')
-# only keep countries that have counterfactuals if any do
-country_mapping = json.load(open('policy_int_to_rice_country_map.json'))
-df = df[df['n'].isin(country_mapping.values())]
+# Read the CSV file based on dataset
+if dataset == 'cscc':
+    df = pd.read_csv(f'output/data/mitigation_cscc_v_cntfc_{year}.csv')
+    # For cscc, countries are already iso3, no need for mapping
+else:
+    df = pd.read_csv(f'output/data/mitigation_rice_v_cntfc_{year}.csv')
+    # only keep countries that have counterfactuals if any do
+    country_mapping = json.load(open('policy_int_to_iso3.json'))
+    df = df[df['n'].isin(country_mapping.values())]
 
 
 # Separate outcome columns
-coop_cols = [c for c in df.columns if c.startswith('COOP_')]
+if dataset == 'cscc':
+    outcome_cols = ['noncoop_optimal_mu']
+else:
+    coop_cols = [c for c in df.columns if c.startswith('COOP_')]
 
 # Function to create plot for a specific scenario
-def create_plot(outcome_cols, title, filename):
+def create_plot(outcome_cols, title, filename, exclude_countries=[]):
     # Convert to numeric and compute values for the chosen scenario
     outcomes = df[outcome_cols].apply(pd.to_numeric, errors='coerce')
     df_temp = df.copy()
@@ -42,6 +50,10 @@ def create_plot(outcome_cols, title, filename):
         x_label = f'Outcome range across {title.split()[-1]} columns'
 
     plot_df = plot_df.sort_values('policy_int_cntfc').dropna()
+
+    # Exclude specified countries
+    if exclude_countries:
+        plot_df = plot_df[~plot_df['n'].isin(exclude_countries)]
 
     # Compute y error bars
     yerr = [plot_df['policy_int_cntfc'] - plot_df['policy_int_cntfc_low'], plot_df['policy_int_cntfc_high'] - plot_df['policy_int_cntfc']]
@@ -84,9 +96,6 @@ def create_plot(outcome_cols, title, filename):
     # Plot the best fit line
     plt.plot(plot_df['x_value'], pred, 'b-', label=f'Best fit (slope={slope:.2f}, R²={r_squared:.2f})')
 
-    # Add text label
-    plt.text(0.05, 0.95, f'Slope: {slope:.2f}\nR²: {r_squared:.2f}', transform=plt.gca().transAxes, fontsize=12, verticalalignment='top')
-
     # Label key countries
     for code, label in [('usa', 'US'), ('chn', 'China'), ('ind', 'India')]:
         row = plot_df[plot_df['n'] == code]
@@ -98,7 +107,7 @@ def create_plot(outcome_cols, title, filename):
                          bbox=dict(boxstyle='round,pad=0.2', fc='white', alpha=0.8))
 
     plt.xlabel(x_label)
-    plt.ylabel('policy_int_cntfc')
+    plt.ylabel('Policy Intensity Counterfatual')
     plt.title(title)
     plt.legend()
     plt.grid(False)
@@ -161,7 +170,11 @@ def create_scenario_bar_chart(scenario, filename):
 scenario_choice = 'ssp2_BHM-LR_0.015'
 
 if year<=2022:
-    create_plot([f'NONCOOP_{scenario_choice}'], f'Noncoop scenario {scenario_choice} vs policy_int_cntfc ({year})', f'output/charts/policy_int_scenario_vs_cntfc_noncoop_plot_{year}.png')
+    if dataset == 'cscc':
+        create_plot(['noncoop_optimal_mu'], f'Noncoop optimal mu vs policy_int_cntfc ({year})', f'output/charts/policy_int_noncoop_optimal_mu_vs_cntfc_{year}_no_{"_".join(exclude_countries)}.png', exclude_countries)
+    else:
+        create_plot([f'NONCOOP_{scenario_choice}'], f'Noncoop scenario {scenario_choice} vs policy_int_cntfc ({year})', f'output/charts/policy_int_scenario_vs_cntfc_noncoop_plot_{year}_no_{"_".join(exclude_countries)}.png', exclude_countries)
 
 # Create a scenario-specific COOP vs NONCOOP bar chart
-create_scenario_bar_chart(scenario_choice, f'output/charts/coop_vs_noncoop_{scenario_choice}_bar_{year}.png')
+if dataset == 'rice':
+    create_scenario_bar_chart(scenario_choice, f'output/charts/coop_vs_noncoop_{scenario_choice}_bar_{year}.png')

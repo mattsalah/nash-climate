@@ -86,7 +86,6 @@ pivoted_df = pd.merge(pivoted_noncoop, pivoted_coop, on='n', how='outer')
 rice_to_iso3 = json.load(open('rice_to_iso3.json'))
 pivoted_df['n'] = pivoted_df['n'].apply(lambda x: rice_to_iso3[x] if x in rice_to_iso3 else x)
 
-
 ###### POLICY INTENSITY COUNTERFACUTALS #########
 
 # Mapping from full country names to region codes
