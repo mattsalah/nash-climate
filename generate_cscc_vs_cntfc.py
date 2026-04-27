@@ -2,31 +2,81 @@
 import pandas as pd
 import json
 
+output_filename = 'output/data/mitigation_cscc_v_cntfc_2020.csv'
+
 ###### COUNTRY LEVEL SCCS #######
 
 scc_df = pd.read_csv('country_scc/41558_2018_282_MOESM2_ESM.csv')
 
-# Filter the data
-# for now let's just take bhm_lr, bootstrap, uncertain, SSP2, rcp45, prtp = 2
-# rename 'iso3' to n
-# after filtering, just take the three values for 16.7%,50%,83.3% as save them as scc_low, scc_mid, scc_high
+# Rename ISO3 to n
+scc_df = scc_df.rename(columns={'ISO3': 'n'})
+
+# Filter the data for spec 1 [global scc ~ 400]
+filtered_scc = scc_df[(scc_df['run'] == 'bhm_sr') & 
+                     (scc_df['dmgfuncpar'] == 'bootstrap') & 
+                     (scc_df['climate'] == 'uncertain') & 
+                     (scc_df['SSP'] == 'SSP2') & 
+                     (scc_df['RCP'] == 'rcp60') & 
+                     (scc_df['prtp'] == 2)]
+
+
+# Select and rename columns
+pivoted_df = filtered_scc[['n', '16.7%', '50%', '83.3%']].rename(columns={'16.7%': 'scc_low_spec1', '50%': 'scc_mid_spec1', '83.3%': 'scc_high_spec1'})
+pivoted_df['n'] = pivoted_df['n'].apply(lambda x: x.lower())
+
+# Filter the data for spec 2 - high damages [global scc 781]
 filtered_scc = scc_df[(scc_df['run'] == 'bhm_lr') & 
                      (scc_df['dmgfuncpar'] == 'bootstrap') & 
                      (scc_df['climate'] == 'uncertain') & 
                      (scc_df['SSP'] == 'SSP2') & 
+                     (scc_df['RCP'] == 'rcp60') & 
+                     (scc_df['prtp'] == 2)]
+
+# add to pivoted_df
+pivoted_df_new = filtered_scc[['n', '16.7%', '50%', '83.3%']].rename(columns={'16.7%': 'scc_low_spec2', '50%': 'scc_mid_spec2', '83.3%': 'scc_high_spec2'})
+pivoted_df_new['n'] = pivoted_df_new['n'].apply(lambda x: x.lower())
+pivoted_df = pd.merge(pivoted_df, pivoted_df_new, on='n', how='left')
+
+# Filter the data for spec 3 - optimistic [global scc 131]
+filtered_scc = scc_df[(scc_df['run'] == 'bhm_richpoor_sr') & 
+                     (scc_df['dmgfuncpar'] == 'bootstrap') & 
+                     (scc_df['climate'] == 'uncertain') & 
+                     (scc_df['SSP'] == 'SSP1') & 
                      (scc_df['RCP'] == 'rcp45') & 
                      (scc_df['prtp'] == 2)]
+
+# add to pivoted_df
+pivoted_df_new = filtered_scc[['n', '16.7%', '50%', '83.3%']].rename(columns={'16.7%': 'scc_low_spec3', '50%': 'scc_mid_spec3', '83.3%': 'scc_high_spec3'})
+pivoted_df_new['n'] = pivoted_df_new['n'].apply(lambda x: x.lower())
+pivoted_df = pd.merge(pivoted_df, pivoted_df_new, on='n', how='left')
+
+
+# Filter the data for spec 4 - fixed discounting [global scc ~400 but order of countries changes]
+filtered_scc = scc_df[(scc_df['run'] == 'bhm_sr') & 
+                     (scc_df['dmgfuncpar'] == 'bootstrap') & 
+                     (scc_df['climate'] == 'uncertain') & 
+                     (scc_df['SSP'] == 'SSP2') & 
+                     (scc_df['RCP'] == 'rcp60') & 
+                     (scc_df['dr'] == 3)]
+# add to pivoted_df
+pivoted_df_new = filtered_scc[['n', '16.7%', '50%', '83.3%']].rename(columns={'16.7%': 'scc_low_spec4', '50%': 'scc_mid_spec4', '83.3%': 'scc_high_spec4'})
+pivoted_df_new['n'] = pivoted_df_new['n'].apply(lambda x: x.lower())
+pivoted_df = pd.merge(pivoted_df, pivoted_df_new, on='n', how='left')
 
 # Rename ISO3 to n
 filtered_scc = filtered_scc.rename(columns={'ISO3': 'n'})
 
-# Select and rename columns
-pivoted_df = filtered_scc[['n', '16.7%', '50%', '83.3%']].rename(columns={'16.7%': 'scc_low', '50%': 'scc_mid', '83.3%': 'scc_high'})
-pivoted_df['n'] = pivoted_df['n'].apply(lambda x: x.lower())
 
-# global SCC 
-global_scc = pivoted_df['scc_mid'].sum()
-pivoted_df['global_scc_mid'] = global_scc
+# global SCCs
+global_scc1 = pivoted_df['scc_mid_spec1'].sum()
+pivoted_df['global_scc_mid_spec1'] = global_scc1
+global_scc2 = pivoted_df['scc_mid_spec2'].sum()
+pivoted_df['global_scc_mid_spec2'] = global_scc2
+global_scc3 = pivoted_df['scc_mid_spec3'].sum()
+pivoted_df['global_scc_mid_spec3'] = global_scc3
+global_scc4 = pivoted_df['scc_mid_spec4'].sum()
+pivoted_df['global_scc_mid_spec4'] = global_scc4
+
 
 ########## MACC parameters ##########
 
@@ -110,28 +160,26 @@ def solve_optimal_mu(scc, a, d):
     
     # Solve using fsolve
     try:
-        mu_solution = fsolve(equation, mu_init)[0]
-        # Ensure mu is between 0 and 1 
-        if 0 <= mu_solution <= 1:
-            return mu_solution
+        mu_opt = fsolve(equation, mu_init)[0]
+        if mu_opt < 0: 
+            return 0 # no negative abatement
         else:
-            return np.nan
+            return mu_opt
     except:
         return np.nan
     
-def solve_coop_opt(row):
-    return 100*solve_optimal_mu(row['global_scc_mid'], row['macc_a'], row['macc_d'])
+def solve_coop_opt(row, spec):
+    return 100*solve_optimal_mu(row[f'global_scc_mid_spec{spec}'], row['macc_a'], row['macc_d'])
 
-def solve_noncoop_opt(row):
-    return 100*solve_optimal_mu(row['scc_mid'], row['macc_a'], row['macc_d'])
+def solve_noncoop_opt(row, spec):
+    return 100*solve_optimal_mu(row[f'scc_mid_spec{spec}'], row['macc_a'], row['macc_d'])
 
-
-# Apply the solver to each row
-pivoted_df['coop_optimal_mu'] = pivoted_df.apply(solve_coop_opt, axis=1)
-pivoted_df['noncoop_optimal_mu'] = pivoted_df.apply(solve_noncoop_opt, axis=1)
+for spec in range(1,5):
+    # Apply the solver to each row
+    pivoted_df[f'coop_optimal_mu_spec{spec}'] = pivoted_df.apply(solve_coop_opt, args=(spec,), axis=1)
+    pivoted_df[f'noncoop_optimal_mu_spec{spec}'] = pivoted_df.apply(solve_noncoop_opt, args=(spec,), axis=1)
 
 # save the output
-output_filename = f'output/data/mitigation_cscc_v_cntfc_2020.csv'
 pivoted_df.to_csv(output_filename, index=False)
 
 print(f"Transformation complete. Output saved to {output_filename}")
