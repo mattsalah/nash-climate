@@ -106,11 +106,7 @@ def create_plot(outcome_cols, title, filename, exclude_countries=[], outcome='de
     # Add a 45-degree reference line
     x_min_data = plot_df['x_value'].min()
     x_max_data = plot_df['x_value'].max()
-    y_min_data = plot_df[policy_col].min()
-    y_max_data = plot_df[policy_col].max()
-    line_min = min(x_min_data, y_min_data)
-    line_max = max(x_max_data, y_max_data)
-    plt.plot([line_min, line_max], [line_min, line_max], 'r--', label='45-degree line')
+    plt.plot([x_min_data, x_max_data], [x_min_data, x_max_data], 'r--', label='45-degree line')
 
     # Plot the best fit line
     plt.plot(plot_df['x_value'], pred, 'b-', label=f'Best fit (slope={slope:.2f}, R²={r_squared:.2f}, p={p_value:.3g})')
