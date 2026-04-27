@@ -42,28 +42,28 @@ def create_plot(outcome_cols, title, filename, exclude_countries=[]):
     outcomes = df[outcome_cols].apply(pd.to_numeric, errors='coerce')
     df_temp = df.copy()
     if len(outcome_cols) == 1:
-        plot_df = df_temp[['n', 'policy_int_cntfc', 'policy_int_cntfc_low', 'policy_int_cntfc_high']].copy()
+        plot_df = df_temp[['n', 'policy_den_cntfc', 'policy_den_cntfc_low', 'policy_den_cntfc_high']].copy()
         plot_df['x_value'] = outcomes.iloc[:, 0]
         x_label = outcome_cols[0].replace('_', ' ')
     else:
         df_temp['min_outcome'] = outcomes.min(axis=1)
         df_temp['max_outcome'] = outcomes.max(axis=1)
         df_temp['mean_outcome'] = outcomes.mean(axis=1)
-        plot_df = df_temp[['n', 'min_outcome', 'max_outcome', 'mean_outcome', 'policy_int_cntfc', 'policy_int_cntfc_low', 'policy_int_cntfc_high']].copy()
+        plot_df = df_temp[['n', 'min_outcome', 'max_outcome', 'mean_outcome', 'policy_den_cntfc', 'policy_den_cntfc_low', 'policy_den_cntfc_high']].copy()
         plot_df['x_value'] = plot_df['mean_outcome']
         x_label = f'Outcome range across {title.split()[-1]} columns'
 
-    plot_df = plot_df.sort_values('policy_int_cntfc').dropna()
+    plot_df = plot_df.sort_values('policy_den_cntfc').dropna()
 
     # Exclude specified countries
     if exclude_countries:
         plot_df = plot_df[~plot_df['n'].isin(exclude_countries)]
 
     # Compute y error bars
-    yerr = [plot_df['policy_int_cntfc'] - plot_df['policy_int_cntfc_low'], plot_df['policy_int_cntfc_high'] - plot_df['policy_int_cntfc']]
+    yerr = [plot_df['policy_den_cntfc'] - plot_df['policy_den_cntfc_low'], plot_df['policy_den_cntfc_high'] - plot_df['policy_den_cntfc']]
 
     # Fit a line of best fit and compute slope significance
-    lr = stats.linregress(plot_df['x_value'], plot_df['policy_int_cntfc'])
+    lr = stats.linregress(plot_df['x_value'], plot_df['policy_den_cntfc'])
     slope = lr.slope
     intercept = lr.intercept
     r_squared = lr.rvalue ** 2
@@ -78,7 +78,7 @@ def create_plot(outcome_cols, title, filename, exclude_countries=[]):
 
     plt.errorbar(
         plot_df['x_value'],
-        plot_df['policy_int_cntfc'],
+        plot_df['policy_den_cntfc'],
         xerr=xerr,
         yerr=yerr,
         fmt='o',
@@ -90,8 +90,8 @@ def create_plot(outcome_cols, title, filename, exclude_countries=[]):
     # Add a 45-degree reference line
     x_min_data = plot_df['x_value'].min()
     x_max_data = plot_df['x_value'].max()
-    y_min_data = plot_df['policy_int_cntfc'].min()
-    y_max_data = plot_df['policy_int_cntfc'].max()
+    y_min_data = plot_df['policy_den_cntfc'].min()
+    y_max_data = plot_df['policy_den_cntfc'].max()
     line_min = min(x_min_data, y_min_data)
     line_max = max(x_max_data, y_max_data)
     plt.plot([line_min, line_max], [line_min, line_max], 'r--', label='45-degree line')
@@ -104,7 +104,7 @@ def create_plot(outcome_cols, title, filename, exclude_countries=[]):
         row = plot_df[plot_df['n'] == code]
         if not row.empty:
             x_val = row['x_value'].values[0]
-            y_val = row['policy_int_cntfc'].values[0]
+            y_val = row['policy_den_cntfc'].values[0]
             plt.annotate(label, xy=(x_val, y_val), xytext=(5, -5), textcoords='offset points',
                          fontsize=10, fontweight='bold', color='black',
                          bbox=dict(boxstyle='round,pad=0.2', fc='white', alpha=0.8))

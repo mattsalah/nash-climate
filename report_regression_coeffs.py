@@ -19,19 +19,21 @@ REPORT_ROWS = []
 
 
 def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_codes=None):
-    if x_col not in df.columns:
+    missing_columns = [col for col in (x_col, y_col) if col not in df.columns]
+    if missing_columns:
         REPORT_ROWS.append({
             "dataset": dataset,
             "year": year,
             "spec": spec,
             "sample": "full",
             "x_column": x_col,
+            "y_column": y_col,
             "n": 0,
             "slope": None,
             "intercept": None,
             "r_squared": None,
             "p_value": None,
-            "note": "column missing",
+            "note": "missing column(s): " + ", ".join(missing_columns),
         })
         return
 
@@ -51,6 +53,7 @@ def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_codes=None
             "spec": spec,
             "sample": sample,
             "x_column": x_col,
+            "y_column": y_col,
             "n": 0,
             "slope": None,
             "intercept": None,
@@ -67,6 +70,7 @@ def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_codes=None
         "spec": spec,
         "sample": sample,
         "x_column": x_col,
+        "y_column": y_col,
         "n": int(len(data)),
         "slope": lr.slope,
         "intercept": lr.intercept,
@@ -81,60 +85,60 @@ for spec in ["1", "2", "3", "4"]:
     filename = "output/data/mitigation_cscc_v_cntfc_2020.csv"
     df = pd.read_csv(filename)
     x_col = f"noncoop_optimal_mu_spec{spec}"
-    y_col = "policy_int_cntfc"
-
-    for group_name, exclude_codes in EXCLUDE_GROUPS:
-        add_regression_row(
-            dataset="cscc",
-            year=2020,
-            spec=spec,
-            x_col=x_col,
-            y_col=y_col,
-            df=df,
-            exclude_codes=exclude_codes,
-        )
+    for y_col in ["policy_den_cntfc", "policy_strng_cntfc"]:
+        for group_name, exclude_codes in EXCLUDE_GROUPS:
+            add_regression_row(
+                dataset="cscc",
+                year=2020,
+                spec=spec,
+                x_col=x_col,
+                y_col=y_col,
+                df=df,
+                exclude_codes=exclude_codes,
+            )
 
 # RICE 2022: NONCOOP_{scenario}
 rice_filename = "output/data/mitigation_rice_v_cntfc_2022.csv"
 if os.path.exists(rice_filename):
     df_rice = pd.read_csv(rice_filename)
-    country_mapping = pd.read_json("policy_int_to_iso3.json", typ="series")
+    country_mapping = pd.read_json("policy_den_to_iso3.json", typ="series")
     df_rice = df_rice[df_rice["n"].isin(country_mapping.values)]
 
     for spec in ["1", "2", "3", "4"]:
         scenario = SPEC_MAP[spec]
         x_col = f"NONCOOP_{scenario}"
-        y_col = "policy_int_cntfc"
-
-        for group_name, exclude_codes in EXCLUDE_GROUPS:
-            add_regression_row(
-                dataset="rice",
-                year=2022,
-                spec=spec,
-                x_col=x_col,
-                y_col=y_col,
-                df=df_rice,
-                exclude_codes=exclude_codes,
-            )
+        for y_col in ["policy_den_cntfc", "policy_strng_cntfc"]:
+            for group_name, exclude_codes in EXCLUDE_GROUPS:
+                add_regression_row(
+                    dataset="rice",
+                    year=2022,
+                    spec=spec,
+                    x_col=x_col,
+                    y_col=y_col,
+                    df=df_rice,
+                    exclude_codes=exclude_codes,
+                )
 else:
     for spec in ["1", "2", "3", "4"]:
-        REPORT_ROWS.append({
-            "dataset": "rice",
-            "year": 2022,
-            "spec": spec,
-            "sample": "full",
-            "x_column": f"NONCOOP_{SPEC_MAP[spec]}",
-            "n": 0,
-            "slope": None,
-            "intercept": None,
-            "r_squared": None,
-            "p_value": None,
-            "note": "rice data file missing",
-        })
+        for y_col in ["policy_den_cntfc", "policy_strng_cntfc"]:
+            REPORT_ROWS.append({
+                "dataset": "rice",
+                "year": 2022,
+                "spec": spec,
+                "sample": "full",
+                "x_column": f"NONCOOP_{SPEC_MAP[spec]}",
+                "y_column": y_col,
+                "n": 0,
+                "slope": None,
+                "intercept": None,
+                "r_squared": None,
+                "p_value": None,
+                "note": "rice data file missing",
+            })
 
 report = pd.DataFrame(REPORT_ROWS)
 report = report[
-    ["dataset", "year", "spec", "sample", "x_column", "n", "slope", "intercept", "r_squared", "p_value", "note"]
+    ["dataset", "year", "spec", "sample", "x_column", "y_column", "n", "slope", "intercept", "r_squared", "p_value", "note"]
 ]
 
 output_dir = "output/charts"

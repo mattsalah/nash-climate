@@ -13,11 +13,14 @@ parser.add_argument('--include-global-scc', dest='include_global_scc', action='s
                     help='Include the global SCC/MAB line in the plot (default)')
 parser.add_argument('--no-global-scc', dest='include_global_scc', action='store_false',
                     help='Do not include the global SCC/MAB line in the plot')
+parser.add_argument('--outcome', choices=['strng', 'den', 'both'], default='den',
+                    help='Which policy outcome line(s) to plot: stringency (strng), density (den), or both')
 args = parser.parse_args()
 
 country = args.country.lower()
 spec = args.spec.lower()
 include_global_scc = args.include_global_scc
+outcome = args.outcome.lower()
 
 # Read the data
 df = pd.read_csv('output/data/mitigation_cscc_v_cntfc_2020.csv')
@@ -37,7 +40,16 @@ a = row['macc_a']
 d = row['macc_d']
 coop_optimal_mu = row[f'coop_optimal_mu_spec{spec}']
 noncoop_optimal_mu = row[f'noncoop_optimal_mu_spec{spec}']
-policy_int_cntfc = row['policy_int_cntfc']
+policy_den_cntfc = row['policy_den_cntfc']
+policy_strng_cntfc = row['policy_strng_cntfc']
+
+policy_cntfc_values = []
+if outcome in ('int', 'both') and not pd.isna(policy_den_cntfc):
+    policy_cntfc_values.append(policy_den_cntfc)
+if outcome in ('strng', 'both') and not pd.isna(policy_strng_cntfc):
+    policy_cntfc_values.append(policy_strng_cntfc)
+
+policy_cntfc_max = max(policy_cntfc_values) if policy_cntfc_values else 0
 
 # Check for missing values
 if pd.isna(scc_mid) or pd.isna(a) or pd.isna(d):
@@ -45,10 +57,14 @@ if pd.isna(scc_mid) or pd.isna(a) or pd.isna(d):
     sys.exit(1)
 
 # Create mu range for plotting
-if include_global_scc:
-    mu_range = np.linspace(min(0, noncoop_optimal_mu)*1.2, max(coop_optimal_mu, policy_int_cntfc)*1.2, 1000)
-else:
-    mu_range = np.linspace(min(0, noncoop_optimal_mu)*1.2, max(noncoop_optimal_mu, policy_int_cntfc)*1.2, 1000)
+lower_mu = min(0, noncoop_optimal_mu) if not pd.isna(noncoop_optimal_mu) else 0
+mu_upper_candidates = [policy_cntfc_max]
+if include_global_scc and not pd.isna(coop_optimal_mu):
+    mu_upper_candidates.append(coop_optimal_mu)
+elif not include_global_scc and not pd.isna(noncoop_optimal_mu):
+    mu_upper_candidates.append(noncoop_optimal_mu)
+upper_mu = max(mu_upper_candidates) if mu_upper_candidates else 1
+mu_range = np.linspace(lower_mu * 1.2, upper_mu * 1.2, 1000)
 
 # Calculate MAB and MC
 mab_loc = scc_mid * np.ones(len(mu_range))
@@ -78,11 +94,16 @@ if include_global_scc:
         # Mark the intersection point
         ax.plot(coop_optimal_mu, global_scc_mid, 'o', color='purple', markersize=8)
 
-# Add vertical line at policy intensity counterfactual
-if not pd.isna(policy_int_cntfc):
-    ax.axvline(x=policy_int_cntfc, color='orange', linestyle=':', linewidth=2, label=f'Policy Intensity μ = {policy_int_cntfc:.4f}')
-    # Mark the intersection point
-    ax.plot(policy_int_cntfc, scc_mid, 'o', color='orange', markersize=8)
+# Add vertical line(s) at policy counterfactual(s)
+if outcome in ('int', 'both') and not pd.isna(policy_den_cntfc):
+    ax.axvline(x=policy_den_cntfc, color='orange', linestyle=':', linewidth=2,
+               label=f'Policy Intensity μ = {policy_den_cntfc:.4f}')
+    ax.plot(policy_den_cntfc, scc_mid, 'o', color='orange', markersize=8)
+
+if outcome in ('strng', 'both') and not pd.isna(policy_strng_cntfc):
+    ax.axvline(x=policy_strng_cntfc, color='teal', linestyle=':', linewidth=2,
+               label=f'Policy Strength μ = {policy_strng_cntfc:.4f}')
+    ax.plot(policy_strng_cntfc, scc_mid, 'o', color='teal', markersize=8)
 
 # Labels and title
 ax.set_xlabel('Abatement Fraction (μ)', fontsize=12)
@@ -92,7 +113,9 @@ ax.legend(fontsize=11, loc='best')
 ax.grid(True, alpha=0.3)
 
 # Save and show
-output_filename = f'output/charts/mac_mab_{country}_spec{spec}.png'
+output_filename = f'output/charts/mac_mab_{country}_spec{spec}_{outcome}.png'
+if not include_global_scc:
+    output_filename = output_filename.replace('.png', '_no_global.png')
 plt.tight_layout()
 plt.savefig(output_filename, dpi=300, bbox_inches='tight')
 print(f"Plot saved to {output_filename}")

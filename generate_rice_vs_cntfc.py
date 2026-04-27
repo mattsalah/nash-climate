@@ -95,7 +95,7 @@ country_mapping = json.load(open('policy_int_to_iso3.json'))
 pct_diff_df = pd.read_csv('output/data/country_year_counterfactual_CO2.csv')
 
 # Filter for the year
-pct_diff_year = pct_diff_df[pct_diff_df['year'] == year][['id', 'pct_diff', 'ci_lower_pct', 'ci_upper_pct']]
+pct_diff_year = pct_diff_df[pct_diff_df['year'] == year]
 
 # Map the country names to codes
 pct_diff_year['n'] = pct_diff_year['id'].map(country_mapping)
@@ -103,14 +103,19 @@ pct_diff_year['n'] = pct_diff_year['id'].map(country_mapping)
 # Drop rows where mapping is not found
 pct_diff_year = pct_diff_year.dropna(subset=['n'])
 
-# Merge the pct_diff into the pivoted_df on 'n', rename to policy_int_cntfc
-pivoted_df = pd.merge(pivoted_df, pct_diff_year[['n', 'pct_diff', 'ci_lower_pct', 'ci_upper_pct']], on='n', how='left')
+cntfc_cols = ['n', 'pct_diff_2015', 'ci_lower_pct_2015', 'ci_upper_pct_2015', 'pct_diff_2015_strng', 'ci_lower_pct_2015_strng', 'ci_upper_pct_2015_strng']
 
-# Rename pct_diff to policy_int_cntfc
+# Merge the pct_diff into the pivoted_df on 'n', rename to policy_den_cntfc
+pivoted_df = pd.merge(pivoted_df, pct_diff_year[cntfc_cols], on='n', how='left')
+
+# Rename pct_diff to policy_den_cntfc
 pivoted_df.rename(columns={
-    'pct_diff': 'policy_int_cntfc',
-    'ci_lower_pct': 'policy_int_cntfc_low',
-    'ci_upper_pct': 'policy_int_cntfc_high',
+    'pct_diff_2015': 'policy_den_cntfc',
+    'ci_lower_pct_2015': 'policy_den_cntfc_low',
+    'ci_upper_pct_2015': 'policy_den_cntfc_high',
+    'pct_diff_2015_strng': 'policy_strng_cntfc',
+    'ci_lower_pct_2015_strng': 'policy_strng_cntfc_low',
+    'ci_upper_pct_2015_strng': 'policy_strng_cntfc_high',
     }, inplace=True)
 
 # Save the transformed data to a new CSV file
