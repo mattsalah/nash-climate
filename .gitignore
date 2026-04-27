@@ -8,3 +8,6 @@ NC2021_results_dataset/
 country_scc/
 country_scc/
 output/*
+__pycache__/
+__pycache__/
+__pycache__/
