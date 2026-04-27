@@ -87,12 +87,10 @@ if include_global_scc:
 if outcome in ('den', 'both') and not pd.isna(policy_den_cntfc):
     ax.axvline(x=policy_den_cntfc, color='orange', linestyle=':', linewidth=2,
                label=f'Policy Density μ = {policy_den_cntfc:.4f}')
-    ax.plot(policy_den_cntfc, scc_mid, 'o', color='orange', markersize=8)
 
 if outcome in ('strng', 'both') and not pd.isna(policy_strng_cntfc):
     ax.axvline(x=policy_strng_cntfc, color='teal', linestyle=':', linewidth=2,
                label=f'Policy Strength μ = {policy_strng_cntfc:.4f}')
-    ax.plot(policy_strng_cntfc, scc_mid, 'o', color='teal', markersize=8)
 
 # Labels and title
 ax.set_xlabel('Abatement Fraction (μ)', fontsize=12)

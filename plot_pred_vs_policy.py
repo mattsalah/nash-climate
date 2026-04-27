@@ -11,7 +11,7 @@ parser.add_argument('year', type=int, help='The year to process (e.g., 2022)')
 parser.add_argument('--dataset', choices=['rice', 'cscc'], default='rice', help='Dataset to use: rice or cscc')
 parser.add_argument('--exclude', nargs='*', default=[], help='List of country codes to exclude from the plot (e.g., usa chn ind)')
 parser.add_argument('--spec', choices=["1", "2", "3", "4"], default='1', help='Specification')
-parser.add_argument('--outcome', choices=['strng', 'den'], default='den', help='Policy outcome to plot: strength (strng) or intensity (int)')
+parser.add_argument('--outcome', choices=['strng', 'den'], default='den', help='Policy outcome to plot: stringency (strng) or density (den)')
 
 args = parser.parse_args()
 
@@ -45,12 +45,12 @@ def create_plot(outcome_cols, title, filename, exclude_countries=[], outcome='de
         policy_col = 'policy_den_cntfc'
         policy_low = 'policy_den_cntfc_low'
         policy_high = 'policy_den_cntfc_high'
-        y_label = 'Policy Intensity Counterfactual'
+        y_label = 'Policy Density Counterfactual'
     elif outcome == 'strng':
         policy_col = 'policy_strng_cntfc'
         policy_low = 'policy_strng_cntfc_low'
         policy_high = 'policy_strng_cntfc_high'
-        y_label = 'Policy Strength Counterfactual'
+        y_label = 'Policy Stringency Counterfactual'
     else:
         raise ValueError("Invalid outcome")
 

@@ -1,8 +1,5 @@
 python generate_cscc_vs_cntfc.py
 python generate_rice_vs_cntfc.py 2022
-python plot_MAC_MAB.py usa 1
-python plot_MAC_MAB.py chn 1
-python plot_MAC_MAB.py ind 1
 python plot_MAC_MAB.py usa 1 --outcome both
 python plot_MAC_MAB.py chn 1 --outcome both
 python plot_MAC_MAB.py ind 1 --outcome both
