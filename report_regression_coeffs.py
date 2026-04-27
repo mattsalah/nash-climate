@@ -101,7 +101,7 @@ for spec in ["1", "2", "3", "4"]:
 rice_filename = "output/data/mitigation_rice_v_cntfc_2022.csv"
 if os.path.exists(rice_filename):
     df_rice = pd.read_csv(rice_filename)
-    country_mapping = pd.read_json("policy_den_to_iso3.json", typ="series")
+    country_mapping = pd.read_json("policy_int_to_iso3.json", typ="series")
     df_rice = df_rice[df_rice["n"].isin(country_mapping.values)]
 
     for spec in ["1", "2", "3", "4"]:

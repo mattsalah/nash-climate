@@ -43,28 +43,17 @@ noncoop_optimal_mu = row[f'noncoop_optimal_mu_spec{spec}']
 policy_den_cntfc = row['policy_den_cntfc']
 policy_strng_cntfc = row['policy_strng_cntfc']
 
-policy_cntfc_values = []
-if outcome in ('int', 'both') and not pd.isna(policy_den_cntfc):
-    policy_cntfc_values.append(policy_den_cntfc)
-if outcome in ('strng', 'both') and not pd.isna(policy_strng_cntfc):
-    policy_cntfc_values.append(policy_strng_cntfc)
-
-policy_cntfc_max = max(policy_cntfc_values) if policy_cntfc_values else 0
-
 # Check for missing values
 if pd.isna(scc_mid) or pd.isna(a) or pd.isna(d):
     print(f"Missing parameters for country '{country}'")
     sys.exit(1)
 
 # Create mu range for plotting
-lower_mu = min(0, noncoop_optimal_mu) if not pd.isna(noncoop_optimal_mu) else 0
-mu_upper_candidates = [policy_cntfc_max]
-if include_global_scc and not pd.isna(coop_optimal_mu):
-    mu_upper_candidates.append(coop_optimal_mu)
-elif not include_global_scc and not pd.isna(noncoop_optimal_mu):
-    mu_upper_candidates.append(noncoop_optimal_mu)
-upper_mu = max(mu_upper_candidates) if mu_upper_candidates else 1
-mu_range = np.linspace(lower_mu * 1.2, upper_mu * 1.2, 1000)
+if include_global_scc:
+    mu_max = max(policy_den_cntfc, policy_strng_cntfc, coop_optimal_mu)
+else:
+    mu_max = max(policy_den_cntfc, policy_strng_cntfc, noncoop_optimal_mu)
+mu_range = np.linspace(0, mu_max * 1.2, 1000)
 
 # Calculate MAB and MC
 mab_loc = scc_mid * np.ones(len(mu_range))
@@ -97,7 +86,7 @@ if include_global_scc:
 # Add vertical line(s) at policy counterfactual(s)
 if outcome in ('den', 'both') and not pd.isna(policy_den_cntfc):
     ax.axvline(x=policy_den_cntfc, color='orange', linestyle=':', linewidth=2,
-               label=f'Policy Intensity μ = {policy_den_cntfc:.4f}')
+               label=f'Policy Density μ = {policy_den_cntfc:.4f}')
     ax.plot(policy_den_cntfc, scc_mid, 'o', color='orange', markersize=8)
 
 if outcome in ('strng', 'both') and not pd.isna(policy_strng_cntfc):
