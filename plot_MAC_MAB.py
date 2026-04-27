@@ -95,7 +95,7 @@ if include_global_scc:
         ax.plot(coop_optimal_mu, global_scc_mid, 'o', color='purple', markersize=8)
 
 # Add vertical line(s) at policy counterfactual(s)
-if outcome in ('int', 'both') and not pd.isna(policy_den_cntfc):
+if outcome in ('den', 'both') and not pd.isna(policy_den_cntfc):
     ax.axvline(x=policy_den_cntfc, color='orange', linestyle=':', linewidth=2,
                label=f'Policy Intensity μ = {policy_den_cntfc:.4f}')
     ax.plot(policy_den_cntfc, scc_mid, 'o', color='orange', markersize=8)
