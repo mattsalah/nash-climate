@@ -143,6 +143,9 @@ carbon_price_df = carbon_price_df[['REF_AREA', 'OBS_VALUE']].rename(columns={
 # Convert 'n' to lowercase for merging
 carbon_price_df['n'] = carbon_price_df['n'].str.lower()
 
+# Remove duplicate country codes, keeping the first entry
+carbon_price_df = carbon_price_df.drop_duplicates(subset='n', keep='first')
+
 # Merge with pivoted_df
 pivoted_df = pd.merge(pivoted_df, carbon_price_df, on='n', how='left')
 

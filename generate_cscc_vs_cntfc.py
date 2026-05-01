@@ -133,7 +133,7 @@ cntfc_cols = ['n', 'pol_dens_cum', 'strng_wght_ind',
               'pct_diff_2015_strng', 'ci_lower_pct_2015_strng', 'ci_upper_pct_2015_strng']
 
 # Merge the pct_diff into the pivoted_df on 'n', rename to policy_den_cntfc
-pivoted_df = pd.merge(pivoted_df, policy_int_year[cntfc_cols], on='n', how='left')
+pivoted_df = pd.merge(pivoted_df, policy_int_year[cntfc_cols], on='n', how='left').sort_values('n')
 
 # Rename pct_diff to policy_den_cntfc
 pivoted_df.rename(columns={
@@ -217,8 +217,11 @@ carbon_price_df = carbon_price_df[['REF_AREA', 'OBS_VALUE']].rename(columns={
 # Convert 'n' to lowercase for merging
 carbon_price_df['n'] = carbon_price_df['n'].str.lower()
 
+# Remove duplicate country codes, keeping the first entry
+carbon_price_df = carbon_price_df.drop_duplicates(subset='n', keep='first')
+
 # Merge with pivoted_df
-pivoted_df = pd.merge(pivoted_df, carbon_price_df, on='n', how='left')
+pivoted_df = pd.merge(pivoted_df, carbon_price_df, on='n', how='left').sort_values('n')
 
 ################ SAVE ################
 
