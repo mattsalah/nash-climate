@@ -80,12 +80,14 @@ def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_codes=None
     })
 
 
+outcome_cols = ["policy_den_cntfc", "policy_strng_cntfc", "pol_dens_cum", "pol_dens_cum_diff", "strng_wght_ind", "strng_wght_ind_diff"]
+
 # CSCC 2020: noncoop_optimal_mu_spec{spec}
 for spec in ["1", "2", "3", "4"]:
     filename = "output/data/mitigation_cscc_v_cntfc_2020.csv"
     df = pd.read_csv(filename)
     x_col = f"noncoop_optimal_mu_spec{spec}"
-    for y_col in ["policy_den_cntfc", "policy_strng_cntfc"]:
+    for y_col in outcome_cols:
         for group_name, exclude_codes in EXCLUDE_GROUPS:
             add_regression_row(
                 dataset="cscc",
@@ -95,6 +97,15 @@ for spec in ["1", "2", "3", "4"]:
                 y_col=y_col,
                 df=df,
                 exclude_codes=exclude_codes,
+            )
+    # also regress carbon prices on cscc
+    add_regression_row(
+                dataset="cscc",
+                year=2020,
+                spec=spec,
+                x_col=f'scc_mid_spec{spec}',
+                y_col='carbon_price_effective',
+                df=df,
             )
 
 # RICE 2022: NONCOOP_{scenario}
@@ -107,7 +118,7 @@ if os.path.exists(rice_filename):
     for spec in ["1", "2", "3", "4"]:
         scenario = SPEC_MAP[spec]
         x_col = f"NONCOOP_{scenario}"
-        for y_col in ["policy_den_cntfc", "policy_strng_cntfc"]:
+        for y_col in outcome_cols:
             for group_name, exclude_codes in EXCLUDE_GROUPS:
                 add_regression_row(
                     dataset="rice",
@@ -119,22 +130,7 @@ if os.path.exists(rice_filename):
                     exclude_codes=exclude_codes,
                 )
 else:
-    for spec in ["1", "2", "3", "4"]:
-        for y_col in ["policy_den_cntfc", "policy_strng_cntfc"]:
-            REPORT_ROWS.append({
-                "dataset": "rice",
-                "year": 2022,
-                "spec": spec,
-                "sample": "full",
-                "x_column": f"NONCOOP_{SPEC_MAP[spec]}",
-                "y_column": y_col,
-                "n": 0,
-                "slope": None,
-                "intercept": None,
-                "r_squared": None,
-                "p_value": None,
-                "note": "rice data file missing",
-            })
+    print("FAILED TO FIND RICE DATA FILE")
 
 report = pd.DataFrame(REPORT_ROWS)
 report = report[
