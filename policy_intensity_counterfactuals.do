@@ -144,13 +144,10 @@ preserve
     gen ci_lower_avoided_zero_strng = ci_lower_co2_zero_strng - CO2_mt
     gen ci_upper_avoided_zero_strng = ci_upper_co2_zero_strng - CO2_mt
     gen ci_lower_pct_zero_strng = 100 * ci_lower_avoided_zero_strng / CO2_mt
-    gen ci_upper_pct_zero_strng = 100 * ci_upper_avoided_zero_strng / CO2_mt
-
-    * Filter to years post 2015
-    drop if year <= 2015
+    gen ci_upper_pct_zero_strng = 100 * ci_upper_avoided_zero_strng / CO2_mt         
 
     * Keep relevant variables - all three scenarios for both models
-    keep id year CO2_mt ///
+    keep id year CO2_mt strng_wght_ind pol_dens_cum ///
          co2_cntfc_2015 avoided_CO2_2015 pct_diff_2015 ci_lower_pct_2015 ci_upper_pct_2015 ///
          co2_cntfc_2000 avoided_CO2_2000 pct_diff_2000 ci_lower_pct_2000 ci_upper_pct_2000 ///
          co2_cntfc_zero avoided_CO2_zero pct_diff_zero ci_lower_pct_zero ci_upper_pct_zero ///

@@ -2,15 +2,7 @@ import pandas as pd
 import argparse
 import json
 
-# Parse command line arguments
-parser = argparse.ArgumentParser(description='Generate dataset for a specific year.')
-parser.add_argument('year', type=int, help='The year to process (e.g., 2022)')
-args = parser.parse_args()
-
-# RICE: 2015-2100
-# Policy Intensity: 2015-2022
-# Structural Breaks: ??
-year = args.year
+year = 2022
 
 ###### RICE PREDICTED ABATEMENT #########
 
@@ -91,22 +83,31 @@ pivoted_df['n'] = pivoted_df['n'].apply(lambda x: rice_to_iso3[x] if x in rice_t
 # Mapping from full country names to region codes
 country_mapping = json.load(open('policy_int_to_iso3.json'))
 
-# Read the pct_diff CSV
-pct_diff_df = pd.read_csv('output/data/country_year_counterfactual_CO2.csv')
+# Read the CSV
+policy_int_df = pd.read_csv('output/data/country_year_counterfactual_CO2.csv')
+
+# For each country, calculate the difference from its 2015 value for pol_dens_cum and strng_wght_ind columns
+for col in ['pol_dens_cum', 'strng_wght_ind']:
+    # Create a mapping of id to its 2015 value
+    val_2015 = policy_int_df[policy_int_df['year'] == 2015].set_index('id')[col]
+    policy_int_df[f'{col}_diff'] = policy_int_df[col] - policy_int_df['id'].map(val_2015)
 
 # Filter for the year
-pct_diff_year = pct_diff_df[pct_diff_df['year'] == year]
+policy_int_year = policy_int_df[policy_int_df['year'] == 2022]
 
 # Map the country names to codes
-pct_diff_year['n'] = pct_diff_year['id'].map(country_mapping)
+policy_int_year['n'] = policy_int_year['id'].map(country_mapping)
 
 # Drop rows where mapping is not found
-pct_diff_year = pct_diff_year.dropna(subset=['n'])
+policy_int_year = policy_int_year.dropna(subset=['n'])
 
-cntfc_cols = ['n', 'pct_diff_2015', 'ci_lower_pct_2015', 'ci_upper_pct_2015', 'pct_diff_2015_strng', 'ci_lower_pct_2015_strng', 'ci_upper_pct_2015_strng']
+cntfc_cols = ['n', 'pol_dens_cum', 'strng_wght_ind', 
+              'pol_dens_cum_diff', 'strng_wght_ind_diff', 
+              'pct_diff_2015', 'ci_lower_pct_2015', 'ci_upper_pct_2015', 
+              'pct_diff_2015_strng', 'ci_lower_pct_2015_strng', 'ci_upper_pct_2015_strng']
 
 # Merge the pct_diff into the pivoted_df on 'n', rename to policy_den_cntfc
-pivoted_df = pd.merge(pivoted_df, pct_diff_year[cntfc_cols], on='n', how='left')
+pivoted_df = pd.merge(pivoted_df, policy_int_year[cntfc_cols], on='n', how='left')
 
 # Rename pct_diff to policy_den_cntfc
 pivoted_df.rename(columns={
@@ -118,7 +119,35 @@ pivoted_df.rename(columns={
     'ci_upper_pct_2015_strng': 'policy_strng_cntfc_high',
     }, inplace=True)
 
-# Save the transformed data to a new CSV file
+
+################ CARBON PRICING ################
+
+# read carbon_pricing.csv
+# take REF_AREA, OBS_VALUE filtering for (TIME_PERIOD=2021, STRUCTURE_ID=OECD.CTP.TPS:DSD_NECR@DF_NECRS(1.1))
+# rename OBS_VALUE to a column called carbon_price_effective
+# merge with pivoted df on REF_AREA = 'n'
+carbon_price_df = pd.read_csv('carbon_pricing/carbon_pricing.csv')
+
+# Filter for relevant data
+carbon_price_df = carbon_price_df[
+    (carbon_price_df['TIME_PERIOD'] == year+1) &
+    (carbon_price_df['STRUCTURE_ID'] == 'OECD.CTP.TPS:DSD_NECR@DF_NECRS(1.1)')
+]
+
+# Select and rename columns
+carbon_price_df = carbon_price_df[['REF_AREA', 'OBS_VALUE']].rename(columns={
+    'REF_AREA': 'n',
+    'OBS_VALUE': 'carbon_price_effective'
+})
+
+# Convert 'n' to lowercase for merging
+carbon_price_df['n'] = carbon_price_df['n'].str.lower()
+
+# Merge with pivoted_df
+pivoted_df = pd.merge(pivoted_df, carbon_price_df, on='n', how='left')
+
+################ SAVE ################
+
 output_filename = f'output/data/mitigation_rice_v_cntfc_{year}.csv'
 pivoted_df.to_csv(output_filename, index=False)
 

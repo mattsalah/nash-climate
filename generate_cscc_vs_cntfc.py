@@ -109,32 +109,40 @@ pivoted_df = pd.merge(pivoted_df, macc_pivoted, on='n', how='left')
 # Mapping from full country names to region codes
 country_mapping = json.load(open('policy_int_to_iso3.json'))
 
-# Read the pct_diff CSV
-pct_diff_df = pd.read_csv('output/data/country_year_counterfactual_CO2.csv')
+# Read the CSV
+policy_int_df = pd.read_csv('output/data/country_year_counterfactual_CO2.csv')
 
+# For each country, calculate the difference from its 2015 value for pol_dens_cum and strng_wght_ind columns
+for col in ['pol_dens_cum', 'strng_wght_ind']:
+    # Create a mapping of id to its 2015 value
+    val_2015 = policy_int_df[policy_int_df['year'] == 2015].set_index('id')[col]
+    policy_int_df[f'{col}_diff'] = policy_int_df[col] - policy_int_df['id'].map(val_2015)
 
 # Filter for the year
-pct_diff_year = pct_diff_df[pct_diff_df['year'] == 2020]
+policy_int_year = policy_int_df[policy_int_df['year'] == 2020]
 
 # Map the country names to codes
-pct_diff_year['n'] = pct_diff_year['id'].map(country_mapping)
+policy_int_year['n'] = policy_int_year['id'].map(country_mapping)
 
 # Drop rows where mapping is not found
-pct_diff_year = pct_diff_year.dropna(subset=['n'])
+policy_int_year = policy_int_year.dropna(subset=['n'])
 
-cntfc_cols = ['n', 'pct_diff_zero', 'ci_lower_pct_zero', 'ci_upper_pct_zero', 'pct_diff_zero_strng', 'ci_lower_pct_zero_strng', 'ci_upper_pct_zero_strng']
+cntfc_cols = ['n', 'pol_dens_cum', 'strng_wght_ind', 
+              'pol_dens_cum_diff', 'strng_wght_ind_diff', 
+              'pct_diff_2015', 'ci_lower_pct_2015', 'ci_upper_pct_2015', 
+              'pct_diff_2015_strng', 'ci_lower_pct_2015_strng', 'ci_upper_pct_2015_strng']
 
 # Merge the pct_diff into the pivoted_df on 'n', rename to policy_den_cntfc
-pivoted_df = pd.merge(pivoted_df, pct_diff_year[cntfc_cols], on='n', how='left')
+pivoted_df = pd.merge(pivoted_df, policy_int_year[cntfc_cols], on='n', how='left')
 
 # Rename pct_diff to policy_den_cntfc
 pivoted_df.rename(columns={
-    'pct_diff_zero': 'policy_den_cntfc',
-    'ci_lower_pct_zero': 'policy_den_cntfc_low',
-    'ci_upper_pct_zero': 'policy_den_cntfc_high',
-    'pct_diff_zero_strng': 'policy_strng_cntfc',
-    'ci_lower_pct_zero_strng': 'policy_strng_cntfc_low',
-    'ci_upper_pct_zero_strng': 'policy_strng_cntfc_high',
+    'pct_diff_2015': 'policy_den_cntfc',
+    'ci_lower_pct_2015': 'policy_den_cntfc_low',
+    'ci_upper_pct_2015': 'policy_den_cntfc_high',
+    'pct_diff_2015_strng': 'policy_strng_cntfc',
+    'ci_lower_pct_2015_strng': 'policy_strng_cntfc_low',
+    'ci_upper_pct_2015_strng': 'policy_strng_cntfc_high',
     }, inplace=True)
 
 
@@ -185,7 +193,35 @@ for spec in range(1,5):
     pivoted_df[f'coop_optimal_mu_spec{spec}'] = pivoted_df.apply(solve_coop_opt, args=(spec,), axis=1)
     pivoted_df[f'noncoop_optimal_mu_spec{spec}'] = pivoted_df.apply(solve_noncoop_opt, args=(spec,), axis=1)
 
-# save the output
+
+################ CARBON PRICING ################
+
+# read carbon_pricing.csv
+# take REF_AREA, OBS_VALUE filtering for (TIME_PERIOD=2021, STRUCTURE_ID=OECD.CTP.TPS:DSD_NECR@DF_NECRS(1.1))
+# rename OBS_VALUE to a column called carbon_price_effective
+# merge with pivoted df on REF_AREA = 'n'
+carbon_price_df = pd.read_csv('carbon_pricing/carbon_pricing.csv')
+
+# Filter for relevant data
+carbon_price_df = carbon_price_df[
+    (carbon_price_df['TIME_PERIOD'] == 2021) &
+    (carbon_price_df['STRUCTURE_ID'] == 'OECD.CTP.TPS:DSD_NECR@DF_NECRS(1.1)')
+]
+
+# Select and rename columns
+carbon_price_df = carbon_price_df[['REF_AREA', 'OBS_VALUE']].rename(columns={
+    'REF_AREA': 'n',
+    'OBS_VALUE': 'carbon_price_effective'
+})
+
+# Convert 'n' to lowercase for merging
+carbon_price_df['n'] = carbon_price_df['n'].str.lower()
+
+# Merge with pivoted_df
+pivoted_df = pd.merge(pivoted_df, carbon_price_df, on='n', how='left')
+
+################ SAVE ################
+
 pivoted_df.to_csv(output_filename, index=False)
 
 print(f"Transformation complete. Output saved to {output_filename}")
