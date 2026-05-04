@@ -250,6 +250,23 @@ carbon_price_df_dolphin['n'] = carbon_price_df_dolphin['n'].map(dolphin_to_iso3)
 # Merge with pivoted_df
 pivoted_df = pd.merge(pivoted_df, carbon_price_df_dolphin, on='n', how='left')
 
+################ World Bank Controls ################
+
+wb_df = pd.read_csv('input/wb_controls/pop_gdp_2015_2025.csv')
+
+# filter for year = 2015
+wb_df = wb_df[wb_df['year'] == 2020]
+wb_df = wb_df[["country", "WB_WDI_SP_POP_TOTL", "WB_WDI_NY_GDP_PCAP_CD"]]
+
+# rename columns
+wb_df.rename(columns={
+    'country': 'n',
+    'WB_WDI_SP_POP_TOTL': 'pop',
+    'WB_WDI_NY_GDP_PCAP_CD': 'gdppc'
+}, inplace=True)
+
+pivoted_df = pd.merge(pivoted_df, wb_df, on='n', how='left')
+
 ################ SAVE ################
 
 pivoted_df.to_csv(output_filename, index=False)

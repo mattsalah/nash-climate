@@ -119,6 +119,23 @@ pivoted_df.rename(columns={
     'ci_upper_pct_2015_strng': 'policy_strng_cntfc_high',
     }, inplace=True)
 
+################ World Bank Controls ################
+
+wb_df = pd.read_csv('input/wb_controls/pop_gdp_2015_2025.csv')
+
+# filter for year = 2015
+wb_df = wb_df[wb_df['year'] == year]
+wb_df = wb_df[["country", "WB_WDI_SP_POP_TOTL", "WB_WDI_NY_GDP_PCAP_CD"]]
+
+# rename columns
+wb_df.rename(columns={
+    'country': 'n',
+    'WB_WDI_SP_POP_TOTL': 'pop',
+    'WB_WDI_NY_GDP_PCAP_CD': 'gdppc'
+}, inplace=True)
+
+pivoted_df = pd.merge(pivoted_df, wb_df, on='n', how='left')
+
 ################ SAVE ################
 
 output_filename = f'output/data/mitigation_rice_v_cntfc_{year}.csv'
