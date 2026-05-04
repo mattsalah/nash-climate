@@ -156,23 +156,24 @@ def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_group=None
     plt.savefig(os.path.join("output/regressions", filename))
     plt.close(fig)
 
-    for exclude_group in EXCLUDE_GROUPS:
 
-        # CSCC 2020: noncoop_optimal_mu_spec{spec}
-        for spec in ["1", "2", "3", "4"]:
-            filename = "output/data/mitigation_cscc_v_cntfc_2020.csv"
-            df = pd.read_csv(filename)
-            x_col = f"noncoop_optimal_mu_spec{spec}"
-            for y_col in outcome_cols:
-                add_regression_row(
-                    dataset="cscc",
-                    year=2020,
-                    spec=spec,
-                    x_col=x_col,
-                    y_col=y_col,
-                    df=df,
-                    exclude_group=exclude_group,
-                )
+for exclude_group in EXCLUDE_GROUPS:
+
+    # CSCC 2020: noncoop_optimal_mu_spec{spec}
+    for spec in ["1", "2", "3", "4"]:
+        filename = "output/data/mitigation_cscc_v_cntfc_2020.csv"
+        df = pd.read_csv(filename)
+        x_col = f"noncoop_optimal_mu_spec{spec}"
+        for y_col in outcome_cols:
+            add_regression_row(
+                dataset="cscc",
+                year=2020,
+                spec=spec,
+                x_col=x_col,
+                y_col=y_col,
+                df=df,
+                exclude_group=exclude_group,
+            )
 
         # also regress carbon prices on cscc
         for carbon_price in ['carbon_price_effective', 'carbon_price_dolphin_ghg', 'carbon_price_dolphin_co2']:
@@ -186,18 +187,16 @@ def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_group=None
                         exclude_group=exclude_group
                     )
 
-# RICE 2022: NONCOOP_{scenario}
-rice_filename = "output/data/mitigation_rice_v_cntfc_2022.csv"
-if os.path.exists(rice_filename):
+    # RICE 2022: NONCOOP_{scenario}
+    rice_filename = "output/data/mitigation_rice_v_cntfc_2022.csv"
     df_rice = pd.read_csv(rice_filename)
     country_mapping = pd.read_json("policy_int_to_iso3.json", typ="series")
     df_rice = df_rice[df_rice["n"].isin(country_mapping.values)]
-
+    
     for spec in ["1", "2", "3", "4"]:
         scenario = SPEC_MAP[spec]
         x_col = f"NONCOOP_{scenario}"
         for y_col in outcome_cols:
-            for exclude_group in EXCLUDE_GROUPS:
                 add_regression_row(
                     dataset="rice",
                     year=2022,
@@ -207,8 +206,6 @@ if os.path.exists(rice_filename):
                     df=df_rice,
                     exclude_group=exclude_group,
                 )
-else:
-    print("FAILED TO FIND RICE DATA FILE")
 
 report = pd.DataFrame(REPORT_ROWS)
 report = report[
