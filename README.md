@@ -1,21 +1,23 @@
 # Installation
 
-1. Clone the RICE50xmodel into this directory (https://github.com/witch-team/RICE50xmodel/tree/main).
+1. Clone the RICE50xmodel into the "input" directory (https://github.com/witch-team/RICE50xmodel/tree/main).
 2. Install GAMS from the website (https://www.gams.com/download/).
-3. Download the data_ed58 folder and place it into RICE50xmodel directory (https://github.com/witch-team/RICE50xmodel/releases/tag/v2.6.0).
-4. Configure environment:
+3. Configure environment:
 ```
 source setup.sh 
 ```
-5. Download results from the Gazzotti et al 2021 (https://github.com/witch-team/RICE50xmodel/releases/download/v1.0.0/NC2021_results_dataset.zip), and place the NC2021_results_dataset in the repo directory.
-- This is temporary, because I can't run the model myself unti I get the license.
-6. Download annual-co2-emissions from Our World in Data (https://ourworldindata.org/explorers/co2)
-- Settings: CO2, Territorial, All fossil emissions, Per country
-7. Download replication package for (https://www.nature.com/articles/s41467-026-68577-z#Sec9) and place it in a folder called "policy_intensity".
-8. Download replication package for (https://pmc.ncbi.nlm.nih.gov/articles/PMC11717907) and place it in a folder called "structural_breaks".
-9. Download results dataset for (https://www.nature.com/articles/s41558-018-0282-y#MOESM1) and place it in "country_scc"
-10. Download OECD carbon pricing data to "carbon_pricing/carbon_pricing.csv". Data from: https://data-explorer.oecd.org/vis?lc=en&fs[0]=Topic%2C1%7CTaxation%23TAX%23%7CTax%20and%20environment%23TAX_ENV%23&pg=0&fc=Topic&bp=true&snb=7&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_NECR%40DF_NECRS&df[ag]=OECD.CTP.TPS&dq=._T._T.ECRATE%2BNETECR..EUR_TCO2E.MEANW.Q.A&to[TIME_PERIOD]=false&pd=2020%2C&vw=tb
-11. Download Dolphin and Merkle 2024 carbon pricing dataset (https://github.com/g-dolphin/ECP/blob/main/_output/_dataset/v2025.0/ecp/ipcc/ecp_economy/ecp_CO2.csv) to "carbon_pricing/carbon_pricing_dolphin.csv"
+
+4. Donwload source data:
+- data_ed58 folder and place it into "input/RICE50xmodel" directory (https://github.com/witch-team/RICE50xmodel/releases/tag/v2.6.0).
+- results from the Gazzotti et al 2021 (https://github.com/witch-team/RICE50xmodel/releases/download/v1.0.0/NC2021_results_dataset.zip), and place the NC2021_results_dataset in "input/
+- annual-co2-emissions from Our World in Data (https://ourworldindata.org/explorers/co2) to "input/annual-co2-emissions/"
+  - Settings: CO2, Territorial, All fossil emissions, Per country
+- replication package for (https://www.nature.com/articles/s41467-026-68577-z#Sec9) and place it in a folder called "input/policy_intensity".
+- replication package for (https://pmc.ncbi.nlm.nih.gov/articles/PMC11717907) and place it in a folder called "structural_breaks".
+- results dataset for (https://www.nature.com/articles/s41558-018-0282-y#MOESM1) and place it in "country_scc"
+- OECD carbon pricing data to "input/carbon_pricing/carbon_pricing.csv". Data from: https://data-explorer.oecd.org/vis?lc=en&fs[0]=Topic%2C1%7CTaxation%23TAX%23%7CTax%20and%20environment%23TAX_ENV%23&pg=0&fc=Topic&bp=true&snb=7&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_NECR%40DF_NECRS&df[ag]=OECD.CTP.TPS&dq=._T._T.ECRATE%2BNETECR..EUR_TCO2E.MEANW.Q.A&to[TIME_PERIOD]=false&pd=2020%2C&vw=tb
+- Dolphin and Merkle 2024 carbon pricing dataset (https://github.com/g-dolphin/ECP/blob/main/_output/_dataset/v2025.0/ecp/ipcc/ecp_economy/ecp_CO2.csv) to "input/carbon_pricing/carbon_pricing_dolphin.csv"
+- WB WDI data on population and GDP (WB_WDI_SP_POP_TOTL" and "WB_WDI_NY_GDP_PCAP_CD") to "input/wb_controls/pop_gdp_2015_2025.csv"
 
 # Usage
 
