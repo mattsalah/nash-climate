@@ -156,42 +156,35 @@ def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_group=None
     plt.savefig(os.path.join("output/regressions", filename))
     plt.close(fig)
 
-# CSCC 2020: noncoop_optimal_mu_spec{spec}
-for spec in ["1", "2", "3", "4"]:
-    filename = "output/data/mitigation_cscc_v_cntfc_2020.csv"
-    df = pd.read_csv(filename)
-    x_col = f"noncoop_optimal_mu_spec{spec}"
-    for y_col in outcome_cols:
-        for exclude_group in EXCLUDE_GROUPS:
-            add_regression_row(
-                dataset="cscc",
-                year=2020,
-                spec=spec,
-                x_col=x_col,
-                y_col=y_col,
-                df=df,
-                exclude_group=exclude_group,
-            )
-    # also regress carbon prices on cscc
-    add_regression_row(
-                dataset="cscc",
-                year=2020,
-                spec=spec,
-                x_col=f'scc_mid_spec{spec}',
-                y_col='carbon_price_effective',
-                df=df,
-            )
+    for exclude_group in EXCLUDE_GROUPS:
 
-    # also regress carbon prices on cscc
-    for carbon_price in ['carbon_price_effective', 'carbon_price_dolphin_ghg', 'carbon_price_dolphin_co2']:
-        add_regression_row(
+        # CSCC 2020: noncoop_optimal_mu_spec{spec}
+        for spec in ["1", "2", "3", "4"]:
+            filename = "output/data/mitigation_cscc_v_cntfc_2020.csv"
+            df = pd.read_csv(filename)
+            x_col = f"noncoop_optimal_mu_spec{spec}"
+            for y_col in outcome_cols:
+                add_regression_row(
                     dataset="cscc",
                     year=2020,
                     spec=spec,
-                    x_col=f'scc_mid_spec{spec}',
-                    y_col=carbon_price,
+                    x_col=x_col,
+                    y_col=y_col,
                     df=df,
+                    exclude_group=exclude_group,
                 )
+
+        # also regress carbon prices on cscc
+        for carbon_price in ['carbon_price_effective', 'carbon_price_dolphin_ghg', 'carbon_price_dolphin_co2']:
+            add_regression_row(
+                        dataset="cscc",
+                        year=2020,
+                        spec=spec,
+                        x_col=f'scc_mid_spec{spec}',
+                        y_col=carbon_price,
+                        df=df,
+                        exclude_group=exclude_group
+                    )
 
 # RICE 2022: NONCOOP_{scenario}
 rice_filename = "output/data/mitigation_rice_v_cntfc_2022.csv"
