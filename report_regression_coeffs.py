@@ -53,7 +53,7 @@ x_col_disp = {
 REPORT_ROWS = []
 
 
-def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_codes=None):
+def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_group=None):
     missing_columns = [col for col in (x_col, y_col) if col not in df.columns]
     if missing_columns:
         REPORT_ROWS.append({
@@ -75,10 +75,9 @@ def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_codes=None
     df_sub = df.copy()
     sample = "full"
     note = ""
-    if exclude_codes:
-        sample = "no_us_chn_ind"
-        note = "excluded US, CHN, IND"
-        df_sub = df_sub[~df_sub["n"].astype(str).str.lower().isin([code.lower() for code in exclude_codes])]
+    if exclude_group:
+        sample = exclude_group[0]
+        df_sub = df_sub[~df_sub["n"].astype(str).str.lower().isin([code.lower() for code in exclude_group[1]])]
 
     data = df_sub[[x_col, y_col]].apply(pd.to_numeric, errors="coerce").dropna()
     if data.empty:
@@ -111,7 +110,6 @@ def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_codes=None
         "intercept": lr.intercept,
         "r_squared": lr.rvalue ** 2,
         "p_value": lr.pvalue,
-        "note": note,
     })
 
     # for each regression, save a chart showing x, y, and best fit line (p value, r^2, slope written in corner)
@@ -163,7 +161,7 @@ for spec in ["1", "2", "3", "4"]:
     df = pd.read_csv(filename)
     x_col = f"noncoop_optimal_mu_spec{spec}"
     for y_col in outcome_cols:
-        for group_name, exclude_codes in EXCLUDE_GROUPS:
+        for exclude_group in EXCLUDE_GROUPS:
             add_regression_row(
                 dataset="cscc",
                 year=2020,
@@ -171,7 +169,7 @@ for spec in ["1", "2", "3", "4"]:
                 x_col=x_col,
                 y_col=y_col,
                 df=df,
-                exclude_codes=exclude_codes,
+                exclude_group=exclude_group,
             )
     # also regress carbon prices on cscc
     add_regression_row(
@@ -205,7 +203,7 @@ if os.path.exists(rice_filename):
         scenario = SPEC_MAP[spec]
         x_col = f"NONCOOP_{scenario}"
         for y_col in outcome_cols:
-            for group_name, exclude_codes in EXCLUDE_GROUPS:
+            for exclude_group in EXCLUDE_GROUPS:
                 add_regression_row(
                     dataset="rice",
                     year=2022,
@@ -213,7 +211,7 @@ if os.path.exists(rice_filename):
                     x_col=x_col,
                     y_col=y_col,
                     df=df_rice,
-                    exclude_codes=exclude_codes,
+                    exclude_group=exclude_group,
                 )
 else:
     print("FAILED TO FIND RICE DATA FILE")
