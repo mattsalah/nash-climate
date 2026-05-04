@@ -194,13 +194,13 @@ for spec in range(1,5):
     pivoted_df[f'noncoop_optimal_mu_spec{spec}'] = pivoted_df.apply(solve_noncoop_opt, args=(spec,), axis=1)
 
 
-################ CARBON PRICING ################
+################ OECD CARBON PRICING ################
 
-# read carbon_pricing.csv
+# read carbon_pricing_oecd.csv
 # take REF_AREA, OBS_VALUE filtering for (TIME_PERIOD=2021, STRUCTURE_ID=OECD.CTP.TPS:DSD_NECR@DF_NECRS(1.1))
 # rename OBS_VALUE to a column called carbon_price_effective
 # merge with pivoted df on REF_AREA = 'n'
-carbon_price_df = pd.read_csv('carbon_pricing/carbon_pricing.csv')
+carbon_price_df = pd.read_csv('carbon_pricing/carbon_pricing_oecd.csv')
 
 # Filter for relevant data
 carbon_price_df = carbon_price_df[
@@ -221,7 +221,34 @@ carbon_price_df['n'] = carbon_price_df['n'].str.lower()
 carbon_price_df = carbon_price_df.drop_duplicates(subset='n', keep='first')
 
 # Merge with pivoted_df
-pivoted_df = pd.merge(pivoted_df, carbon_price_df, on='n', how='left').sort_values('n')
+pivoted_df = pd.merge(pivoted_df, carbon_price_df, on='n', how='left')
+
+################ DOLPHIN CARBON PRICING ################
+
+# read carbon_pricing_dolphin.csv
+# take jurisdiction, ecp_all_jurGHG_usd_k, ecp_tax_jurCO2_usd_k filtering for (year=2021, country in our list)
+carbon_price_df_dolphin = pd.read_csv('carbon_pricing/carbon_pricing_dolphin.csv')
+
+dolphin_to_iso3 = json.load(open('dolphin_to_iso3.json'))
+
+# Filter for relevant data
+carbon_price_df_dolphin = carbon_price_df_dolphin[
+    (carbon_price_df_dolphin['year'] == 2020) &
+    (carbon_price_df_dolphin['jurisdiction'].isin(dolphin_to_iso3.keys()))
+]
+
+# Select and rename columns
+carbon_price_df_dolphin = carbon_price_df_dolphin[['jurisdiction', 'ecp_all_jurGHG_usd_k', 'ecp_tax_jurCO2_usd_k']].rename(columns={
+    'jurisdiction': 'n',
+    'ecp_all_jurGHG_usd_k': 'carbon_price_dolphin_ghg',
+    'ecp_tax_jurCO2_usd_k': 'carbon_price_dolphin_co2'
+})
+
+# Convert jurisdictions to iso3
+carbon_price_df_dolphin['n'] = carbon_price_df_dolphin['n'].map(dolphin_to_iso3).str.lower()
+
+# Merge with pivoted_df
+pivoted_df = pd.merge(pivoted_df, carbon_price_df_dolphin, on='n', how='left')
 
 ################ SAVE ################
 

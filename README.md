@@ -15,7 +15,7 @@ source setup.sh
 8. Download replication package for (https://pmc.ncbi.nlm.nih.gov/articles/PMC11717907) and place it in a folder called "structural_breaks".
 9. Download results dataset for (https://www.nature.com/articles/s41558-018-0282-y#MOESM1) and place it in "country_scc"
 10. Download OECD carbon pricing data to "carbon_pricing/carbon_pricing.csv". Data from: https://data-explorer.oecd.org/vis?lc=en&fs[0]=Topic%2C1%7CTaxation%23TAX%23%7CTax%20and%20environment%23TAX_ENV%23&pg=0&fc=Topic&bp=true&snb=7&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_NECR%40DF_NECRS&df[ag]=OECD.CTP.TPS&dq=._T._T.ECRATE%2BNETECR..EUR_TCO2E.MEANW.Q.A&to[TIME_PERIOD]=false&pd=2020%2C&vw=tb
-
+11. Download Dolphin and Merkle 2024 carbon pricing dataset (https://github.com/g-dolphin/ECP/blob/main/_output/_dataset/v2025.0/ecp/ipcc/ecp_economy/ecp_CO2.csv) to "carbon_pricing/carbon_pricing_dolphin.csv"
 
 # Usage
 

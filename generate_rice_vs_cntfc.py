@@ -119,36 +119,6 @@ pivoted_df.rename(columns={
     'ci_upper_pct_2015_strng': 'policy_strng_cntfc_high',
     }, inplace=True)
 
-
-################ CARBON PRICING ################
-
-# read carbon_pricing.csv
-# take REF_AREA, OBS_VALUE filtering for (TIME_PERIOD=2021, STRUCTURE_ID=OECD.CTP.TPS:DSD_NECR@DF_NECRS(1.1))
-# rename OBS_VALUE to a column called carbon_price_effective
-# merge with pivoted df on REF_AREA = 'n'
-carbon_price_df = pd.read_csv('carbon_pricing/carbon_pricing.csv')
-
-# Filter for relevant data
-carbon_price_df = carbon_price_df[
-    (carbon_price_df['TIME_PERIOD'] == year+1) &
-    (carbon_price_df['STRUCTURE_ID'] == 'OECD.CTP.TPS:DSD_NECR@DF_NECRS(1.1)')
-]
-
-# Select and rename columns
-carbon_price_df = carbon_price_df[['REF_AREA', 'OBS_VALUE']].rename(columns={
-    'REF_AREA': 'n',
-    'OBS_VALUE': 'carbon_price_effective'
-})
-
-# Convert 'n' to lowercase for merging
-carbon_price_df['n'] = carbon_price_df['n'].str.lower()
-
-# Remove duplicate country codes, keeping the first entry
-carbon_price_df = carbon_price_df.drop_duplicates(subset='n', keep='first')
-
-# Merge with pivoted_df
-pivoted_df = pd.merge(pivoted_df, carbon_price_df, on='n', how='left')
-
 ################ SAVE ################
 
 output_filename = f'output/data/mitigation_rice_v_cntfc_{year}.csv'
