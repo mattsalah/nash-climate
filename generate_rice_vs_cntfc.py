@@ -7,7 +7,7 @@ year = 2022
 ###### RICE PREDICTED ABATEMENT #########
 
 # Read the CSV file
-df = pd.read_csv('NC2021_results_dataset/CBA_regional_data.csv')
+df = pd.read_csv('input/NC2021_results_dataset/CBA_regional_data.csv')
 
 # Get unique years
 years = sorted(df['year'].unique())
@@ -75,13 +75,13 @@ else:
 pivoted_df = pd.merge(pivoted_noncoop, pivoted_coop, on='n', how='outer')
 
 # rename 'n' to the iso3 codes
-rice_to_iso3 = json.load(open('rice_to_iso3.json'))
+rice_to_iso3 = json.load(open('input/rice_to_iso3.json'))
 pivoted_df['n'] = pivoted_df['n'].apply(lambda x: rice_to_iso3[x] if x in rice_to_iso3 else x)
 
 ###### POLICY INTENSITY COUNTERFACUTALS #########
 
 # Mapping from full country names to region codes
-country_mapping = json.load(open('policy_int_to_iso3.json'))
+country_mapping = json.load(open('input/policy_int_to_iso3.json'))
 
 # Read the CSV
 policy_int_df = pd.read_csv('output/data/country_year_counterfactual_CO2.csv')

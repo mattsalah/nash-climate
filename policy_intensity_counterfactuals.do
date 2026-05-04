@@ -2,7 +2,7 @@
 	
 	clear 
 	set more off
-	use  policy_intensity/Climate_Policy_Emissions_Arvanitopoulos_Schaub_et_al_heiDATA_v3
+	use  input/policy_intensity/Climate_Policy_Emissions_Arvanitopoulos_Schaub_et_al_heiDATA_v3
 	
 ****************
 *** AVOIDED CO2 EMISSIONS DUE TO CLIMATE POLICIES

@@ -28,7 +28,7 @@ if dataset == 'cscc':
 else:
     df = pd.read_csv(f'output/data/mitigation_rice_v_cntfc_{year}.csv')
     # only keep countries that have counterfactuals if any do
-    country_mapping = json.load(open('policy_int_to_iso3.json'))
+    country_mapping = json.load(open('input/policy_int_to_iso3.json'))
     df = df[df['n'].isin(country_mapping.values())]
 
 

@@ -6,7 +6,7 @@ output_filename = 'output/data/mitigation_cscc_v_cntfc_2020.csv'
 
 ###### COUNTRY LEVEL SCCS #######
 
-scc_df = pd.read_csv('country_scc/41558_2018_282_MOESM2_ESM.csv')
+scc_df = pd.read_csv('input/country_scc/41558_2018_282_MOESM2_ESM.csv')
 
 # Rename ISO3 to n
 scc_df = scc_df.rename(columns={'ISO3': 'n'})
@@ -97,7 +97,7 @@ macc_pivoted.columns = ['n', 'macc_a', 'macc_d']
 
 # Convert n to iso3
 macc_pivoted['n'] = macc_pivoted['n'].apply(lambda x: x.strip().lower())
-rice_to_iso3 = json.load(open('rice_to_iso3.json'))
+rice_to_iso3 = json.load(open('input/rice_to_iso3.json'))
 macc_pivoted['n'] = macc_pivoted['n'].apply(lambda x: rice_to_iso3[x] if x in rice_to_iso3 else x)
 
 # Merge MACC parameters into pivoted_df
@@ -107,7 +107,7 @@ pivoted_df = pd.merge(pivoted_df, macc_pivoted, on='n', how='left')
 ###### POLICY INTENSITY COUNTERFACUTALS #########
 
 # Mapping from full country names to region codes
-country_mapping = json.load(open('policy_int_to_iso3.json'))
+country_mapping = json.load(open('input/policy_int_to_iso3.json'))
 
 # Read the CSV
 policy_int_df = pd.read_csv('output/data/country_year_counterfactual_CO2.csv')
@@ -200,7 +200,7 @@ for spec in range(1,5):
 # take REF_AREA, OBS_VALUE filtering for (TIME_PERIOD=2021, STRUCTURE_ID=OECD.CTP.TPS:DSD_NECR@DF_NECRS(1.1))
 # rename OBS_VALUE to a column called carbon_price_effective
 # merge with pivoted df on REF_AREA = 'n'
-carbon_price_df = pd.read_csv('carbon_pricing/carbon_pricing_oecd.csv')
+carbon_price_df = pd.read_csv('input/carbon_pricing/carbon_pricing_oecd.csv')
 
 # Filter for relevant data
 carbon_price_df = carbon_price_df[
@@ -227,9 +227,9 @@ pivoted_df = pd.merge(pivoted_df, carbon_price_df, on='n', how='left')
 
 # read carbon_pricing_dolphin.csv
 # take jurisdiction, ecp_all_jurGHG_usd_k, ecp_tax_jurCO2_usd_k filtering for (year=2021, country in our list)
-carbon_price_df_dolphin = pd.read_csv('carbon_pricing/carbon_pricing_dolphin.csv')
+carbon_price_df_dolphin = pd.read_csv('input/carbon_pricing/carbon_pricing_dolphin.csv')
 
-dolphin_to_iso3 = json.load(open('dolphin_to_iso3.json'))
+dolphin_to_iso3 = json.load(open('input/dolphin_to_iso3.json'))
 
 # Filter for relevant data
 carbon_price_df_dolphin = carbon_price_df_dolphin[

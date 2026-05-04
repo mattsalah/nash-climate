@@ -2,7 +2,7 @@
 * Standalone MACC parameter extractor for RICE50+
 * ------------------------------------------------
 
-$setglobal datapath    "RICE50xmodel/data_ed58/"
+$setglobal datapath    "input/RICE50xmodel/data_ed58/"
 $setglobal pback       550
 $setglobal gback       0.025
 $setglobal expcost2    2.8
