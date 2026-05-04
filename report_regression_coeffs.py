@@ -110,6 +110,7 @@ def add_regression_row(dataset, year, spec, x_col, y_col, df, exclude_group=None
         "intercept": lr.intercept,
         "r_squared": lr.rvalue ** 2,
         "p_value": lr.pvalue,
+        "note": note
     })
 
     # for each regression, save a chart showing x, y, and best fit line (p value, r^2, slope written in corner)
