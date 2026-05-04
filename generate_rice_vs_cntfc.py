@@ -137,6 +137,7 @@ wb_df.rename(columns={
 
 wb_df['log_gdppc'] = np.log(wb_df['gdppc'])
 wb_df['log_pop'] = np.log(wb_df['pop'])
+wb_df['n'] = wb_df['n'].str.lower()
 
 pivoted_df = pd.merge(pivoted_df, wb_df, on='n', how='left')
 

@@ -258,6 +258,7 @@ wb_df = pd.read_csv('input/wb_controls/pop_gdp_2015_2025.csv')
 wb_df = wb_df[wb_df['year'] == 2020]
 wb_df = wb_df[["country", "WB_WDI_SP_POP_TOTL", "WB_WDI_NY_GDP_PCAP_CD"]]
 
+
 # rename columns
 wb_df.rename(columns={
     'country': 'n',
@@ -267,8 +268,13 @@ wb_df.rename(columns={
 
 wb_df['log_gdppc'] = np.log(wb_df['gdppc'])
 wb_df['log_pop'] = np.log(wb_df['pop'])
+wb_df['n'] = wb_df['n'].str.lower()
 
 pivoted_df = pd.merge(pivoted_df, wb_df, on='n', how='left')
+
+# add per capita measures
+for spec in ["1", "2", "3", "4"]:
+    pivoted_df[f'scc_mid_spec{spec}_pc'] = pivoted_df[f'scc_mid_spec{spec}'] / pivoted_df['pop']
 
 ################ SAVE ################
 
