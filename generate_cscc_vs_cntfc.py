@@ -265,6 +265,9 @@ wb_df.rename(columns={
     'WB_WDI_NY_GDP_PCAP_CD': 'gdppc'
 }, inplace=True)
 
+wb_df['log_gdppc'] = np.log(wb_df['gdppc'])
+wb_df['log_pop'] = np.log(wb_df['pop'])
+
 pivoted_df = pd.merge(pivoted_df, wb_df, on='n', how='left')
 
 ################ SAVE ################
