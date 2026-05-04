@@ -2,7 +2,7 @@
 * Standalone MACC parameter extractor for RICE50+
 * ------------------------------------------------
 
-$setglobal datapath    "input/RICE50xmodel/data_ed58/"
+$setglobal datapath    "input/RICE50xmodel/data_maxiso3/"
 $setglobal pback       550
 $setglobal gback       0.025
 $setglobal expcost2    2.8
@@ -14,12 +14,10 @@ $setglobal klogistic   0.25
 SET t;
 ALIAS(t, tp1);
 SET pre(t,tp1);
-SET n /
-    arg, aus, aut, bel, bgr, blt, bra, can, chl, chn, cor, cro,
-    dnk, egy, esp, fin, fra, gbr, golf57, grc, hun, idn, irl, ita,
-    jpn, meme, mex, mys, nde, nld, noan, noap, nor, oeu, osea, pol,
-    prt, rcam, rcz, rfa, ris, rjan57, rom, rsaf, rsam, rsas, rsl,
-    rus, sau, slo, sui, swe, tha, tur, ukr, usa, vnm, zaf /;
+SET n/
+$include "%datapath%n.inc"
+/
+;
 
 SET sector 'EnerData sectors' /
     "Electricity"

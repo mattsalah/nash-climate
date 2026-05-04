@@ -29,7 +29,7 @@ We don't necessarily want to run the whole thing just to figure out what the MAC
 gams extract_macc.gms 
 ```
 
-This produces macc_extract.gdx which has all the information the full model uses, including SSP scaling. We don't actually care about the SSP scaling since we are just looking at cost curves for 2015, 2020, and 2025. So the script also outputs two simple csvs called `macc_ed_early.csv` and `emi_bau_early.csv`.
+This produces macc_extract.gdx which has all the information the full model uses, including SSP scaling. We don't actually care about the SSP scaling since we are just looking at cost curves for 2015, 2020, and 2025. So the script also outputs a simple csv called `macc_ed_early.csv`.
 
 ### macc_ed_early.csc
 
