@@ -69,9 +69,9 @@ filtered_scc = filtered_scc.rename(columns={'ISO3': 'n'})
 
 # global SCCs
 pivoted_df['global_scc_mid_spec1'] = 418
-pivoted_df['global_scc_mid_spec1'] = 781
-pivoted_df['global_scc_mid_spec1'] = 135
-pivoted_df['global_scc_mid_spec1'] = 406
+pivoted_df['global_scc_mid_spec2'] = 781
+pivoted_df['global_scc_mid_spec3'] = 135
+pivoted_df['global_scc_mid_spec4'] = 406
 
 
 
