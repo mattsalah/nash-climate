@@ -308,23 +308,23 @@ for exclude_group in EXCLUDE_GROUPS:
 
             # also regress carbon prices on cscc
             for carbon_price in ['carbon_price_effective', 'carbon_price_dolphin_ghg', 'carbon_price_dolphin_co2']:
-                for x_col in [f'scc_mid_spec{spec}', f'scc_mid_spec{spec}_pc']:
+                for x_col2 in [f'scc_mid_spec{spec}', f'scc_mid_spec{spec}_pc']:
                     add_regression_row(
                                 dataset="cscc",
                                 year=2020,
                                 spec=spec,
-                                x_col=x_col,
+                                x_col=x_col2,
                                 y_col=carbon_price,
                                 controls=controls,
                                 df=df,
                                 exclude_group=exclude_group
                             )
-                    if controls and x_col.endswith("_pc"): # also run controlling for log_pop
+                    if controls and x_col2.endswith("_pc"): # also run controlling for log_pop
                         add_regression_row(
                                 dataset="cscc",
                                 year=2020,
                                 spec=spec,
-                                x_col=x_col,
+                                x_col=x_col2,
                                 y_col=carbon_price,
                                 controls=controls+["log_pop"],
                                 df=df,
