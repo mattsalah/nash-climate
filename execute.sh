@@ -3,6 +3,7 @@ python generate_rice_vs_cntfc.py
 python plot_MAC_MAB.py usa 1 --outcome both
 python plot_MAC_MAB.py chn 1 --outcome both
 python plot_MAC_MAB.py ind 1 --outcome both
+python plot_MAC_MAB.py che 1 --outcome both
 python plot_MAC_MAB.py usa 1 --no-global-scc
 python plot_MAC_MAB.py usa 2 --no-global-scc
 python plot_MAC_MAB.py usa 3 --no-global-scc

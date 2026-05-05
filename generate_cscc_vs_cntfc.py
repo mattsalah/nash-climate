@@ -68,14 +68,11 @@ filtered_scc = filtered_scc.rename(columns={'ISO3': 'n'})
 
 
 # global SCCs
-global_scc1 = pivoted_df['scc_mid_spec1'].sum()
-pivoted_df['global_scc_mid_spec1'] = global_scc1
-global_scc2 = pivoted_df['scc_mid_spec2'].sum()
-pivoted_df['global_scc_mid_spec2'] = global_scc2
-global_scc3 = pivoted_df['scc_mid_spec3'].sum()
-pivoted_df['global_scc_mid_spec3'] = global_scc3
-global_scc4 = pivoted_df['scc_mid_spec4'].sum()
-pivoted_df['global_scc_mid_spec4'] = global_scc4
+pivoted_df['global_scc_mid_spec1'] = 418
+pivoted_df['global_scc_mid_spec1'] = 781
+pivoted_df['global_scc_mid_spec1'] = 135
+pivoted_df['global_scc_mid_spec1'] = 406
+
 
 
 ########## MACC parameters ##########
@@ -249,6 +246,11 @@ carbon_price_df_dolphin['n'] = carbon_price_df_dolphin['n'].map(dolphin_to_iso3)
 
 # Merge with pivoted_df
 pivoted_df = pd.merge(pivoted_df, carbon_price_df_dolphin, on='n', how='left')
+
+# create versions with no zeros
+for carbon_price in ['carbon_price_effective', 'carbon_price_dolphin_ghg', 'carbon_price_dolphin_co2']:
+    # set 0 to NA in new column
+    pivoted_df[f"{carbon_price}_no_zeros"] = pivoted_df[carbon_price].apply(lambda x: np.nan if x == 0 else x)
 
 ################ World Bank Controls ################
 

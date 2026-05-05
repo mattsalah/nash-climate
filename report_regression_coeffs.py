@@ -307,7 +307,10 @@ for exclude_group in EXCLUDE_GROUPS:
                 )
 
             # also regress carbon prices on cscc
-            for carbon_price in ['carbon_price_effective', 'carbon_price_dolphin_ghg', 'carbon_price_dolphin_co2']:
+            for carbon_price in ['carbon_price_effective', 'carbon_price_dolphin_ghg', 'carbon_price_dolphin_co2',
+                                 'carbon_price_effective_no_zeros', 'carbon_price_dolphin_ghg_no_zeros', 'carbon_price_dolphin_co2_no_zeros'
+                                 ]:
+
                 for x_col2 in [f'scc_mid_spec{spec}', f'scc_mid_spec{spec}_pc']:
                     add_regression_row(
                                 dataset="cscc",

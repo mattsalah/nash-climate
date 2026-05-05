@@ -4,6 +4,40 @@ import numpy as np
 import argparse
 import json
 from scipy import stats
+import seaborn as sns
+
+# FiveThirtyEight-ish style
+plt.style.use('fivethirtyeight')
+
+# Tweak a few defaults to make it cleaner
+plt.rcParams.update({
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "DejaVu Sans"],
+    "axes.facecolor": "white",
+    "figure.facecolor": "white",
+    "grid.color": "#E5E5E5",
+    "grid.linestyle": "-",
+    "grid.linewidth": 1.0,
+    "axes.edgecolor": "#CCCCCC",
+    "axes.labelcolor": "#333333",
+    "xtick.color": "#333333",
+    "ytick.color": "#333333",
+})
+
+cscc_spec_map = {
+    "1": "Baseline",
+    "2": "High Damages",
+    "3": "Low Damages",
+    "4": "Fixed Discounting",
+}
+
+rice_spec_map = {
+    "1": "Baseline",
+    "2": "High Damages",
+    "3": "Low Damages",
+    "4": "DJO",
+}
+
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Generate dataset for a specific year.')
@@ -87,48 +121,85 @@ def create_plot(outcome_cols, title, filename, exclude_countries=[], outcome='de
     pred = slope * plot_df['x_value'] + intercept
 
     # Create the plot
-    plt.figure(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    # Colors (538-like palette)
+    point_color = "#4C78A8"   # muted blue
+    line_color = "#F58518"    # muted orange (fit line)
+    ref_color = "#E45756"     # muted red (45-degree line)
+
     xerr = None
     if len(outcome_cols) != 1:
-        xerr = [plot_df['x_value'] - plot_df['min_outcome'], plot_df['max_outcome'] - plot_df['x_value']]
+        xerr = [
+            plot_df['x_value'] - plot_df['min_outcome'],
+            plot_df['max_outcome'] - plot_df['x_value']
+        ]
 
-    plt.errorbar(
+    ax.errorbar(
         plot_df['x_value'],
         plot_df[policy_col],
         xerr=xerr,
         yerr=yerr,
         fmt='o',
-        ecolor='gray',
-        capsize=3,
-        alpha=0.7
+        color=point_color,
+        ecolor="#BBBBBB",
+        elinewidth=1,
+        capsize=2,
+        alpha=0.75,
+        markersize=5,
+        markeredgecolor="white",
+        markeredgewidth=0.5
     )
 
-    # Add a 45-degree reference line
+    # 45-degree line
     x_min_data = plot_df['x_value'].min()
     x_max_data = plot_df['x_value'].max()
-    plt.plot([x_min_data, x_max_data], [x_min_data, x_max_data], 'r--', label='45-degree line')
+    ax.plot(
+        [x_min_data, x_max_data],
+        [x_min_data, x_max_data],
+        linestyle="--",
+        color=ref_color,
+        linewidth=1.5,
+        alpha=0.8,
+        label="45-degree line"
+    )
 
-    # Plot the best fit line
-    plt.plot(plot_df['x_value'], pred, 'b-', label=f'Best fit (slope={slope:.2f}, R²={r_squared:.2f}, p={p_value:.3g})')
+    # Best fit line
+    ax.plot(
+        plot_df['x_value'],
+        pred,
+        color=line_color,
+        linewidth=2.5,
+        label=f"Best fit (β={slope:.2f}, R²={r_squared:.2f}, p={p_value:.3g})"
+    )
 
-    # Label key countries
+    # Key country labels (slightly cleaner)
     for code, label in [('usa', 'US'), ('chn', 'China'), ('ind', 'India')]:
         row = plot_df[plot_df['n'] == code]
         if not row.empty:
             x_val = row['x_value'].values[0]
             y_val = row[policy_col].values[0]
-            plt.annotate(label, xy=(x_val, y_val), xytext=(5, -5), textcoords='offset points',
-                         fontsize=10, fontweight='bold', color='black',
-                         bbox=dict(boxstyle='round,pad=0.2', fc='white', alpha=0.8))
+            ax.text(
+                x_val, y_val, label,
+                fontsize=10,
+                fontweight='bold',
+                color="#222222",
+                bbox=dict(boxstyle='round,pad=0.2', fc='white', ec='none', alpha=0.7)
+            )
 
-    plt.xlabel("Non-Cooperative Nash")
-    plt.ylabel(y_label)
-    plt.title(title)
-    plt.legend()
-    plt.grid(False)
+    ax.set_xlabel("Non-Cooperative Nash", fontsize=12)
+    ax.set_ylabel(y_label, fontsize=12)
+    ax.set_title(title, fontsize=14, weight='bold')
+
+    ax.legend(frameon=False)
+    ax.grid(True, axis='y', alpha=0.3)
+    ax.grid(False, axis='x')
+
+    # Remove top/right spines (key 538 aesthetic)
+    sns.despine(ax=ax)
+
     plt.tight_layout()
-    plt.savefig(filename)
-    print(f"Plot saved to {filename}")
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -136,7 +207,8 @@ if dataset == 'cscc':
     outfile = f'output/charts/cscc_plot_{year}_spec{spec}_{outcome}.png'
     if exclude_countries:
         outfile = outfile.replace('.png', f'_no_{"_".join(exclude_countries)}')
-    create_plot([f'noncoop_optimal_mu_spec{spec}'], f'Non-Cooperative Nash Equilbrium (CSCC) vs Counterfactual ({year}) - Spec {spec}', outfile, exclude_countries, outcome)
+    spec_name = cscc_spec_map[spec]
+    create_plot([f'noncoop_optimal_mu_spec{spec}'], f'Non-Cooperative Nash Equilbrium (CSCC) vs Counterfactual ({year}) - {spec_name}', outfile, exclude_countries, outcome)
 else:
     spec_map = {
         "1": "ssp2_BHM-SR_0.015", # standard
@@ -146,6 +218,7 @@ else:
     }
     scenario = spec_map[spec]
     outfile = f'output/charts/rice_spec{spec}_plot_{year}_{outcome}.png'
+    spec_name = rice_spec_map[spec]
     if exclude_countries:
         outfile = outfile.replace('.png', f'_no_{"_".join(exclude_countries)}')
-    create_plot([f'NONCOOP_{scenario}'], f'Non-Cooperative Nash Equilbrium (RICE) vs Counterfactual ({year}) - Spec {spec}', outfile, exclude_countries, outcome)
+    create_plot([f'NONCOOP_{scenario}'], f'Non-Cooperative Nash Equilbrium (RICE) vs Counterfactual ({year}) - {spec_name}', outfile, exclude_countries, outcome)
