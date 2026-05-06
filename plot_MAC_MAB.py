@@ -68,34 +68,41 @@ fig, ax = plt.subplots(figsize=(10, 6))
 ax.plot(mu_range, mab_loc, label='Local MAB', linewidth=2, color='blue')
 if include_global_scc:
     ax.plot(mu_range, mab_glob, label='Global MAB', linewidth=2, color='purple')
-ax.plot(mu_range, mc, label='MC', linewidth=2, color='red')
+ax.plot(mu_range, mc, label='MAC', linewidth=2, color='red')
 
 # Add vertical line at non-coop optimal mu
 if not pd.isna(noncoop_optimal_mu):
-    ax.axvline(x=noncoop_optimal_mu, color='green', linestyle='--', linewidth=2, label=f'Non-Coop Optimal μ = {noncoop_optimal_mu:.4f}')
+    ax.axvline(x=noncoop_optimal_mu, color='green', linestyle='--', linewidth=2, label=f'Non-Coop Optimal μ = {noncoop_optimal_mu:.2f}%')
     # Mark the intersection point
     ax.plot(noncoop_optimal_mu, scc_mid, 'go', markersize=8)
 
 if include_global_scc:
     # Add vertical line at coop optimal mu
     if not pd.isna(coop_optimal_mu):
-        ax.axvline(x=coop_optimal_mu, color='purple', linestyle='-.', linewidth=2, label=f'Coop Optimal μ = {coop_optimal_mu:.4f}')
+        ax.axvline(x=coop_optimal_mu, color='purple', linestyle='-.', linewidth=2, label=f'Coop Optimal μ = {coop_optimal_mu:.2f}%')
         # Mark the intersection point
         ax.plot(coop_optimal_mu, global_scc_mid, 'o', color='purple', markersize=8)
 
 # Add vertical line(s) at policy counterfactual(s)
 if outcome in ('den', 'both') and not pd.isna(policy_den_cntfc):
     ax.axvline(x=policy_den_cntfc, color='orange', linestyle=':', linewidth=2,
-               label=f'Policy Density μ = {policy_den_cntfc:.4f}')
+               label=f'Policy Density μ = {policy_den_cntfc:.2f}%')
 
 if outcome in ('strng', 'both') and not pd.isna(policy_strng_cntfc):
     ax.axvline(x=policy_strng_cntfc, color='teal', linestyle=':', linewidth=2,
-               label=f'Policy Strength μ = {policy_strng_cntfc:.4f}')
+               label=f'Policy Stringency μ = {policy_strng_cntfc:.2f}%')
+
+spec_map = {
+    "1": "Baseline",
+    "2": "High Damages",
+    "3": "Low Damages",
+    "4": "Fixed Discounting",
+}
 
 # Labels and title
 ax.set_xlabel('Abatement Fraction (μ)', fontsize=12)
 ax.set_ylabel('Benefit/Cost ($)', fontsize=12)
-ax.set_title(f'{country.upper()} - Specification {spec}', fontsize=14, fontweight='bold')
+ax.set_title(f'{country.upper()} - {spec_map[spec]}', fontsize=14, fontweight='bold')
 ax.legend(fontsize=11, loc='best')
 ax.grid(True, alpha=0.3)
 

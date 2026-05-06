@@ -38,6 +38,12 @@ rice_spec_map = {
     "4": "DJO",
 }
 
+EU_COUNTRIES = {
+    "aut", "bel", "bgr", "hrv", "cyp", "cze", "dnk", "est",
+    "fin", "fra", "deu", "grc", "hun", "irl", "ita", "lva",
+    "ltu", "lux", "mlt", "nld", "pol", "prt", "rou", "svk",
+    "svn", "esp", "swe"
+}
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Generate dataset for a specific year.')
@@ -135,35 +141,86 @@ def create_plot(outcome_cols, title, filename, exclude_countries=[], outcome='de
             plot_df['max_outcome'] - plot_df['x_value']
         ]
 
+    eu_mask = plot_df['n'].isin(EU_COUNTRIES)
+
+    eu_color = "#59A14F"  
+    non_eu_color = "#4C78A8" # 538 blue
+
+    # Split data
+    eu_df = plot_df[eu_mask]
+    non_eu_df = plot_df[~eu_mask]
+
+    # EU points
     ax.errorbar(
-        plot_df['x_value'],
-        plot_df[policy_col],
-        xerr=xerr,
-        yerr=yerr,
+        eu_df['x_value'],
+        eu_df[policy_col],
+        xerr=None if len(outcome_cols) == 1 else [
+            eu_df['x_value'] - eu_df['min_outcome'],
+            eu_df['max_outcome'] - eu_df['x_value']
+        ],
+        yerr=[eu_df[policy_col] - eu_df[policy_low],
+            eu_df[policy_high] - eu_df[policy_col]],
         fmt='o',
-        color=point_color,
+        color=eu_color,
         ecolor="#BBBBBB",
         elinewidth=1,
         capsize=2,
-        alpha=0.75,
-        markersize=5,
+        alpha=0.85,
+        markersize=8,
         markeredgecolor="white",
-        markeredgewidth=0.5
+        markeredgewidth=0.5,
+        label="EU"
+    )
+
+    # Non-EU points
+    ax.errorbar(
+        non_eu_df['x_value'],
+        non_eu_df[policy_col],
+        xerr=None if len(outcome_cols) == 1 else [
+            non_eu_df['x_value'] - non_eu_df['min_outcome'],
+            non_eu_df['max_outcome'] - non_eu_df['x_value']
+        ],
+        yerr=[non_eu_df[policy_col] - non_eu_df[policy_low],
+            non_eu_df[policy_high] - non_eu_df[policy_col]],
+        fmt='o',
+        color=non_eu_color,
+        ecolor="#DDDDDD",
+        elinewidth=1,
+        capsize=2,
+        alpha=0.6,
+        markersize=8,
+        markeredgecolor="white",
+        markeredgewidth=0.5,
+        label="Non-EU"
     )
 
     # 45-degree line
-    x_min_data = plot_df['x_value'].min()
-    x_max_data = plot_df['x_value'].max()
+    x = plot_df['x_value']
+    y = plot_df[policy_col]
+    x_min, x_max = x.min(), x.max()
+    y_min, y_max = y.min(), y.max()
+
+    # small padding so points don't touch edges
+    x_pad = (x_max - x_min) * 0.05
+    y_pad = (y_max - y_min) * 0.05
+
+    ax.set_xlim(x_min - x_pad, x_max + x_pad)
+    ax.set_ylim(y_min - y_pad, y_max + y_pad)
+
+    lims = [
+        max(ax.get_xlim()[0], ax.get_ylim()[0]),
+        min(ax.get_xlim()[1], ax.get_ylim()[1])
+    ]
     ax.plot(
-        [x_min_data, x_max_data],
-        [x_min_data, x_max_data],
+        lims,
+        lims,
         linestyle="--",
         color=ref_color,
         linewidth=1.5,
         alpha=0.8,
         label="45-degree line"
     )
-
+    
     # Best fit line
     ax.plot(
         plot_df['x_value'],
@@ -181,10 +238,10 @@ def create_plot(outcome_cols, title, filename, exclude_countries=[], outcome='de
             y_val = row[policy_col].values[0]
             ax.text(
                 x_val, y_val, label,
-                fontsize=10,
+                fontsize=12,
                 fontweight='bold',
-                color="#222222",
-                bbox=dict(boxstyle='round,pad=0.2', fc='white', ec='none', alpha=0.7)
+                color=non_eu_color,
+                bbox=None
             )
 
     ax.set_xlabel("Non-Cooperative Nash", fontsize=12)
