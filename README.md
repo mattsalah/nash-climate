@@ -112,6 +112,23 @@ To run the script (for 2020):
 python plot_pred_vs_policy.py 2020
 ```
 
+### Interactive charts (web app)
+
+`plot_MAC_MAB.py` writes one PNG per country/spec, which `execute.sh` calls
+repeatedly. `webapp/` serves the same chart interactively instead: pick a
+country, year, specification and abatement measure from dropdowns and see where
+realized abatement sits relative to the Nash and cooperative optima, with an
+over/under-abatement verdict.
+
+```
+python webapp/server.py          # reads output/data/, serves http://127.0.0.1:8000/
+python webapp/server.py --demo   # synthetic sample data, no pipeline needed
+```
+
+It reads `output/data/mitigation_cscc_v_cntfc_{year}.csv` and needs nothing
+beyond the Python standard library. See `webapp/README.md` for the controls,
+the HTTP API and the tests.
+
 ## Running BAU
 
 ```
