@@ -2,6 +2,7 @@ python generate_cscc_vs_cntfc.py
 python generate_rice_vs_cntfc.py
 python plot_MAC_MAB.py ind 1 --outcome both
 python plot_MAC_MAB.py nld 2 --outcome both
+python plot_MAC_MAB.py eu 2 --outcome both
 python plot_pred_vs_policy.py 2020 --dataset cscc --spec 1
 python plot_pred_vs_policy.py 2020 --dataset cscc --spec 2
 python plot_pred_vs_policy.py 2020 --dataset cscc --spec 3

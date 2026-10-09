@@ -278,6 +278,63 @@ pivoted_df = pd.merge(pivoted_df, wb_df, on='n', how='left')
 for spec in ["1", "2", "3", "4"]:
     pivoted_df[f'scc_mid_spec{spec}_pc'] = pivoted_df[f'scc_mid_spec{spec}'] / pivoted_df['pop']
 
+################ EU AGGREGATE PSEUDO-ROW ################
+
+# Treat the EU as a single player, saved as row n = 'eu'.
+# Members are the EU27 countries with both a policy counterfactual and MACC parameters.
+#   damages:  bloc SCC = sum of member SCCs (sum of medians, so approximate)
+#   costs:    horizontal sum of the member MAC curves. At a common carbon price each member
+#             abates until its own MAC hits that price (lowest cost abatement happens first),
+#             and bloc mu is the emissions-weighted mean of member mu
+#   realized: total avoided emissions over total emissions
+EU_CODE = 'eu'
+EU27 = ['aut', 'bel', 'bgr', 'hrv', 'cyp', 'cze', 'dnk', 'est', 'fin',
+        'fra', 'deu', 'grc', 'hun', 'irl', 'ita', 'lva', 'ltu', 'lux',
+        'mlt', 'nld', 'pol', 'prt', 'rou', 'svk', 'svn', 'esp', 'swe']
+
+eu_df = pd.merge(pivoted_df[pivoted_df['n'].isin(EU27)],
+                 policy_int_year[['n', 'CO2_mt', 'co2_cntfc_2015']], on='n', how='left')
+eu_df = eu_df[eu_df['policy_den_cntfc'].notna() & (eu_df['macc_a'] > 0)]
+print(f"EU aggregate: {len(eu_df)} members, missing {sorted(set(EU27) - set(eu_df['n']))}")
+
+# BAU (counterfactual) emission shares weight the cost side, actual emissions weight the
+# realized side because the counterfactual columns are percentages of actual emissions
+bau_share = eu_df['co2_cntfc_2015'] / eu_df['co2_cntfc_2015'].sum()
+actual_share = eu_df['CO2_mt'] / eu_df['CO2_mt'].sum()
+
+eu_row = {'n': EU_CODE}
+
+for spec in range(1, 5):
+    eu_scc = eu_df[f'scc_mid_spec{spec}'].sum()
+    global_scc = eu_df[f'global_scc_mid_spec{spec}'].iloc[0]
+    eu_row[f'scc_mid_spec{spec}'] = eu_scc
+    eu_row[f'global_scc_mid_spec{spec}'] = global_scc
+    # every member abates up to the common price, so no aggregate curve is needed here
+    for name, price in [('noncoop', eu_scc), ('coop', global_scc)]:
+        member_mu = eu_df.apply(lambda row: solve_optimal_mu(price, row['macc_a'], row['macc_d']), axis=1)
+        eu_row[f'{name}_optimal_mu_spec{spec}'] = 100 * (bau_share * member_mu).sum()
+
+# The aggregate curve is not exactly a*mu + d*mu^4. These match it in both limits (mu -> 0,
+# where the linear term dominates, and large mu) and stay within 5% of it in between.
+# Only used to draw the curve, the optimal mus above are exact.
+eu_row['macc_a'] = 1 / (bau_share / eu_df['macc_a']).sum()
+eu_row['macc_d'] = (bau_share * eu_df['macc_d'] ** -0.25).sum() ** -4
+
+# The confidence bounds come from one regression coefficient shared by all countries,
+# so the member bounds move together and can be averaged like the point estimate
+for col in ['policy_den_cntfc', 'policy_den_cntfc_low', 'policy_den_cntfc_high',
+            'policy_strng_cntfc', 'policy_strng_cntfc_low', 'policy_strng_cntfc_high']:
+    eu_row[col] = (actual_share * eu_df[col]).sum()
+
+eu_row['pop'] = eu_df['pop'].sum()
+eu_row['gdppc'] = (eu_df['gdppc'] * eu_df['pop']).sum() / eu_df['pop'].sum()
+eu_row['log_gdppc'] = np.log(eu_row['gdppc'])
+eu_row['log_pop'] = np.log(eu_row['pop'])
+for spec in ["1", "2", "3", "4"]:
+    eu_row[f'scc_mid_spec{spec}_pc'] = eu_row[f'scc_mid_spec{spec}'] / eu_row['pop']
+
+pivoted_df = pd.concat([pivoted_df, pd.DataFrame([eu_row])], ignore_index=True)
+
 ################ SAVE ################
 
 pivoted_df.to_csv(output_filename, index=False)

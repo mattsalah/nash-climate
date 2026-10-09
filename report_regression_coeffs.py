@@ -291,6 +291,8 @@ for exclude_group in EXCLUDE_GROUPS:
     # CSCC 2020: noncoop_optimal_mu_spec{spec}
     filename = "output/data/mitigation_cscc_v_cntfc_2020.csv"
     df = pd.read_csv(filename)
+    # drop the EU aggregate pseudo-row, its members are already in the sample
+    df = df[df["n"] != "eu"]
     for spec in ["1", "2", "3", "4"]:
         x_col = f"noncoop_optimal_mu_spec{spec}"
         for controls in CONTROLS:
