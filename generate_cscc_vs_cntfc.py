@@ -335,6 +335,130 @@ for spec in ["1", "2", "3", "4"]:
 
 pivoted_df = pd.concat([pivoted_df, pd.DataFrame([eu_row])], ignore_index=True)
 
+################ OPTIMAL RANGES AND TESTS ################
+
+# add column for highest and lowest coop and noncoop optimal mu across specs
+# (done after the EU row is appended so it gets a range and test result too)
+pivoted_df['coop_optimal_mu_max'] = pivoted_df[[f'coop_optimal_mu_spec{spec}' for spec in range(1,5)]].max(axis=1)
+pivoted_df['coop_optimal_mu_min'] = pivoted_df[[f'coop_optimal_mu_spec{spec}' for spec in range(1,5)]].min(axis=1)
+pivoted_df['noncoop_optimal_mu_max'] = pivoted_df[[f'noncoop_optimal_mu_spec{spec}' for spec in range(1,5)]].max(axis=1)
+pivoted_df['noncoop_optimal_mu_min'] = pivoted_df[[f'noncoop_optimal_mu_spec{spec}' for spec in range(1,5)]].min(axis=1)
+
+# test the null that the counterfactual is in each range, treating the range bounds as fixed
+# reject when the 95% CI is entirely outside the range. Each side is a 2.5% one-sided test,
+# so this is conservative at p<0.05
+for cntfc in ['policy_den_cntfc', 'policy_strng_cntfc']:
+    for name in ['noncoop', 'coop']:
+        test_cols = [f'{cntfc}_low', f'{cntfc}_high', f'{name}_optimal_mu_min', f'{name}_optimal_mu_max']
+        result = pd.Series('not_rejected', index=pivoted_df.index, dtype=object)
+        result[pivoted_df[f'{cntfc}_high'] < pivoted_df[f'{name}_optimal_mu_min']] = 'below'
+        result[pivoted_df[f'{cntfc}_low'] > pivoted_df[f'{name}_optimal_mu_max']] = 'above'
+        result[pivoted_df[test_cols].isna().any(axis=1)] = np.nan
+        pivoted_df[f'{cntfc}_vs_{name}_range'] = result
+
+################ MONTE CARLO TEST WITH UNCERTAIN BOUNDS ################
+
+# Same null as above, but the range bounds are uncertain too. Each draw takes
+#   - an SCC for every spec from a distribution fitted to its 16.7 / 50 / 83.3% quantiles,
+#     pushed through the MAC curve to get that draw's optimal mu range (min and max over specs)
+#   - a counterfactual from its 95% CI, independent of the SCC
+# and the null is rejected when the counterfactual is inside the range in under 5% of draws.
+
+from scipy.stats import norm
+
+N_DRAWS = 50_000
+# True: one quantile draw is shared by all specs (and all countries), so the specs differ only
+# in how they map the same underlying climate / damage uncertainty to an SCC.
+# False: every spec gets its own draw, which widens the range and makes the test more conservative.
+SHARED_SCC_DRAW_ACROSS_SPECS = True
+
+Z_SCC = norm.ppf(0.833)
+Z_CI = norm.ppf(0.975)
+rng = np.random.default_rng(0)
+z_scc = rng.standard_normal((4, N_DRAWS))
+if SHARED_SCC_DRAW_ACROSS_SPECS:
+    z_scc = np.tile(z_scc[0], (4, 1))
+z_cntfc = rng.standard_normal(N_DRAWS)
+
+def draw_scc(low, mid, high, z):
+    """
+    Draws from a shifted lognormal passing exactly through the three SCC quantiles.
+    A plain lognormal cannot be used because many country SCCs are negative, so the
+    distribution is shifted, and mirrored when the quantiles are left skewed.
+    """
+    up, down = high - mid, mid - low
+    log_ratio = np.log(up / down)
+    if abs(log_ratio) < 1e-6:
+        return mid + up / Z_SCC * z  # symmetric quantiles, the lognormal limit is a normal
+    sign = np.sign(log_ratio)
+    sigma = abs(log_ratio) / Z_SCC
+    scale = min(up, down) / (1 - np.exp(-sigma * Z_SCC))
+    return mid + sign * scale * (np.exp(sign * sigma * z) - 1)
+
+def draw_cntfc(low, mid, high, z):
+    # split normal through the point estimate and both ends of the 95% CI
+    return mid + z * np.where(z > 0, high - mid, mid - low) / Z_CI
+
+def solve_optimal_mu_vec(scc, a, d):
+    """Vectorized solve_optimal_mu. Newton from above the root, where MC is increasing and convex."""
+    scc_pos = np.clip(scc, 0, None)
+    mu = np.minimum(scc_pos / a, (scc_pos / d) ** 0.25)
+    for _ in range(30):
+        mu = mu - (a * mu + d * mu ** 4 - scc_pos) / (a + 4 * d * mu ** 3)
+    return mu  # zero wherever scc <= 0, no negative abatement
+
+def optimal_mu_draws(price, members):
+    # members is a list of (a, d, weight). A country is one member, the EU is its member states
+    return 100 * sum(w * solve_optimal_mu_vec(price, a, d) for a, d, w in members)
+
+# The global SCC keeps its hardcoded median and takes its spread from the WLD row
+wld = pivoted_df[pivoted_df['n'] == 'wld'].iloc[0]
+global_scc_draws = {
+    spec: wld[f'global_scc_mid_spec{spec}'] / wld[f'scc_mid_spec{spec}'] * draw_scc(
+        wld[f'scc_low_spec{spec}'], wld[f'scc_mid_spec{spec}'], wld[f'scc_high_spec{spec}'], z_scc[spec - 1])
+    for spec in range(1, 5)
+}
+
+def own_scc_draws(row, spec):
+    return draw_scc(row[f'scc_low_spec{spec}'], row[f'scc_mid_spec{spec}'], row[f'scc_high_spec{spec}'], z_scc[spec - 1])
+
+eu_members = list(zip(eu_df['macc_a'], eu_df['macc_d'], bau_share))
+
+mc_results = {}
+for idx, row in pivoted_df.iterrows():
+    is_eu = row['n'] == EU_CODE
+    if pd.isna(row['policy_den_cntfc']) or not (is_eu or (row['macc_a'] > 0 and row['macc_d'] > 0)):
+        continue
+    members = eu_members if is_eu else [(row['macc_a'], row['macc_d'], 1)]
+
+    mu_draws = {'noncoop': [], 'coop': []}
+    for spec in range(1, 5):
+        if is_eu:
+            # bloc SCC = sum of member SCCs, as in the point estimate
+            own_scc = sum(own_scc_draws(member, spec) for _, member in eu_df.iterrows())
+        else:
+            own_scc = own_scc_draws(row, spec)
+        mu_draws['noncoop'].append(optimal_mu_draws(own_scc, members))
+        mu_draws['coop'].append(optimal_mu_draws(global_scc_draws[spec], members))
+
+    mc_results[idx] = {}
+    for cntfc in ['policy_den_cntfc', 'policy_strng_cntfc']:
+        if pd.isna(row[cntfc]):
+            continue
+        cntfc_draws = draw_cntfc(row[f'{cntfc}_low'], row[cntfc], row[f'{cntfc}_high'], z_cntfc)
+        for name in ['noncoop', 'coop']:
+            p_below = (cntfc_draws < np.min(mu_draws[name], axis=0)).mean()
+            p_above = (cntfc_draws > np.max(mu_draws[name], axis=0)).mean()
+            if 1 - p_below - p_above >= 0.05:
+                result = 'not_rejected'
+            else:
+                result = 'below' if p_below > p_above else 'above'
+            mc_results[idx][f'{cntfc}_p_below_{name}_range'] = p_below
+            mc_results[idx][f'{cntfc}_p_above_{name}_range'] = p_above
+            mc_results[idx][f'{cntfc}_vs_{name}_range_mc'] = result
+
+pivoted_df = pivoted_df.join(pd.DataFrame.from_dict(mc_results, orient='index'))
+
 ################ SAVE ################
 
 pivoted_df.to_csv(output_filename, index=False)
