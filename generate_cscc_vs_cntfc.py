@@ -200,9 +200,12 @@ for spec in range(1,5):
 carbon_price_df = pd.read_csv('input/carbon_pricing/carbon_pricing_oecd.csv')
 
 # Filter for relevant data
+# The file has both the effective carbon rate (ECRATE) and the net rate after fossil fuel
+# subsidies (NETECR), which is blank for some countries (e.g. the US), so keep ECRATE only
 carbon_price_df = carbon_price_df[
     (carbon_price_df['TIME_PERIOD'] == 2021) &
-    (carbon_price_df['STRUCTURE_ID'] == 'OECD.CTP.TPS:DSD_NECR@DF_NECRS(1.1)')
+    (carbon_price_df['STRUCTURE_ID'] == 'OECD.CTP.TPS:DSD_NECR@DF_NECRS(1.1)') &
+    (carbon_price_df['MEASURE'] == 'ECRATE')
 ]
 
 # Select and rename columns
