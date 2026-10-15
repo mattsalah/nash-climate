@@ -10,3 +10,6 @@ carbon_pricing/
 output/*
 __pycache__/
 wb_controls/
+!input/country_scc/chiani_et_al_2026_global.csv
+!input/country_scc/chiani_et_al_2026_national.csv
+!input/country_scc/chiani_et_al_2026.md
