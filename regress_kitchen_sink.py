@@ -7,6 +7,7 @@ import statsmodels.api as sm
 #   pop_share          population as a % of world population (2020)
 #   scc_mid_spec2      own country SCC (Ricke et al.), spec 2, $/tCO2
 #   vdem_corruption    V-Dem political corruption index (2020, 0-1, higher = more corrupt)
+#   vdem_democracy     V-Dem electoral democracy index (2020, 0-1, higher = more democratic)
 #   gini               Gini index, latest year 2010-2020
 #   ff_assets_1995     oil + natural gas + coal subsoil assets (trillion real 2019 US$, 1995;
 #                      CWON WB_CWON_SAOI/SAGA/SACO)
@@ -28,7 +29,7 @@ OUTCOMES = {
     'carbon_price_effective': 'OECD effective carbon rate (EUR/tCO2e, 2021)',
     'eps_climate': 'OECD EPS climate policy stringency (0-6, 2020)',
 }
-X_COLS = ['pop_share', 'scc_mid_spec2', 'vdem_corruption', 'gini', 'ff_assets_1995',
+X_COLS = ['pop_share', 'scc_mid_spec2', 'vdem_corruption', 'vdem_democracy', 'gini', 'ff_assets_1995',
           'land_area', 'gdppc']
 INTERACTIONS = {
     'corruption_x_ff_assets': ('vdem_corruption', 'ff_assets_1995'),
@@ -56,9 +57,9 @@ df = df[['n', 'pop_share', 'scc_mid_spec2', 'gdppc', 'carbon_price_dolphin_ghg',
 eps_df = pd.read_csv('output/data/eps_stringency_2020.csv')[['n', 'eps_climate']]
 df = df.merge(eps_df, on='n', how='left')
 
-vdem = pd.read_csv('input/kitchen_sink/vdem_corruption.csv')
-vdem = vdem[vdem['year'] == 2020][['n', 'vdem_corruption']]
-df = df.merge(vdem, on='n', how='left')
+for name in ['vdem_corruption', 'vdem_democracy']:
+    vdem = pd.read_csv(f'input/kitchen_sink/{name}.csv')
+    df = df.merge(vdem[vdem['year'] == 2020][['n', name]], on='n', how='left')
 
 wb = pd.read_csv('input/kitchen_sink/wb_indicators.csv')
 

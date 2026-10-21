@@ -11,7 +11,8 @@ import statsmodels.api as sm
 #
 # Regressors (standardised; time-invariant ones across countries, time-varying ones across
 # country-years in the risk set):
-#   slim   own CSCC (spec 1-4), log GDP per capita (t-1), V-Dem corruption (t-1)
+#   slim   own CSCC (spec 1-4), log GDP per capita (t-1), V-Dem corruption and
+#          electoral democracy (t-1)
 #   full   slim + Gini, 1995 fossil assets, land area, population share
 # plus a cubic in calendar time (the baseline hazard) and an EU ETS coverage dummy
 #
@@ -26,7 +27,7 @@ output_filename = 'output/regressions/carbon_price_adoption_hazard.csv'
 EVER_EU = ['bel', 'fra', 'deu', 'ita', 'lux', 'nld', 'dnk', 'irl', 'gbr', 'grc', 'esp', 'prt', 'aut',
            'fin', 'swe', 'cyp', 'cze', 'est', 'hun', 'lva', 'ltu', 'mlt', 'pol', 'svk', 'svn', 'bgr',
            'rou', 'hrv']
-TIME_VARYING = ['log_gdppc_lag', 'vdem_corruption_lag']
+TIME_VARYING = ['log_gdppc_lag', 'vdem_corruption_lag', 'vdem_democracy_lag']
 FULL_EXTRA = ['gini', 'ff_assets_1995', 'land_area', 'pop_share']
 SAMPLES = {
     'all': [],
@@ -39,7 +40,7 @@ START_YEAR, END_YEAR = 1990, 2024
 
 panel = pd.read_csv('output/data/policy_panel.csv').sort_values(['n', 'year'])
 panel = panel[panel['dolphin_price'].notna()]
-for col in ['log_gdppc', 'vdem_corruption']:
+for col in ['log_gdppc', 'vdem_corruption', 'vdem_democracy']:
     panel[f'{col}_lag'] = panel.groupby('n')[col].shift(1)
 
 # risk set: years up to and including the first priced year

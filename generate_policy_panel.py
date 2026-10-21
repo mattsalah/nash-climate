@@ -8,6 +8,7 @@ import pandas as pd
 #   priced             dolphin_price > 0
 #   log_gdppc          log GDP per capita (constant 2015 US$)
 #   vdem_corruption    V-Dem political corruption index
+#   vdem_democracy     V-Dem electoral democracy index
 #   eu_member          EU member that year (the UK until 2020)
 #   eu_ets             covered by the EU ETS that year: EU members from 2005, and Norway, Iceland
 #                      and Liechtenstein from 2008
@@ -44,8 +45,8 @@ gdppc = wb[wb['indicator'] == 'NY.GDP.PCAP.KD'][['n', 'year', 'value']]
 gdppc['log_gdppc'] = np.log(gdppc['value'])
 panel = panel.merge(gdppc[['n', 'year', 'log_gdppc']], on=['n', 'year'], how='left')
 
-vdem = pd.read_csv('input/kitchen_sink/vdem_corruption.csv')
-panel = panel.merge(vdem, on=['n', 'year'], how='left')
+for name in ['vdem_corruption', 'vdem_democracy']:
+    panel = panel.merge(pd.read_csv(f'input/kitchen_sink/{name}.csv'), on=['n', 'year'], how='left')
 
 accession = panel['n'].map(EU_ACCESSION)
 exit_year = panel['n'].map(EU_EXIT).fillna(np.inf)
@@ -64,5 +65,5 @@ panel = panel[~panel['n'].isin(['eu', 'wld'])].sort_values(['n', 'year'])
 
 os.makedirs(os.path.dirname(output_filename), exist_ok=True)
 panel.to_csv(output_filename, index=False)
-print(panel.groupby('year')[['dolphin_price', 'log_gdppc', 'vdem_corruption']].count().loc[[1990, 2005, 2015, 2020, 2024]])
+print(panel.groupby('year')[['dolphin_price', 'log_gdppc', 'vdem_corruption', 'vdem_democracy']].count().loc[[1990, 2005, 2015, 2020, 2024]])
 print(f"Saved {len(panel)} country-years for {panel['n'].nunique()} countries to {output_filename}")

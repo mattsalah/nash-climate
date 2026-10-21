@@ -25,7 +25,7 @@ output_filename = 'output/regressions/dolphin_hurdle_regressions.csv'
 lr_filename = 'output/regressions/dolphin_hurdle_lr_tests.csv'
 
 Y_COL = 'carbon_price_dolphin_ghg'
-MAIN = ['pop_share', 'scc_mid_spec2', 'vdem_corruption', 'gini', 'ff_assets_1995',
+MAIN = ['pop_share', 'scc_mid_spec2', 'vdem_corruption', 'vdem_democracy', 'gini', 'ff_assets_1995',
         'land_area', 'gdppc']
 INTERACTIONS = {
     'corruption_x_ff_assets': ('vdem_corruption', 'ff_assets_1995'),

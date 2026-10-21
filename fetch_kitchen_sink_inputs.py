@@ -1,3 +1,4 @@
+import io
 import os
 import requests
 import pandas as pd
@@ -8,7 +9,9 @@ import pandas as pd
 #     SI.POV.GINI                       Gini index
 #     AG.LND.TOTL.K2                    land area (sq. km)
 #     NY.GDP.PCAP.KD                    GDP per capita (constant 2015 US$), for the panels
-#   V-Dem political corruption index (v2x_corr, 0-1, higher = more corrupt), via Our World in Data
+#   V-Dem, via Our World in Data:
+#     political corruption index (v2x_corr, 0-1, higher = more corrupt)
+#     electoral democracy index (v2x_polyarchy, 0-1, higher = more democratic)
 
 output_dir = 'input/kitchen_sink'
 
@@ -17,7 +20,12 @@ WB_INDICATORS = {
     'AG.LND.TOTL.K2': None,
     'NY.GDP.PCAP.KD': None,
 }
-VDEM_URL = 'https://ourworldindata.org/grapher/political-corruption-index.csv?v=1&csvType=full&useColumnShortNames=true'
+OWID_URL = 'https://ourworldindata.org/grapher/{}.csv?v=1&csvType=full&useColumnShortNames=true'
+VDEM = {
+    # output name: (OWID grapher, OWID column)
+    'vdem_corruption': ('political-corruption-index', 'corruption_vdem__estimate_best'),
+    'vdem_democracy': ('electoral-democracy-index', 'electdem_vdem__estimate_best'),
+}
 
 ###### FETCH #######
 
@@ -36,17 +44,24 @@ for indicator, source in WB_INDICATORS.items():
 
 wb = pd.DataFrame(rows)
 
-print("Fetching V-Dem corruption")
-vdem = pd.read_csv(VDEM_URL)
-vdem = vdem[vdem['code'].notna()]
-vdem = vdem[~vdem['code'].str.startswith('OWID')]
-vdem = vdem.rename(columns={'code': 'n', 'corruption_vdem__estimate_best': 'vdem_corruption'})
-vdem['n'] = vdem['n'].str.lower()
+vdem = {}
+for name, (grapher, column) in VDEM.items():
+    print(f"Fetching {name}")
+    # OWID refuses urllib's default user agent, so fetch with requests
+    r = requests.get(OWID_URL.format(grapher), headers={'User-Agent': 'Mozilla/5.0'}, timeout=300)
+    r.raise_for_status()
+    v = pd.read_csv(io.StringIO(r.text))
+    v = v[v['code'].notna()]
+    v = v[~v['code'].str.startswith('OWID')]
+    v = v.rename(columns={'code': 'n', column: name})
+    v['n'] = v['n'].str.lower()
+    vdem[name] = v[['n', 'year', name]]
 
 ###### SAVE ################
 
 os.makedirs(output_dir, exist_ok=True)
 wb.to_csv(f'{output_dir}/wb_indicators.csv', index=False)
-vdem[['n', 'year', 'vdem_corruption']].to_csv(f'{output_dir}/vdem_corruption.csv', index=False)
+for name, v in vdem.items():
+    v.to_csv(f'{output_dir}/{name}.csv', index=False)
 print(wb.groupby('indicator')['n'].nunique())
 print(f"Saved to {output_dir}/")
