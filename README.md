@@ -12,6 +12,8 @@ The pipeline compares predicted abatement under both benchmarks with the abateme
 4. **Country size:** larger countries have *more* policies but not *more stringent* ones. Population predicts policy counts strongly but not stringency. Explicit carbon pricing on the OECD EPS is lower in large countries, which are also the ones with the most predicted Nash abatement.
 5. **Robustness:** controlling for lobbying (LobbyMap) or treating the EU as one cooperative player doesn't change these conclusions. The lobbying measure mostly proxies economy size, and the EU bloc's predicted Nash abatement is about zero.
 
+6. **Green technology support:** green spending doesn't rise with own CSCC in specs 1, 3 or 4 on any measure (World Bank program counts, OECD EPS R&D scores, IEA public energy RD&D, IEA clean-energy spending commitments). Larger economies spend more in total, which spec 2, a near-proxy for GDP, picks up. Relative to GDP, spending *falls* with own CSCC in specs 1, 3 and 4 (ρ ≈ −0.3 to −0.55), mostly because richer countries spend more and have lower CSCCs; controlling for GDP per capita leaves rank correlations of about −0.3.
+
 Overall, observed policy sits well below the cooperative benchmark and doesn't track own CSCC the way a Nash model predicts. The cross-country variation that does exist is mostly about income and size.
 
 # Setup
@@ -31,9 +33,13 @@ Overall, observed policy sits well below the cooperative benchmark and doesn't t
 | Annual CO2 emissions | [Our World in Data](https://ourworldindata.org/explorers/co2) (CO2, territorial, all fossil emissions, per country) | `input/annual-co2-emissions/` |
 | Policy intensity replication package | [Nature Communications](https://www.nature.com/articles/s41467-026-68577-z#Sec9) | `input/policy_intensity/` |
 | Structural breaks replication package | [PMC11717907](https://pmc.ncbi.nlm.nih.gov/articles/PMC11717907) | `input/structural_breaks/` |
+| Stechemesser et al. (2024) policy-matched breaks | [Zenodo 12773811](https://zenodo.org/records/12773811) (`Policy_out.RDS`, `break_detection_regression_input.RDS`; downloaded automatically, read with `pip install rdata`) | `input/stechemesser/` |
 | Country-level SCC (Ricke et al. 2018) | [Nature Climate Change, MOESM](https://www.nature.com/articles/s41558-018-0282-y#MOESM1) | `input/country_scc/` |
 | OECD effective carbon rates | [OECD data explorer](https://data-explorer.oecd.org/vis?lc=en&fs[0]=Topic%2C1%7CTaxation%23TAX%23%7CTax%20and%20environment%23TAX_ENV%23&pg=0&fc=Topic&bp=true&snb=7&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_NECR%40DF_NECRS&df[ag]=OECD.CTP.TPS&dq=._T._T.ECRATE%2BNETECR..EUR_TCO2E.MEANW.Q.A&to[TIME_PERIOD]=false&pd=2020%2C&vw=tb) | `input/carbon_pricing/carbon_pricing_oecd.csv` |
 | Dolphin & Merkle (2024) carbon prices | [ecp_CO2.csv](https://github.com/g-dolphin/ECP/blob/main/_output/_dataset/v2025.0/ecp/ipcc/ecp_economy/ecp_CO2.csv) | `input/carbon_pricing/carbon_pricing_dolphin.csv` |
+| World Bank Green Subsidies Database | [World Bank, Subsidies and Trade](https://www.worldbank.org/en/brief/2024/06/04/subsidies-and-trade) ([xlsx](https://documents1.worldbank.org/curated/en/099644006032423503/IDU1b117b6921f0b1ae4c1dd6fbd4c89d9.xlsx)) | `input/green_subsidies/wb_green_subsidies.xlsx` |
+| IEA Energy Technology RD&D Budgets | [IEA data explorer](https://www.iea.org/data-and-statistics/data-tools/energy-technology-rdd-budgets-data-explorer) API; `python fetch_iea_rdd.py` (the zipped database needs an IEA login, the API doesn't) | `input/iea_rdd/` |
+| IEA Government Energy Spending Tracker | [IEA policy database](https://www.iea.org/data-and-statistics/data-tools/government-energy-spending-tracker-policy-database) (archived Jan 2025), raw file [policies.json](https://iea.blob.core.windows.net/scripts/tsr-tracker/data/policies.json) (snapshot of 26 Sep 2024) | `input/iea_spending_tracker/policies.json` |
 | World Bank WDI population and GDP per capita | `WB_WDI_SP_POP_TOTL`, `WB_WDI_NY_GDP_PCAP_CD` | `input/wb_controls/pop_gdp_2015_2025.csv` |
 | OECD Environmental Policy Stringency (EPS) | [OECD data explorer](https://data-explorer.oecd.org/vis?lc=en&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_EPS%40DF_EPS&df[ag]=OECD.ECO.MAD&dq=.A..&pd=,&to[TIME_PERIOD]=false&vw=tb), see below | `input/policy_stringency/oecd_eps.csv` |
 | LobbyMap scores and headquarters | [LobbyMap](https://lobbymap.org/LobbyMapScores), already saved; refresh with `python fetch_lobbymap.py` (~40 min) | `input/lobbymap/lobbymap_scores.csv` |
@@ -52,6 +58,10 @@ First run `gams extract_macc.gms` and `policy_intensity_counterfactuals.do` (Sta
 | CSCC dataset | `generate_cscc_vs_cntfc.py` | `output/data/mitigation_cscc_v_cntfc_2020.csv` |
 | Implied carbon prices | `generate_implied_carbon_price.py` | `output/data/implied_carbon_price_{2020,2022}.csv`, `output/regressions/implied_price_correlations.csv` |
 | EPS stringency | `generate_eps_stringency.py` | `output/data/eps_stringency_2020.csv` |
+| Structural break abatement (unattributed) | `generate_structural_break_abatement.py` | `output/data/structural_break_abatement.csv` |
+| Policy-matched break abatement | `generate_policy_break_abatement.py` | `output/data/policy_break_abatement.csv` |
+| Green subsidy counts | `generate_green_subsidies.py` | `output/data/green_subsidies.csv` |
+| Green spending (EPS, IEA RD&D, IEA spending tracker) | `generate_green_spending.py` | `output/data/green_spending.csv` |
 | LobbyMap country scores | `generate_lobbymap_country_scores.py` | `output/data/lobbymap_country_scores.csv` |
 | RICE dataset | `generate_rice_vs_cntfc.py` | `output/data/mitigation_rice_v_cntfc_2022.csv` |
 | MAC/MAB charts | `plot_MAC_MAB.py <country> <spec>` | `output/charts/mac_mab_*.png` |
@@ -60,6 +70,8 @@ First run `gams extract_macc.gms` and `policy_intensity_counterfactuals.do` (Sta
 | Population regressions | `regress_population.py` | `output/regressions/population_regressions.csv` |
 | EPS regressions | `regress_eps_stringency.py` | `output/regressions/eps_stringency_regressions.csv` |
 | Carbon price vs CSCC by region | `regress_carbon_price_cscc.py` | `output/regressions/carbon_price_cscc_regressions.csv` |
+| Green subsidy regressions | `regress_green_subsidies.py` | `output/regressions/green_subsidies_regressions.csv` |
+| Green spending regressions | `regress_green_spending.py` | `output/regressions/green_spending_regressions.csv` |
 
 Countries are keyed by lowercase ISO3 codes in an `n` column throughout. `n = 'eu'` is an EU aggregate row where one is built.
 
@@ -297,6 +309,137 @@ n = 40. Without the US, China and India (n = 37):
 - The Nash slope on `eps_carbon_price` steepens to −0.71\*\*\*.
 
 No spec rises with Nash or cooperative abatement. Explicit carbon pricing is lower where predicted Nash abatement is higher. Those are mostly the large countries (Nash μ correlates 0.62 with population), so the two effects can't be separated with 40 countries.
+
+## 7. Abatement implied by structural breaks
+
+Two break datasets are aggregated into implied abatement by country. Only the first attributes breaks to policy.
+
+### 7a. Policy-matched breaks (Stechemesser et al. 2024)
+
+`generate_policy_break_abatement.py` uses the published results of [Stechemesser et al. (2024, *Science*)](https://doi.org/10.1126/science.adl6547), "Climate policies that achieved major emission reductions" → `output/data/policy_break_abatement.csv`.
+
+**Source method:** sectoral CO2 (buildings, electricity & heat, industry, transport) for 41 countries in a developed and a developing sample, 2000–2021. Log emissions are regressed on log GDP, log GDP², log population, heating and cooling degree days, and dummies for EU-wide policies (ETS phases, appliance and vehicle standards), with country and year fixed effects. The model is saturated with country step and impulse indicators (GETS, p = 0.01). Only negative breaks are kept (69). Each break is then matched to policy adoptions or tightenings in the same country and sector, from the OECD Climate Actions and Policies Measurement Framework (CAPMF; IPAC for the US). The match requires the policy to fall within the break's confidence interval (`stat`, the paper's main version) or within ±2 years (`2y`).
+
+**Aggregation:** the same as 7b. The counterfactual is E_cf = E_t · exp(−C_t) per country and sector, summed across the four sectors, in kt CO2, % of actual 4-sector CO2 and μ. Specs are match (`none` = all 69 breaks, `stat`, `2y`) × year (2020, 2021; the data end in 2021) × window (all breaks, or breaks after 2015). 47 breaks match a policy under `stat` and 59 under `2y`.
+
+**Totals across the 50 countries, 2020:**
+
+| Match | Breaks | Abated | μ | Since 2015: breaks | Since 2015: abated | Since 2015: μ |
+|---|---|---|---|---|---|---|
+| Policy within CI (`stat`) | 47 | 1,776 Mt | 6.2% | 17 | 1,396 Mt | 5.0% |
+| Policy within ±2 years (`2y`) | 59 | 1,912 Mt | 6.7% | 19 | 1,399 Mt | 5.0% |
+| Any break (`none`) | 69 | 2,029 Mt | 7.1% | 19 | 1,399 Mt | 5.0% |
+
+**Findings:**
+- **The scale matches the paper's.** The paper reports total reductions of 0.6–1.8 Gt CO2 for its 63 successful interventions. The method behind that range is behind the *Science* paywall and couldn't be checked, but the `stat` point estimate here (1.78 Gt) lies at its top, and coefficient ± 1.96 SE gives 0.87–2.76 Gt. The 47 matches here vs the paper's 63 probably reflect the paper's extra steps: per its replication code, it also credits 4 breaks to EU policies and merges breaks with overlapping confidence intervals.
+- **The US power breaks are gone.** With degree-day controls and these four aggregated sectors, the US has only a −0.09 transport break in 2008, matched to fuel economy standards and vehicle support (118 Mt). Japan, Korea and Mexico have no positive breaks to offset, because only negative breaks are kept.
+- **China dominates.** Two breaks give 1.25 Gt, 70% of the total: industry in 2016 (−0.23, matched to industrial fossil fuel subsidy reform and financing) and buildings in 2018 (−0.21, matched to appliance standards and building codes). The industry break coincides with the 2016 steel and coal capacity cuts, which are policy but not climate policy. It also coincides with the construction slowdown, which isn't policy at all. The largest clearly climate-driven attributions are the UK power sector (44 Mt, carbon price floor and coal phase-out), Germany and France.
+- **Agrees with the policy density counterfactual.** Since 2015, policy-matched μ has a rank correlation of 0.45 (p = 0.003, n = 42) with `policy_den_cntfc`, which uses the same 2015 baseline. It is uncorrelated with `policy_strng_cntfc` (0.11), and weakly correlated with Nash μ, spec 2 (ρ = 0.29, p = 0.04, n = 49). Many countries have no breaks, so these correlations rest on ties at zero.
+
+**Caveats:**
+- Matching shows that the timing coincides with a policy change, not that the policy caused the break. CAPMF records many policy changes per country and sector, so the filter is loose: `stat` drops only 22 of 69 breaks, and `2y` only 10.
+- Year fixed effects and the EU policy dummies absorb common shifts (e.g. the EU ETS), so this is country-specific abatement only, a lower bound.
+- Only negative breaks are kept, so it is a gross measure. Policy-driven *increases* (e.g. nuclear phase-outs) aren't netted out.
+- Gradual policy effects don't show up as steps.
+
+### 7b. All breaks, unattributed (Tebecis & Crespo Cuaresma)
+
+`generate_structural_break_abatement.py` turns the structural breaks dataset of [Tebecis & Crespo Cuaresma (2025, *Scientific Data*)](https://pmc.ncbi.nlm.nih.gov/articles/PMC11717907) into the abatement implied by every detected break, by country → `output/data/structural_break_abatement.csv`.
+
+**Source method:** for each gas × IPCC sector × country sample (EU15 or OECD) × target p-value (0.05, 0.01, 0.001), the paper estimates log emissions per capita on log GDP, log GDP² and log population, with country and year fixed effects. The model is saturated with country-specific step indicators and reduced by general-to-specific search (`getspanel`). Each break is a permanent level shift in log emissions from its year onward, relative to the other countries in the sample. Breaks are "abnormal" changes not explained by income or population, meant to be attributed to policy afterwards. The 37 sectors are leaf IPCC categories, so they add up across sectors.
+
+**Aggregation:**
+- **Counterfactual:** with C_t the sum of a country–sector's break coefficients up to year t, counterfactual emissions are E_cf = E_t · exp(−C_t) and abatement is E_cf − E_t. This is summed across sectors, using EDGAR sector emissions from the replication package (kt CO2 or kt CO2e).
+- **Units:** results are in kt, as % of actual emissions, and as μ = abated / (actual + abated), the share of counterfactual emissions abated (the same basis as the MAC curves).
+- **Zero artefacts:** the replication code sets zero emissions to 10⁻⁶ before taking logs, so sectors moving to or from ~0 produce coefficients up to ±20 log points (e.g. Italy's "other transportation" −19.5 then +20.0). Breaks where the sector emits < 1 kt in the break year or the year before are dropped (56 of 233 CO2 breaks at p = 0.01), as are breaks in sectors EDGAR doesn't report for that country.
+- **Specs:** gas (CO2, all GHG) × p-value (0.05, 0.01, 0.001) × year (2020, 2022) × window (all breaks since 1996, or only breaks after 2015, the same baseline as the policy counterfactuals) × direction (net, or negative breaks only). Only the OECD sample is used (38 countries); the EU15 runs repeat the same countries with a different comparison group.
+
+**Totals across the 38 OECD countries, 2020** (μ, % of counterfactual emissions):
+
+| Gas | p-value | All breaks, net | All breaks, negative only | Since 2015, net | Since 2015, negative only |
+|---|---|---|---|---|---|
+| CO2 | 0.05 | 6.9% (825 Mt) | 11.9% | 3.2% | 3.3% |
+| CO2 | 0.01 | 9.3% (1,133 Mt) | 13.1% | 3.5% | 3.5% |
+| CO2 | 0.001 | 5.9% (698 Mt) | 9.0% | −0.1% | 0.0% |
+| All GHG | 0.01 | 7.4% (1,157 Mt CO2e) | 12.1% | 2.7% | 3.0% |
+
+**Not a policy measure.** Breaks here are any country-specific shift not explained by GDP and population: market shocks, accidents and data revisions as much as policy. The largest are the US power sector (shale gas displacing coal), Japan's post-Fukushima power jump and Mexican reclassifications. Of the large ones, only the UK's carbon price floor (2015) and Ontario's coal phase-out (Canada 2005) are clearly policy. Use 7a for policy abatement; this version is kept as an upper-bound comparison.
+
+**Findings:**
+- **The US dominates.** Its power sector (−0.36 in 2006, −0.23 in 2017) and refining (−0.48 in 2005) breaks give 1.4 Gt of abatement (μ = 24%), 122% of the net CO2 total at p = 0.01. Without the US, net abatement across the other 37 countries is *negative* (μ = −3.8%).
+- **Positive breaks are large.** Japan's +0.53 power-sector break in 2011 (Fukushima nuclear shutdown) is about −180 Mt. Mexico and Korea also have net positive breaks.
+- **Since 2015, almost nothing.** Only 19 CO2 breaks fall after 2015 at p = 0.01, and the ~400 Mt is almost entirely the 2017 US power break. At p = 0.001 that break isn't detected and the since-2015 total is ~0.
+- **No agreement with the policy intensity counterfactuals.** Rank correlations between break-implied μ and `policy_den_cntfc` / `policy_strng_cntfc` range from −0.27 to +0.26, none significant.
+
+**Caveats:**
+- Year fixed effects absorb anything common to the sample, such as EU-wide policy or the overall OECD decarbonisation trend. Breaks only measure country-specific deviations, so this is a lower bound on policy abatement, not total abatement. The paper itself calls the estimates minimum effect sizes.
+- Gradual policy effects don't show up as steps.
+- Totals hinge on a handful of large breaks and on the significance threshold.
+- Positive breaks include data reclassifications (e.g. Mexico carbonate uses +1.7, a jump from 1.9 to 13.5 Mt) and non-climate events, which is why the negative-only version is also reported.
+
+## 8. Green subsidies (World Bank)
+
+`generate_green_subsidies.py` counts programs in the World Bank [Green Subsidies Database](https://www.worldbank.org/en/brief/2024/06/04/subsidies-and-trade) → `output/data/green_subsidies.csv`. `regress_green_subsidies.py` regresses each count, one regressor at a time, on own CSCC (specs 1–4) and population share, with HC1 SEs and Spearman ρ → `output/regressions/green_subsidies_regressions.csv`.
+
+**No amounts.** The database lists 1,480 programs with environmental objectives (name, form, sector, objective, central or subnational) for 20 economies in 2017, 2018, 2021 and 2022. It reports no spending, so total spend and spend as % of GDP can't be measured. Program counts stand in: all programs, central government only, R&D/innovation as the primary objective, and all and R&D programs per $1tn of GDP. The year is 2022 and the EU-level row is dropped (n = 19).
+
+| Outcome | Spec 2 CSCC | Specs 1, 3, 4 | Population share |
+|---|---|---|---|
+| All programs | +0.84/$\*\*\* (R² 0.90), ρ = 0.38 (p = 0.11) | ≈ 0, ρ ≈ 0 | ≈ 0 (p = 0.21) |
+| R&D/innovation programs | +0.16/$\*\*\* (R² 0.82), ρ = 0.45 (p = 0.06) | ≈ 0, ρ ≈ −0.15 | ≈ 0 (p = 0.69) |
+| Programs per $1tn GDP | ≈ 0 (p = 0.55) | negative (spec 3 p = 0.01, spec 4 p = 0.03), ρ ≈ −0.2 to −0.3 | ≈ 0 (p = 0.15) |
+| R&D programs per $1tn GDP | ≈ 0 (p = 0.30) | ≈ 0, ρ ≈ −0.25 to −0.30 | −0.05 (p = 0.07) |
+
+Without the US, China and India (n = 16), no spec 2 slope is significant. Specs 1, 3 and 4 turn negative, significantly so for spec 4 (all programs p < 0.001, R&D per GDP p < 0.001; ρ ≈ −0.3 to −0.5, p = 0.05–0.2).
+
+**Findings:**
+- **No evidence that higher damages mean more green subsidies.** The only positive result is spec 2, where the US's CSCC ($214/t, 2.7× China's) is an outlier, and the US also has 182 of the 391 country-level programs. That one point drives the fit; ranks are weakly positive and not significant. In the other specs, high-damage countries (India, Brazil, China per GDP) run few programs.
+- **Scaled by GDP, the relationship is flat or negative.** Australia, Canada, the Netherlands and the UK have the most programs per unit of GDP and low CSCCs.
+- **Country size doesn't predict program counts either,** unlike policy density (section 3).
+
+**Caveats:**
+- Counts treat a small grant and the IRA tax credits alike, so they say nothing about spending.
+- The 20 economies aren't a random sample, and there are no zeros: every included country has at least one program.
+- Subnational coverage is uneven (the US, China, Australia and the UK account for nearly all subnational programs), which is why the central-government count is also reported.
+- With n = 19 and one dominant observation, HC1 SEs understate uncertainty (the spec 2 p-values are essentially leverage).
+
+## 9. Green technology spending (OECD EPS, IEA)
+
+`generate_green_spending.py` builds three spending or support measures in long format (`n, year, measure, value`) → `output/data/green_spending.csv`. `regress_green_spending.py` regresses each measure in each cross-section year on own CSCC (specs 1–4) and population share, one at a time, with and without a GDP per capita control. It uses HC1 SEs and reports the (partial) Spearman ρ → `output/regressions/green_spending_regressions.csv`. The EU row is dropped.
+
+| Source | Measures | Years (n) |
+|---|---|---|
+| OECD EPS | `eps_rd_sub`: low-carbon public R&D expenditure, scored by its size relative to GDP (0–6). `eps_techsup`: technology support sub-index (R&D plus solar and wind support). | 2015, 2020 (40); EPS ends in 2020 |
+| IEA Energy Technology RD&D Budgets | Public energy RD&D in million USD (y−1 prices, PPP): `rdd_total`, `rdd_low_carbon` (total minus fossil fuels) and `rdd_renewables`, each also as % of GDP | 2015, 2020 (29), 2024 (27), 2025 (13, provisional) |
+| IEA Government Energy Spending Tracker | Government budget commitments in billion USD: `gest_clean` (clean energy investment support, i.e. everything but consumer energy affordability) and `gest_innovation` (the "Fuels and technology innovation" category: hydrogen, CCUS, batteries, biofuels, critical minerals), each also as % of GDP | 2020 (commitments starting in 2020), 2024 (all commitments since 2020 as of Sept 2024) (70) |
+
+The EPS stops in 2020 and the spending tracker starts in 2020, so only the RD&D data cover all three years requested (2015, 2020, 2025). 2024 is added because 2025 RD&D is provisional and covers only 13 countries.
+
+**Rank correlations with own CSCC, full sample** (specs 1 / 3 / 4, † p < 0.05):
+
+| Measure | Year | No controls | + GDP per capita |
+|---|---|---|---|
+| EPS R&D score | 2015 | −0.44† / −0.43† / −0.43† | −0.28 / −0.30 / −0.26 |
+| EPS R&D score | 2020 | −0.50† / −0.49† / −0.48† | −0.35† / −0.38† / −0.33† |
+| Low-carbon RD&D, % GDP | 2015 | −0.45† / −0.42† / −0.44† | −0.30 / −0.33 / −0.31 |
+| Low-carbon RD&D, % GDP | 2020 | −0.56† / −0.53† / −0.55† | −0.41† / −0.41† / −0.39† |
+| Low-carbon RD&D, % GDP | 2024 | −0.46† / −0.42† / −0.45† | −0.32 / −0.31 / −0.31 |
+| Low-carbon RD&D, % GDP | 2025 | −0.56† / −0.54 / −0.55† | −0.25 / −0.38 / −0.30 |
+| Clean spending commitments, % GDP | 2020 | −0.32† / −0.33† / −0.33† | −0.10 / −0.10 / −0.05 |
+| Clean spending commitments, % GDP | 2024 | −0.43† / −0.46† / −0.43† | −0.24† / −0.26† / −0.19 |
+
+**Findings:**
+- **Spec 2 and population pick up economy size.** Spec 2 CSCC has a rank correlation of 0.93 with log GDP. In *levels*, every RD&D and spending-tracker measure rises with spec 2 (ρ ≈ +0.4 to +0.85) and with population share. RD&D as % of GDP doesn't (ρ ≈ +0.1 to +0.3, not significant). Spending-tracker commitments as % of GDP do rise with spec 2 (ρ = +0.24 to +0.48) and with population share, so large economies committed relatively more after 2020. That is the only positive result, and it reflects size rather than damages per se.
+- **Relative to GDP, spending falls with own CSCC in specs 1, 3 and 4.** The EPS R&D score, RD&D as % of GDP and clean commitments as % of GDP all fall with own CSCC (ρ ≈ −0.3 to −0.55, mostly significant). Norway, France, Finland and Switzerland are among the most RD&D-intensive countries and have low CSCCs. Mexico, Spain and Türkiye are among the least and have high ones. Japan is the exception (high on both).
+- **Mostly income.** Richer countries have lower CSCCs (ρ = −0.23 to −0.38 with log GDP per capita) and spend more relative to GDP. With a GDP per capita control, the OLS slopes are mostly insignificant, but the partial rank correlations stay at about −0.3 and never turn positive.
+- **Excluding the US, China and India doesn't change this.** None of the three is in the RD&D data after 2015 (see caveats), and dropping them from the spending tracker leaves the negative intensity results intact or stronger.
+- Together with section 8, outside spec 2's size effect, nothing suggests that countries with higher own damages support green technology more, as a Nash model would predict.
+
+**Caveats:**
+- **The US has no RD&D data after 2015.** The IEA estimates US budgets from 2016 onwards, and the explorer API doesn't serve those estimates. China and India aren't IEA members, so the RD&D sample is OECD-heavy (29 countries).
+- RD&D per GDP uses the IEA's own GDP (backed out of its RD&D per thousand GDP ratio, PPP basis). Spending-tracker per GDP uses WB current-USD GDP (2020 for the 2020 cohort, 2023 for the cumulative total).
+- **Spending-tracker values are in billions.** The explorer labels them "million USD", but the values are billions (e.g. IRA Sec. 13101 = 51.06). They are commitments, multi-year and announced, not disbursed spending. The 2024 total includes tranches that start after 2024.
+- Spending-tracker totals follow the tracker's own aggregation (summing every record with a start year, technology and budget). The tracker has no fossil-fuel categories, so `gest_clean` is all investment support.
 
 # Known issues
 
