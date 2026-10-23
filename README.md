@@ -12,7 +12,7 @@ The pipeline compares predicted abatement under both benchmarks with the abateme
 4. **Country size:** larger countries have *more* policies but not *more stringent* ones. Population predicts policy counts strongly but not stringency. Explicit carbon pricing on the OECD EPS is lower in large countries, which are also the ones with the most predicted Nash abatement. Non-price support (renewable trading schemes, solar/wind support) goes the other way and is higher in large countries, so the two cancel in the EPS climate score.
 5. **Robustness:** controlling for lobbying (LobbyMap) or treating the EU as one cooperative player doesn't change these conclusions. The lobbying measure mostly proxies economy size, and the EU bloc's predicted Nash abatement is about zero.
 
-6. **Green technology support:** green spending doesn't rise with own CSCC in specs 1, 3 or 4 on any measure (World Bank program counts, OECD EPS R&D scores, IEA public energy RD&D, IEA clean-energy spending commitments). Larger economies spend more in total, which spec 2, a near-proxy for GDP, picks up. Relative to GDP, spending *falls* with own CSCC in specs 1, 3 and 4 (ρ ≈ −0.3 to −0.55), mostly because richer countries spend more and have lower CSCCs; controlling for GDP per capita leaves rank correlations of about −0.3. Splitting the EPS climate score shows the one place support does rise with own CSCC: off-budget deployment support (renewable trading schemes, solar and wind support), +0.2 to +0.4 SD in all four specs, while carbon prices fall. That rests on the US, China and India: without them it is ≈ 0 in specs 1 and 3 and survives only for the size-like measures (spec 2, population) with controls.
+6. **Green technology support:** green spending doesn't rise with own CSCC in specs 1, 3 or 4 on any measure (World Bank program counts, OECD EPS R&D scores, IEA public energy RD&D, IEA clean-energy spending commitments). Larger economies spend more in total, which spec 2, a near-proxy for GDP, picks up. Relative to GDP, spending *falls* with own CSCC in specs 1, 3 and 4 (ρ ≈ −0.3 to −0.55), mostly because richer countries spend more and have lower CSCCs; controlling for GDP per capita leaves rank correlations of about −0.3. Splitting the EPS climate score shows the one place support does rise with own CSCC: off-budget deployment support (renewable trading schemes, solar and wind support), +0.2 to +0.4 SD in all four specs, while carbon prices fall. In the full sample this split survives 2015–2020 and 2010–2020 averages, extra controls (EU membership, CO2 per capita, abatement cost), the Chiani et al. national SCCs and 432 of all 486 Ricke et al. configurations. The exceptions are damage functions that concentrate damages in poor countries (section 6b). Without the US, China and India it survives only for size-driven damages measures (population, BHM long-run, Chiani) with controls, so it is better read as a large-economy effect than a damages effect.
 
 7. **Kitchen sink:** with a size measure (own CSCC or population, one at a time, since population is largely a proxy for own CSCC), corruption, democracy, inequality, 1995 fossil-fuel assets, land area and GDP per capita included, income is the strongest predictor of carbon pricing and policy stringency. Inequality lowers carbon prices, robustly. Democracy predicts *whether* a country prices carbon, and corruption predicts how high the OECD rate is. Own CSCC is negative only because of the US, China and India, population predicts EPS stringency (through non-price support) but not carbon prices, and 1995 fossil-fuel assets have no effect (the one exception is Norway). Whether a country prices carbon at all and how high are different processes: a Tobit model is rejected against a double hurdle, and democracy is the only robust predictor of pricing at all.
 
@@ -39,6 +39,7 @@ Overall, observed policy sits well below the cooperative benchmark and doesn't t
 | Structural breaks replication package | [PMC11717907](https://pmc.ncbi.nlm.nih.gov/articles/PMC11717907) | `input/structural_breaks/` |
 | Stechemesser et al. (2024) policy-matched breaks | [Zenodo 12773811](https://zenodo.org/records/12773811) (`Policy_out.RDS`, `break_detection_regression_input.RDS`; downloaded automatically, read with `pip install rdata`) | `input/stechemesser/` |
 | Country-level SCC (Ricke et al. 2018) | [Nature Climate Change, MOESM](https://www.nature.com/articles/s41558-018-0282-y#MOESM1) | `input/country_scc/` |
+| National SCC (Chiani et al. 2026) | [World Scientific](https://www.worldscientific.com/doi/10.1142/S2010007826400026), Tables B.1 (global) and C.1 (national), copied by hand; dollar year not yet checked | `input/country_scc/chiani_et_al_2026_{global,national}.csv` |
 | OECD effective carbon rates | [OECD data explorer](https://data-explorer.oecd.org/vis?lc=en&fs[0]=Topic%2C1%7CTaxation%23TAX%23%7CTax%20and%20environment%23TAX_ENV%23&pg=0&fc=Topic&bp=true&snb=7&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_NECR%40DF_NECRS&df[ag]=OECD.CTP.TPS&dq=._T._T.ECRATE%2BNETECR..EUR_TCO2E.MEANW.Q.A&to[TIME_PERIOD]=false&pd=2020%2C&vw=tb) | `input/carbon_pricing/carbon_pricing_oecd.csv` |
 | Dolphin & Merkle (2024) carbon prices | [ecp_CO2.csv](https://github.com/g-dolphin/ECP/blob/main/_output/_dataset/v2025.0/ecp/ipcc/ecp_economy/ecp_CO2.csv) | `input/carbon_pricing/carbon_pricing_dolphin.csv` |
 | World Bank Green Subsidies Database | [World Bank, Subsidies and Trade](https://www.worldbank.org/en/brief/2024/06/04/subsidies-and-trade) ([xlsx](https://documents1.worldbank.org/curated/en/099644006032423503/IDU1b117b6921f0b1ae4c1dd6fbd4c89d9.xlsx)) | `input/green_subsidies/wb_green_subsidies.xlsx` |
@@ -79,7 +80,7 @@ First run `gams extract_macc.gms` and `policy_intensity_counterfactuals.do` (Sta
 |---|---|---|
 | CSCC dataset | `generate_cscc_vs_cntfc.py` | `output/data/mitigation_cscc_v_cntfc_2020.csv` |
 | Implied carbon prices | `generate_implied_carbon_price.py` | `output/data/implied_carbon_price_{2020,2022}.csv`, `output/regressions/implied_price_correlations.csv` |
-| EPS stringency | `generate_eps_stringency.py` | `output/data/eps_stringency_2020.csv` |
+| EPS stringency | `generate_eps_stringency.py` | `output/data/eps_stringency_2020.csv`, `output/data/eps_stringency_{2015_2020,2010_2020}_mean.csv` |
 | Structural break abatement (unattributed) | `generate_structural_break_abatement.py` | `output/data/structural_break_abatement.csv` |
 | Policy-matched break abatement | `generate_policy_break_abatement.py` | `output/data/policy_break_abatement.csv` |
 | Green subsidy counts | `generate_green_subsidies.py` | `output/data/green_subsidies.csv` |
@@ -96,6 +97,7 @@ First run `gams extract_macc.gms` and `policy_intensity_counterfactuals.do` (Sta
 | Green spending regressions | `regress_green_spending.py` | `output/regressions/green_spending_regressions.csv` |
 | Kitchen sink regressions | `regress_kitchen_sink.py` | `output/regressions/kitchen_sink_regressions.csv`, `output/data/kitchen_sink_inputs.csv` |
 | EPS carbon price vs non-price support | `regress_eps_price_split.py` | `output/regressions/eps_price_split_regressions.csv` |
+| Price / non-price sensitivity | `regress_eps_price_split_sensitivity.py` | `output/regressions/eps_price_split_sensitivity.csv` |
 | Tobit vs double hurdle (Dolphin price) | `regress_dolphin_hurdle.py` | `output/regressions/dolphin_hurdle_regressions.csv`, `output/regressions/dolphin_hurdle_lr_tests.csv` |
 | Country-year policy panel | `generate_policy_panel.py` | `output/data/policy_panel.csv` |
 | Carbon price adoption hazard | `regress_carbon_price_adoption.py` | `output/regressions/carbon_price_adoption_hazard.csv` |
@@ -381,6 +383,90 @@ The non-price instruments are renewable trading schemes (`TRADESCH_RENEW`, green
 - **Carbon prices never rise with size or own CSCC** in any spec, sample or control set.
 
 **Caveats:** 40 mostly OECD countries; up to 8 parameters on 36 observations with the kitchen-sink controls; EPS scores are ordinal 0–6 policy-design scores, not spending or effective prices.
+
+### 6b. Sensitivity of the price / non-price split
+
+`regress_eps_price_split_sensitivity.py` reruns section 6a four ways → `output/regressions/eps_price_split_sensitivity.csv` (one row per regression, with a summary printed to the console). Everything is standardised with HC1 SEs, and every test also runs without the US, China and India. "Main finding" below means carbon price part < 0 and non-price part > 0.
+
+**A. EPS averaged over 2015–2020 and 2010–2020.** The EPS ends in 2020. `generate_eps_stringency.py` also writes the mean of each year's scores over each window → `output/data/eps_stringency_{2015_2020,2010_2020}_mean.csv` (all 40 countries, every year). Against the 2020 scores, the price and non-price parts correlate 0.96–0.98 for the 2015–2020 means and 0.94–0.95 for the 2010–2020 means. Own CSCC specs 1–4 and population share, three control sets as in 6a:
+
+| Outcome | Controls | Average | Spec 1 | Spec 2 | Spec 3 | Spec 4 | Pop share |
+|---|---|---|---|---|---|---|---|
+| Carbon price part | none | 2015–2020 | −0.32\*\*\* | −0.22\*\* | −0.27\*\*\* | −0.22 | −0.30\*\*\* |
+| | | 2010–2020 | −0.31\*\*\* | −0.22\*\* | −0.26\*\*\* | −0.22 | −0.30\*\*\* |
+| | kitchen sink | 2015–2020 | −0.13\*\*\* | −0.13 | −0.12\*\*\* | −0.11\*\* | −0.03 |
+| | | 2010–2020 | −0.12\*\* | −0.15\* | −0.12\*\*\* | −0.10\* | −0.05 |
+| Non-price part | none | 2015–2020 | +0.16 | +0.21\*\*\* | +0.16\*\* | +0.17 | +0.07 |
+| | | 2010–2020 | +0.09 | +0.19\*\* | +0.09 | +0.10 | −0.01 |
+| | kitchen sink | 2015–2020 | +0.32\*\*\* | +0.29\*\* | +0.31\*\*\* | +0.31\*\*\* | +0.32\* |
+| | | 2010–2020 | +0.28\*\*\* | +0.31\*\*\* | +0.27\*\*\* | +0.27\*\*\* | +0.27\* |
+
+- **2015–2020:** the main finding holds in all 15 full-sample regressions per outcome (11 of 15 significant for each part).
+- **2010–2020:** the price part is negative in all 15 (11 significant). The non-price part is positive in 14 of 15 (10 significant). The exception is population share without controls (−0.01). Without controls the non-price coefficients are smaller than for 2020 (+0.09 to +0.19), consistent with large countries adding non-price support over the decade. With GDP per capita or kitchen-sink controls they are close to the 2020 values (+0.15 to +0.31).
+- **Without the US, China and India:** as in 6a, the price part stays negative in all 15 regressions for both averages (significant in 6 for 2010–2020, mostly without controls). The non-price part is positive only with the kitchen-sink controls, and significant only for spec 2 and population share (+0.31 to +0.40). For specs 1 and 3 it is ≈ 0 (−0.03 to +0.11).
+
+**B. Further controls.** On top of the six kitchen-sink controls, one at a time and then all together: EU membership in 2020 (EU27; the UK left in January 2020), log territorial CO2 per capita in 2020 (OWID), and the RICE50x MAC curve slope *a* (abatement cost). n = 39 (36 without the US, China and India); with all three, 10 parameters.
+
+| Outcome | Added to kitchen sink | Spec 1 | Spec 2 | Spec 3 | Spec 4 | Pop share |
+|---|---|---|---|---|---|---|
+| Carbon price part | EU member | −0.14\*\*\* | −0.15\* | −0.13\*\* | −0.13\*\* | −0.05 |
+| | log CO2 per capita | −0.35\*\*\* | −0.19\*\* | −0.35\*\*\* | −0.32\*\*\* | −0.34\*\* |
+| | MAC slope | −0.16\*\*\* | −0.16\*\* | −0.15\*\*\* | −0.14\*\*\* | −0.07 |
+| | all three | −0.34\*\*\* | −0.17\* | −0.36\*\*\* | −0.32\*\*\* | −0.33\*\* |
+| Non-price part | EU member | +0.33\*\*\* | +0.29\*\* | +0.33\*\*\* | +0.32\*\*\* | +0.31 |
+| | log CO2 per capita | +0.35\*\*\* | +0.28\*\* | +0.36\*\*\* | +0.34\*\* | +0.32 |
+| | MAC slope | +0.36\*\*\* | +0.30\*\* | +0.36\*\*\* | +0.35\*\*\* | +0.36\* |
+| | all three | +0.32\*\*\* | +0.28\*\* | +0.32\*\* | +0.30\*\* | +0.27 |
+
+The main finding holds in all 20 full-sample regressions per outcome. Controlling for CO2 per capita roughly doubles the negative price coefficient (to −0.19 to −0.35): high-emitting countries price carbon less, and they also have higher CSCCs and populations. Without the US, China and India, the price part stays negative in all 20 (significant in 9, mostly with CO2 per capita in), and the non-price part is positive in all 20 but significant only for spec 2, spec 4 and population share (+0.31 to +0.51 where significant); for specs 1 and 3 it is +0.03 to +0.13.
+
+**C. Chiani et al. (2026) national SCCs.** Six 2020 measures: RICE50+ and WITCH, each at 2%, 2.5% and 3% discounting. The discount rate barely changes country rankings, so the three rates give near-identical coefficients within each model. Ranges across the six:
+
+| Sample | Controls | Carbon price part | Non-price part |
+|---|---|---|---|
+| Full | none | −0.32 to −0.40 (6/6 significant) | +0.13 to +0.33 (3/6) |
+| | GDP per capita | −0.29 to −0.32 (6/6) | +0.21 to +0.33 (5/6) |
+| | kitchen sink | −0.11 to −0.23 (3/6) | +0.30 to +0.44 (5/6) |
+| No US/CHN/IND | none | −0.38 to −0.44 (6/6) | −0.04 to +0.21 (0/6) |
+| | GDP per capita | −0.30 (6/6) | +0.11 to +0.29 (3/6) |
+| | kitchen sink | −0.21 to −0.23 (6/6, p < 0.1) | +0.43 to +0.44 (6/6, p < 0.05) |
+
+Significance is p < 0.1. The main finding holds in every regression except the WITCH measures without controls and without the US, China and India, where the non-price part is −0.04. The WITCH measures are generally weaker: without controls the non-price part is +0.13 to +0.16 (insignificant), and with kitchen-sink controls the price part is −0.11 to −0.14 (insignificant). WITCH puts China's 2020 SCC at $17–23, against $2–4 in RICE50+. Unlike Ricke et al., the Chiani measures make the finding survive dropping the US, China and India once the kitchen-sink controls are in.
+
+**D. Every Ricke et al. (2018) configuration.** All 486 combinations in the CSCC database: 5 damage functions (BHM short-run and long-run, pooled and rich/poor, and Dell, Jones & Olken), central or bootstrapped damage parameters, central or uncertain climate, SSP1–5, RCP 4.5/6.0/8.5, and Ramsey (PRTP 2%, η 1.5) or fixed 3% discounting. Median CSCC in each. Ranges across all 486:
+
+| Sample | Controls | Carbon price part | Non-price part | Main finding holds |
+|---|---|---|---|---|
+| Full | none | −0.46 to −0.15 (86% significant) | −0.10 to +0.25 (61%) | 451 / 486 |
+| | GDP per capita | −0.33 to −0.10 (76%) | +0.04 to +0.35 (78%) | 486 / 486 |
+| | kitchen sink | −0.19 to +0.20 (58%) | −0.06 to +0.45 (83%) | 444 / 486 |
+| No US/CHN/IND | none | −0.53 to +0.06 (73%) | −0.35 to +0.18 (0%) | 112 / 486 |
+| | GDP per capita | −0.36 to +0.03 (64%) | −0.20 to +0.23 (3%) | 266 / 486 |
+| | kitchen sink | −0.49 to +0.36 (12%) | −0.51 to +0.77 (52%) | 403 / 486 |
+
+By damage function, full sample, kitchen-sink controls:
+
+| Damage function | Configurations | Carbon price part | Non-price part |
+|---|---|---|---|
+| BHM short-run, pooled | 120 | −0.19 to −0.11 (100% significant) | +0.32 to +0.37 (100%) |
+| BHM short-run, rich/poor | 120 | −0.17 to −0.10 (100%) | +0.34 to +0.38 (100%) |
+| BHM long-run, pooled | 96 | −0.16 to −0.09 (41%) | +0.26 to +0.40 (95%) |
+| BHM long-run, rich/poor | 120 | −0.14 to +0.10 (2%) | +0.15 to +0.45 (59%) |
+| Dell, Jones & Olken | 30 | +0.04 to +0.20 (0%) | −0.06 to +0.19 (0%) |
+
+**Outliers that don't reproduce the main finding (full sample):**
+- **Dell, Jones & Olken (all 30 configurations).** With kitchen-sink controls the carbon price coefficient turns positive (+0.04 to +0.20) and the non-price coefficient is insignificant. Without controls, the non-price coefficient is ≈ 0 (−0.10 to +0.01). DJO damages hit only poor countries, so every rich country, including the US, Japan, Canada and Australia, has a CSCC of exactly zero. Its CSCC is mainly an indicator for large emerging economies (China, India, Russia, Brazil, Mexico; rank correlation −0.74 with log GDP per capita, against about −0.4 for BHM), not for damages in general. With GDP per capita as the only control, DJO does have the expected signs, but the non-price part is insignificant.
+- **BHM long-run rich/poor under SSP3 (12 of its 24 configurations).** The Ramsey-discounted ones have a carbon price coefficient of +0.01 to +0.10 (insignificant) with kitchen-sink controls. Without controls, 7 of the 24 have a non-price coefficient of −0.03 to −0.00. SSP3 keeps poor countries poor, so this damage function also concentrates CSCCs in poorer countries.
+- **All other 432 configurations** reproduce the main finding under all three control sets in the full sample.
+
+**Without the US, China and India** the Ricke results are much weaker, as in 6a. Without controls, the non-price coefficient is never significantly positive. With the kitchen-sink controls it is positive in 98% of configurations but significant in only 52%, mostly the BHM long-run functions (pooled long-run 100%, rich/poor long-run 70%, short-run 8–47%, DJO 20%). The price part is negative in 83% but significant in only 12%.
+
+**Findings:**
+- **In the full sample the split is robust.** It holds with the 2015–2020 and 2010–2020 averages (except population share without controls for 2010–2020), with all three extra controls, with all six Chiani measures, and in 432 of 486 Ricke configurations under every control set. The exceptions are the damage functions that concentrate damages in poor countries (Dell, Jones & Olken, and BHM long-run rich/poor under SSP3).
+- **Without the US, China and India it depends on the damages measure.** It survives with the kitchen-sink controls for population share, spec 2, the Chiani measures and the BHM long-run functions, which all rank countries largely by size. It doesn't survive for the short-run BHM functions (specs 1, 3 and 4). The carbon price side is the more robust half: it is negative almost everywhere, though often insignificant without the three.
+- **So the robust statement is about large economies, not own damages.** Large economies, measured by population or by size-driven CSCCs, use non-price support more and carbon prices less. The idea that own damages per se drive non-price support doesn't survive dropping the US, China and India for most damage functions.
+
+**Caveats:** 36–40 countries, mostly OECD; up to 10 parameters with all extra controls. The Chiani dollar year hasn't been checked, but coefficients are standardised so it doesn't matter here. Within a damage function, the Ricke configurations are highly correlated, so the 486 are far from independent tests.
 
 ## 7. Abatement implied by structural breaks
 

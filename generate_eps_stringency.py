@@ -16,6 +16,9 @@ import numpy as np
 input_filename = 'input/policy_stringency/oecd_eps.csv'
 output_filename = 'output/data/eps_stringency_2020.csv'
 YEAR = 2020
+# multi-year averages for sensitivity checks; the EPS ends in 2020
+MEAN_PERIODS = {'2015_2020': range(2015, 2021), '2010_2020': range(2010, 2021)}
+mean_filename = 'output/data/eps_stringency_{}_mean.csv'
 
 PILLARS = {
     'market': {'TAXCO2': 1, 'TAXNOX': 1, 'TAXSOX': 1, 'TAXDIESEL': 1, 'TRADESCH_CO2': 1, 'TRADESCH_RENEW': 1},
@@ -45,11 +48,16 @@ SPECS = {
 
 ###### DATA #######
 
-eps_df = pd.read_csv(input_filename)
-eps_df = eps_df[eps_df['TIME_PERIOD'] == YEAR]
-eps_df = eps_df.pivot_table(index='REF_AREA', columns='CLIM_POL', values='OBS_VALUE')
-eps_df.index = eps_df.index.str.lower()
-eps_df.index.name = 'n'
+raw = pd.read_csv(input_filename)
+raw['REF_AREA'] = raw['REF_AREA'].str.lower()
+
+def instruments(years):
+    df = raw[raw['TIME_PERIOD'].isin(years)].pivot_table(index=['REF_AREA', 'TIME_PERIOD'], columns='CLIM_POL',
+                                                         values='OBS_VALUE')
+    df.index.names = ['n', 'year']
+    return df
+
+eps_df = instruments([YEAR]).droplevel('year')
 
 ###### SPECS #######
 
@@ -62,23 +70,36 @@ def stringency(df, dropped):
     return sum(pillar_scores) / len(pillar_scores)
 
 
-out = pd.DataFrame(index=eps_df.index)
-for spec, dropped in SPECS.items():
-    out[spec] = stringency(eps_df, dropped)
+INSTRUMENTS = [k for weights in PILLARS.values() for k in weights]
 
-# rebuilding the headline index should reproduce the official one
-assert np.allclose(out['eps'], eps_df['EPS']), "EPS weights don't reproduce the official index"
+def build(df):
+    out = pd.DataFrame(index=df.index)
+    for spec, dropped in SPECS.items():
+        out[spec] = stringency(df, dropped)
+    # rebuilding the headline index should reproduce the official one
+    assert np.allclose(out['eps'], df['EPS']), "EPS weights don't reproduce the official index"
+    # keep the instruments so other groupings can be built downstream
+    return out.join(df[INSTRUMENTS])
 
-# keep the instruments so other groupings can be built downstream
-out = out.join(eps_df[[k for weights in PILLARS.values() for k in weights]]).reset_index()
+out = build(eps_df).reset_index()
+
+# country means over each period of each year's specs and instruments
+mean_outs = {}
+for period, years in MEAN_PERIODS.items():
+    yearly = instruments(years)
+    mean_out = build(yearly).groupby('n').mean()
+    mean_out.insert(0, 'n_years', yearly.groupby('n').size())
+    mean_outs[period] = mean_out.reset_index()
 
 ###### SAVE ################
 
 out.to_csv(output_filename, index=False)
+for period, mean_out in mean_outs.items():
+    mean_out.to_csv(mean_filename.format(period), index=False)
 
 pd.set_option('display.width', 200)
 print(f"OECD EPS {YEAR}: {len(out)} countries")
 print(out[['n'] + list(SPECS)].sort_values('eps', ascending=False).to_string(index=False, float_format='%.2f'))
 print("\nCorrelation between specs")
 print(out[list(SPECS)].corr().round(2).to_string())
-print(f"\nSaved to {output_filename}")
+print(f"\nSaved to {output_filename} and " + ', '.join(mean_filename.format(p) for p in MEAN_PERIODS))
