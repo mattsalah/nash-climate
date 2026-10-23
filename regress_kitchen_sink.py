@@ -3,9 +3,10 @@ import glob
 import pandas as pd
 import statsmodels.api as sm
 
-# Kitchen sink: each carbon pricing / climate policy outcome is regressed on all of
-#   pop_share          population as a % of world population (2020)
-#   scc_mid_spec2      own country SCC (Ricke et al.), spec 2, $/tCO2
+# Kitchen sink: each carbon pricing / climate policy outcome is regressed jointly on one size measure,
+#   scc_mid_spec2      own country SCC (Ricke et al.), spec 2, $/tCO2 (size 'cscc'), or
+#   pop_share          population as a % of world population, 2020 (size 'pop')
+# (population is largely a proxy for own CSCC, so the two aren't included together), plus all of
 #   vdem_corruption    V-Dem political corruption index (2020, 0-1, higher = more corrupt)
 #   vdem_democracy     V-Dem electoral democracy index (2020, 0-1, higher = more democratic)
 #   gini               Gini index, latest year 2010-2020
@@ -13,7 +14,7 @@ import statsmodels.api as sm
 #                      CWON WB_CWON_SAOI/SAGA/SACO)
 #   land_area          land area (million sq. km, 2020)
 #   gdppc              GDP per capita (current US$, 2020)
-# jointly (spec 'main'). As a sensitivity check, spec 'interactions' adds (each the product of the
+# (spec 'main'). As a sensitivity check, spec 'interactions' adds (each the product of the
 # standardised terms, itself standardised)
 #   corruption_x_ff_assets   vdem_corruption x ff_assets_1995
 #   gini_x_ff_assets         gini x ff_assets_1995
@@ -29,8 +30,8 @@ OUTCOMES = {
     'carbon_price_effective': 'OECD effective carbon rate (EUR/tCO2e, 2021)',
     'eps_climate': 'OECD EPS climate policy stringency (0-6, 2020)',
 }
-X_COLS = ['pop_share', 'scc_mid_spec2', 'vdem_corruption', 'vdem_democracy', 'gini', 'ff_assets_1995',
-          'land_area', 'gdppc']
+SIZE = {'cscc': 'scc_mid_spec2', 'pop': 'pop_share'}
+CONTROLS = ['vdem_corruption', 'vdem_democracy', 'gini', 'ff_assets_1995', 'land_area', 'gdppc']
 INTERACTIONS = {
     'corruption_x_ff_assets': ('vdem_corruption', 'ff_assets_1995'),
     'gini_x_ff_assets': ('gini', 'ff_assets_1995'),
@@ -100,37 +101,40 @@ df.to_csv(data_filename, index=False)
 ###### REGRESSIONS #######
 
 rows = []
-for spec, with_interactions in SPECS.items():
-    for y_col, y_label in OUTCOMES.items():
-        for sample, (excluded, positive_only) in SAMPLES.items():
-            if positive_only and y_col not in PRICES:
-                continue
-            data = df[~df['n'].isin(excluded)][['n', y_col] + X_COLS].dropna()
-            if positive_only:
-                data = data[data[y_col] > 0]
-            standardise = lambda x: (x - x.mean()) / x.std()
-            X = standardise(data[X_COLS])
-            if with_interactions:
-                for name, (a, b) in INTERACTIONS.items():
-                    X[name] = standardise(X[a] * X[b])
-            y = standardise(data[y_col])
-            model = sm.OLS(y, sm.add_constant(X)).fit(cov_type='HC1')
-            for x_col in X.columns:
-                rows.append({
-                    'spec': spec,
-                    'y_column': y_col,
-                    'y_label': y_label,
-                    'sample': sample,
-                    'x_column': x_col,
-                    'n': int(model.nobs),
-                    'std_coef': model.params[x_col],
-                    'robust_se': model.bse[x_col],
-                    'p_value': model.pvalues[x_col],
-                    'x_sd': data[x_col].std() if x_col in data else None,
-                    'y_sd': data[y_col].std(),
-                    'r_squared': model.rsquared,
-                    'countries': ' '.join(sorted(data['n'])),
-                })
+for size, size_col in SIZE.items():
+    X_COLS = [size_col] + CONTROLS
+    for spec, with_interactions in SPECS.items():
+        for y_col, y_label in OUTCOMES.items():
+            for sample, (excluded, positive_only) in SAMPLES.items():
+                if positive_only and y_col not in PRICES:
+                    continue
+                data = df[~df['n'].isin(excluded)][['n', y_col] + X_COLS].dropna()
+                if positive_only:
+                    data = data[data[y_col] > 0]
+                standardise = lambda x: (x - x.mean()) / x.std()
+                X = standardise(data[X_COLS])
+                if with_interactions:
+                    for name, (a, b) in INTERACTIONS.items():
+                        X[name] = standardise(X[a] * X[b])
+                y = standardise(data[y_col])
+                model = sm.OLS(y, sm.add_constant(X)).fit(cov_type='HC1')
+                for x_col in X.columns:
+                    rows.append({
+                        'size': size,
+                        'spec': spec,
+                        'y_column': y_col,
+                        'y_label': y_label,
+                        'sample': sample,
+                        'x_column': x_col,
+                        'n': int(model.nobs),
+                        'std_coef': model.params[x_col],
+                        'robust_se': model.bse[x_col],
+                        'p_value': model.pvalues[x_col],
+                        'x_sd': data[x_col].std() if x_col in data else None,
+                        'y_sd': data[y_col].std(),
+                        'r_squared': model.rsquared,
+                        'countries': ' '.join(sorted(data['n'])),
+                    })
 
 ###### SAVE ################
 

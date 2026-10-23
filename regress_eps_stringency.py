@@ -11,7 +11,7 @@ import statsmodels.api as sm
 
 output_filename = 'output/regressions/eps_stringency_regressions.csv'
 
-EPS_SPECS = ['eps', 'eps_no_air', 'eps_climate', 'eps_carbon_price']
+EPS_SPECS = ['eps', 'eps_no_air', 'eps_climate', 'eps_carbon_price', 'eps_nonprice']
 X_COLS = ['noncoop_optimal_mu_spec2', 'coop_optimal_mu_spec2', 'pop_share']
 SAMPLES = {
     'full': [],

@@ -11,9 +11,11 @@ import statsmodels.api as sm
 #
 # Regressors (standardised; time-invariant ones across countries, time-varying ones across
 # country-years in the risk set):
-#   slim   own CSCC (spec 1-4), log GDP per capita (t-1), V-Dem corruption and
+#   slim   one size measure, log GDP per capita (t-1), V-Dem corruption and
 #          electoral democracy (t-1)
-#   full   slim + Gini, 1995 fossil assets, land area, population share
+#   full   slim + Gini, 1995 fossil assets, land area
+# The size measure is own CSCC (spec 1-4, size 'cscc') or population share (size 'pop');
+# population is largely a proxy for own CSCC, so the two aren't included together
 # plus a cubic in calendar time (the baseline hazard) and an EU ETS coverage dummy
 #
 # 19 of the 47 adoptions are EU members in 2005, which came with the EU ETS rather than a national
@@ -28,7 +30,9 @@ EVER_EU = ['bel', 'fra', 'deu', 'ita', 'lux', 'nld', 'dnk', 'irl', 'gbr', 'grc',
            'fin', 'swe', 'cyp', 'cze', 'est', 'hun', 'lva', 'ltu', 'mlt', 'pol', 'svk', 'svn', 'bgr',
            'rou', 'hrv']
 TIME_VARYING = ['log_gdppc_lag', 'vdem_corruption_lag', 'vdem_democracy_lag']
-FULL_EXTRA = ['gini', 'ff_assets_1995', 'land_area', 'pop_share']
+FULL_EXTRA = ['gini', 'ff_assets_1995', 'land_area']
+# (size, CSCC spec, column)
+SIZES = [('cscc', spec_num, f'scc_mid_spec{spec_num}') for spec_num in range(1, 5)] + [('pop', None, 'pop_share')]
 SAMPLES = {
     'all': [],
     'non_eu': EVER_EU,
@@ -54,11 +58,10 @@ risk['t1'], risk['t2'], risk['t3'] = t, t ** 2, t ** 3
 ###### REGRESSIONS #######
 
 rows = []
-for spec_num in range(1, 5):
-    scc = f'scc_mid_spec{spec_num}'
+for size, spec_num, size_col in SIZES:
     for covariates, extra in [('slim', []), ('full', FULL_EXTRA)]:
         for sample, excluded in SAMPLES.items():
-            invariant = [scc] + extra
+            invariant = [size_col] + extra
             cols = ['n', 'year', 'event', 'eu_ets', 't1', 't2', 't3'] + invariant + TIME_VARYING
             data = risk[~risk['n'].isin(excluded)][cols].dropna().copy()
             countries = data.groupby('n')[invariant].first()
@@ -75,8 +78,8 @@ for spec_num in range(1, 5):
             result = model.fit(cov_type='cluster', cov_kwds={'groups': pd.factorize(data['n'])[0]})
             for x_col in invariant + TIME_VARYING:
                 rows.append({
-                    'scc_spec': spec_num, 'covariates': covariates, 'sample': sample,
-                    'x_column': 'scc' if x_col == scc else x_col,
+                    'size': size, 'scc_spec': spec_num, 'covariates': covariates, 'sample': sample,
+                    'x_column': 'scc' if x_col.startswith('scc_mid') else x_col,
                     'coef': result.params[x_col], 'robust_se': result.bse[x_col], 'p_value': result.pvalues[x_col],
                     'hazard_ratio': np.exp(result.params[x_col]),
                     'n_country_years': int(result.nobs), 'n_countries': data['n'].nunique(),
@@ -91,5 +94,5 @@ report.to_csv(output_filename, index=False)
 
 pd.set_option('display.width', 250)
 pd.set_option('display.max_rows', 500)
-print(report[report['scc_spec'] == 2].to_string(index=False, float_format='{:.3g}'.format))
+print(report[(report['scc_spec'] == 2) | (report['size'] == 'pop')].to_string(index=False, float_format='{:.3g}'.format))
 print(f"\nSaved CSV to {output_filename}")

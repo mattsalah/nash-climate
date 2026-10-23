@@ -25,7 +25,7 @@ PILLARS = {
 
 AIR_POLLUTION = ['TAXNOX', 'TAXSOX', 'ELV_NOX', 'ELV_SOX', 'ELV_PM', 'ELV_DIESELSO']
 
-# spec -> instruments dropped. Each spec drops more than the last
+# spec -> instruments dropped. Specs 1-4 each drop more than the last
 SPECS = {
     # 1. headline EPS, everything
     'eps': [],
@@ -38,6 +38,9 @@ SPECS = {
     # 4. also drop technology support and renewable trading schemes, leaving only explicit carbon
     #    prices (CO2 tax and CO2 emissions trading)
     'eps_carbon_price': AIR_POLLUTION + ['TAXDIESEL', 'TRADESCH_RENEW', 'RD_SUB', 'FIT_SOLAR', 'FIT_WIND'],
+    # 5. the complement of 4 within eps_climate: drop the carbon prices instead, leaving non-price
+    #    support (renewable trading schemes, low-carbon R&D, solar and wind support)
+    'eps_nonprice': AIR_POLLUTION + ['TAXDIESEL', 'TAXCO2', 'TRADESCH_CO2'],
 }
 
 ###### DATA #######

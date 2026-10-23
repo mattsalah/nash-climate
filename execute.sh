@@ -28,6 +28,7 @@ python regress_carbon_price_cscc.py
 python regress_green_subsidies.py
 python regress_green_spending.py
 python regress_kitchen_sink.py
+python regress_eps_price_split.py
 python regress_dolphin_hurdle.py
 python generate_policy_panel.py
 python regress_carbon_price_adoption.py

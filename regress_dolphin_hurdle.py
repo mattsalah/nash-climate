@@ -8,7 +8,8 @@ from statsmodels.base.model import GenericLikelihoodModel
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
 
 # Most countries have a zero Dolphin & Merkle carbon price, so OLS mixes whether a country prices
-# carbon with how much. This fits the kitchen sink regressors (regress_kitchen_sink.py) with
+# carbon with how much. This fits the kitchen sink regressors (regress_kitchen_sink.py; size measure
+# own CSCC, size 'cscc', or population share, size 'pop') with
 #   tobit     one latent price drives both: y = max(0, Xb + e), e ~ N(0, s^2)
 #   hurdle    Cragg double hurdle: a probit for y > 0 and a truncated normal for y given y > 0,
 #             with separate coefficients. Tobit is the special case probit coef = b / s, so a
@@ -25,8 +26,8 @@ output_filename = 'output/regressions/dolphin_hurdle_regressions.csv'
 lr_filename = 'output/regressions/dolphin_hurdle_lr_tests.csv'
 
 Y_COL = 'carbon_price_dolphin_ghg'
-MAIN = ['pop_share', 'scc_mid_spec2', 'vdem_corruption', 'vdem_democracy', 'gini', 'ff_assets_1995',
-        'land_area', 'gdppc']
+SIZE = {'cscc': 'scc_mid_spec2', 'pop': 'pop_share'}
+CONTROLS = ['vdem_corruption', 'vdem_democracy', 'gini', 'ff_assets_1995', 'land_area', 'gdppc']
 INTERACTIONS = {
     'corruption_x_ff_assets': ('vdem_corruption', 'ff_assets_1995'),
     'gini_x_ff_assets': ('gini', 'ff_assets_1995'),
@@ -108,64 +109,66 @@ df = pd.read_csv('output/data/kitchen_sink_inputs.csv')
 ###### REGRESSIONS #######
 
 rows, lr_rows = [], []
-for spec, with_interactions in SPECS.items():
-    for sample, excluded in SAMPLES.items():
-        data = df[~df['n'].isin(excluded)][['n', Y_COL] + MAIN].dropna()
-        standardise = lambda x: (x - x.mean()) / x.std()
-        X = standardise(data[MAIN])
-        if with_interactions:
-            for name, (a, b) in INTERACTIONS.items():
-                X[name] = standardise(X[a] * X[b])
-        X = sm.add_constant(X)
-        y = data[Y_COL] / data[Y_COL].std()
-        priced = (y > 0).astype(int)
+for size, size_col in SIZE.items():
+    MAIN = [size_col] + CONTROLS
+    for spec, with_interactions in SPECS.items():
+        for sample, excluded in SAMPLES.items():
+            data = df[~df['n'].isin(excluded)][['n', Y_COL] + MAIN].dropna()
+            standardise = lambda x: (x - x.mean()) / x.std()
+            X = standardise(data[MAIN])
+            if with_interactions:
+                for name, (a, b) in INTERACTIONS.items():
+                    X[name] = standardise(X[a] * X[b])
+            X = sm.add_constant(X)
+            y = data[Y_COL] / data[Y_COL].std()
+            priced = (y > 0).astype(int)
 
-        tobit, *tobit_est = fit_mle(Tobit, y, X)
-        trunc, *trunc_est = fit_mle(TruncatedNormal, y[priced == 1], X[priced == 1])
-        probit = sm.Probit(priced, X).fit(disp=False, cov_type='HC0', maxiter=500)
-        ame = probit.get_margeff(at='overall')
-        ame_params = pd.Series(ame.margeff, index=X.columns[1:])
-        ame_se = pd.Series(ame.margeff_se, index=X.columns[1:])
-        ame_p = pd.Series(ame.pvalues, index=X.columns[1:])
+            tobit, *tobit_est = fit_mle(Tobit, y, X)
+            trunc, *trunc_est = fit_mle(TruncatedNormal, y[priced == 1], X[priced == 1])
+            probit = sm.Probit(priced, X).fit(disp=False, cov_type='HC0', maxiter=500)
+            ame = probit.get_margeff(at='overall')
+            ame_params = pd.Series(ame.margeff, index=X.columns[1:])
+            ame_se = pd.Series(ame.margeff_se, index=X.columns[1:])
+            ame_p = pd.Series(ame.pvalues, index=X.columns[1:])
 
-        # LR test of tobit (restricted) against the hurdle (unrestricted)
-        ll_hurdle = probit.llf + trunc.llf
-        lr = 2 * (ll_hurdle - tobit.llf)
-        dof = X.shape[1]
-        lr_rows.append({
-            'spec': spec, 'sample': sample, 'n': len(y), 'n_positive': int(priced.sum()),
-            'n_params_tobit': len(tobit.params), 'n_params_hurdle': len(probit.params) + len(trunc.params),
-            'll_tobit': tobit.llf, 'll_probit': probit.llf, 'll_truncated': trunc.llf,
-            'lr_stat': lr, 'lr_dof': dof, 'lr_p': stats.chi2.sf(lr, dof),
-            'tobit_converged': tobit.mle_retvals['converged'],
-            'truncated_converged': trunc.mle_retvals['converged'],
-            'tobit_max_abs_grad': tobit.mle_retvals['max_abs_grad'],
-            'truncated_max_abs_grad': trunc.mle_retvals['max_abs_grad'],
-            'probit_converged': probit.mle_retvals['converged'],
-            'probit_pseudo_r2': probit.prsquared,
-        })
+            # LR test of tobit (restricted) against the hurdle (unrestricted)
+            ll_hurdle = probit.llf + trunc.llf
+            lr = 2 * (ll_hurdle - tobit.llf)
+            dof = X.shape[1]
+            lr_rows.append({
+                'size': size, 'spec': spec, 'sample': sample, 'n': len(y), 'n_positive': int(priced.sum()),
+                'n_params_tobit': len(tobit.params), 'n_params_hurdle': len(probit.params) + len(trunc.params),
+                'll_tobit': tobit.llf, 'll_probit': probit.llf, 'll_truncated': trunc.llf,
+                'lr_stat': lr, 'lr_dof': dof, 'lr_p': stats.chi2.sf(lr, dof),
+                'tobit_converged': tobit.mle_retvals['converged'],
+                'truncated_converged': trunc.mle_retvals['converged'],
+                'tobit_max_abs_grad': tobit.mle_retvals['max_abs_grad'],
+                'truncated_max_abs_grad': trunc.mle_retvals['max_abs_grad'],
+                'probit_converged': probit.mle_retvals['converged'],
+                'probit_pseudo_r2': probit.prsquared,
+            })
 
-        names = list(X.columns[1:])
-        Xv = X.values
-        tobit_me = delta_ame(tobit_ame(Xv), tobit.params, tobit.cov_params(), names)
-        trunc_me = delta_ame(truncated_ame(Xv[priced.values == 1]), trunc.params, trunc.cov_params(), names)
+            names = list(X.columns[1:])
+            Xv = X.values
+            tobit_me = delta_ame(tobit_ame(Xv), tobit.params, tobit.cov_params(), names)
+            trunc_me = delta_ame(truncated_ame(Xv[priced.values == 1]), trunc.params, trunc.cov_params(), names)
 
-        stages = {
-            'tobit': tuple(tobit_est),
-            'hurdle_probit': (probit.params, probit.bse, probit.pvalues),
-            'hurdle_probit_ame': (ame_params, ame_se, ame_p),
-            'hurdle_truncated': tuple(trunc_est),
-            'tobit_ame': tobit_me,
-            'hurdle_truncated_ame': trunc_me,
-        }
-        for stage, (params, bse, pvalues) in stages.items():
-            for x_col in params.index:
-                rows.append({
-                    'spec': spec, 'sample': sample, 'stage': stage, 'x_column': x_col,
-                    'coef': params[x_col], 'robust_se': bse[x_col], 'p_value': pvalues[x_col],
-                    'n': int(priced.sum()) if stage.startswith('hurdle_truncated') else len(y),
-                    'y_sd': data[Y_COL].std(),
-                })
+            stages = {
+                'tobit': tuple(tobit_est),
+                'hurdle_probit': (probit.params, probit.bse, probit.pvalues),
+                'hurdle_probit_ame': (ame_params, ame_se, ame_p),
+                'hurdle_truncated': tuple(trunc_est),
+                'tobit_ame': tobit_me,
+                'hurdle_truncated_ame': trunc_me,
+            }
+            for stage, (params, bse, pvalues) in stages.items():
+                for x_col in params.index:
+                    rows.append({
+                        'size': size, 'spec': spec, 'sample': sample, 'stage': stage, 'x_column': x_col,
+                        'coef': params[x_col], 'robust_se': bse[x_col], 'p_value': pvalues[x_col],
+                        'n': int(priced.sum()) if stage.startswith('hurdle_truncated') else len(y),
+                        'y_sd': data[Y_COL].std(),
+                    })
 
 ###### SAVE ################
 

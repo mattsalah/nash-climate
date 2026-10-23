@@ -9,16 +9,16 @@ The pipeline compares predicted abatement under both benchmarks with the abateme
 1. **Predicted Nash abatement vs delivered abatement:** policy-density-implied abatement rises with predicted Nash abatement in the full sample (CSCC and RICE, most specs). The relationship is fragile without the US, China and India. Stringency-implied abatement is flat, and turns negative without those three.
 2. **CSCC vs carbon prices:** carbon prices *fall* with own CSCC on all three measures (OECD, Dolphin, EPS carbon pricing score), mostly in ranks (Spearman ρ ≈ −0.4 to −0.6 in specs 1, 3 and 4). Controlling for GDP per capita weakens it but the rank relationship survives (partial ρ ≈ −0.3 to −0.46). It is mostly a contrast between Europe (low CSCCs, high prices) and the rest of the world: within Europe and outside Europe, the relationship is close to zero once GDP per capita is controlled.
 3. **Implied carbon prices:** the abatement policies delivered implies carbon prices of $0–31/t in 2020 ($0–57/t in 2022). That is far below the global SCC ($135–781/t), so no country is near the cooperative benchmark. Implied prices are unrelated to actual carbon prices and show no consistent link with own CSCC.
-4. **Country size:** larger countries have *more* policies but not *more stringent* ones. Population predicts policy counts strongly but not stringency. Explicit carbon pricing on the OECD EPS is lower in large countries, which are also the ones with the most predicted Nash abatement.
+4. **Country size:** larger countries have *more* policies but not *more stringent* ones. Population predicts policy counts strongly but not stringency. Explicit carbon pricing on the OECD EPS is lower in large countries, which are also the ones with the most predicted Nash abatement. Non-price support (renewable trading schemes, solar/wind support) goes the other way and is higher in large countries, so the two cancel in the EPS climate score.
 5. **Robustness:** controlling for lobbying (LobbyMap) or treating the EU as one cooperative player doesn't change these conclusions. The lobbying measure mostly proxies economy size, and the EU bloc's predicted Nash abatement is about zero.
 
-6. **Green technology support:** green spending doesn't rise with own CSCC in specs 1, 3 or 4 on any measure (World Bank program counts, OECD EPS R&D scores, IEA public energy RD&D, IEA clean-energy spending commitments). Larger economies spend more in total, which spec 2, a near-proxy for GDP, picks up. Relative to GDP, spending *falls* with own CSCC in specs 1, 3 and 4 (ρ ≈ −0.3 to −0.55), mostly because richer countries spend more and have lower CSCCs; controlling for GDP per capita leaves rank correlations of about −0.3.
+6. **Green technology support:** green spending doesn't rise with own CSCC in specs 1, 3 or 4 on any measure (World Bank program counts, OECD EPS R&D scores, IEA public energy RD&D, IEA clean-energy spending commitments). Larger economies spend more in total, which spec 2, a near-proxy for GDP, picks up. Relative to GDP, spending *falls* with own CSCC in specs 1, 3 and 4 (ρ ≈ −0.3 to −0.55), mostly because richer countries spend more and have lower CSCCs; controlling for GDP per capita leaves rank correlations of about −0.3. Splitting the EPS climate score shows the one place support does rise with own CSCC: off-budget deployment support (renewable trading schemes, solar and wind support), +0.2 to +0.4 SD in all four specs, while carbon prices fall. That rests on the US, China and India: without them it is ≈ 0 in specs 1 and 3 and survives only for the size-like measures (spec 2, population) with controls.
 
-7. **Kitchen sink:** with population, own CSCC, corruption, democracy, inequality, 1995 fossil-fuel assets, land area and GDP per capita all included, income is the strongest predictor of carbon pricing and policy stringency. Inequality lowers carbon prices, robustly. Democracy predicts *whether* a country prices carbon, and corruption predicts how high the OECD rate is. Own CSCC is negative only because of the US, China and India, and 1995 fossil-fuel assets have no effect (the one exception is Norway). Whether a country prices carbon at all and how high are different processes: a Tobit model is rejected against a double hurdle, and democracy is the only robust predictor of pricing at all.
+7. **Kitchen sink:** with a size measure (own CSCC or population, one at a time, since population is largely a proxy for own CSCC), corruption, democracy, inequality, 1995 fossil-fuel assets, land area and GDP per capita included, income is the strongest predictor of carbon pricing and policy stringency. Inequality lowers carbon prices, robustly. Democracy predicts *whether* a country prices carbon, and corruption predicts how high the OECD rate is. Own CSCC is negative only because of the US, China and India, population predicts EPS stringency (through non-price support) but not carbon prices, and 1995 fossil-fuel assets have no effect (the one exception is Norway). Whether a country prices carbon at all and how high are different processes: a Tobit model is rejected against a double hurdle, and democracy is the only robust predictor of pricing at all.
 
-8. **Timing of adoption:** own CSCC doesn't speed up the first adoption of a carbon price. Income is by far the strongest predictor of when a country adopts (hazard ratio 4–11 per SD), democracies adopt earlier (hazard ratio about 3–5), and outside the EU more populous countries adopt earlier.
+8. **Timing of adoption:** own CSCC doesn't speed up the first adoption of a carbon price. Income is by far the strongest predictor of when a country adopts (hazard ratio 3–13 per SD), democracies adopt earlier (hazard ratio about 3–6), and more populous countries adopt earlier (hazard ratio 1.4–2.0).
 
-Overall, observed policy sits well below the cooperative benchmark and doesn't track own CSCC the way a Nash model predicts. The cross-country variation that does exist is mostly about income and size.
+Overall, observed policy sits well below the cooperative benchmark and doesn't track own CSCC the way a Nash model predicts. The cross-country variation that does exist is mostly about income and size. Large countries favour renewables support over carbon prices.
 
 # Setup
 
@@ -95,6 +95,7 @@ First run `gams extract_macc.gms` and `policy_intensity_counterfactuals.do` (Sta
 | Green subsidy regressions | `regress_green_subsidies.py` | `output/regressions/green_subsidies_regressions.csv` |
 | Green spending regressions | `regress_green_spending.py` | `output/regressions/green_spending_regressions.csv` |
 | Kitchen sink regressions | `regress_kitchen_sink.py` | `output/regressions/kitchen_sink_regressions.csv`, `output/data/kitchen_sink_inputs.csv` |
+| EPS carbon price vs non-price support | `regress_eps_price_split.py` | `output/regressions/eps_price_split_regressions.csv` |
 | Tobit vs double hurdle (Dolphin price) | `regress_dolphin_hurdle.py` | `output/regressions/dolphin_hurdle_regressions.csv`, `output/regressions/dolphin_hurdle_lr_tests.csv` |
 | Country-year policy panel | `generate_policy_panel.py` | `output/data/policy_panel.csv` |
 | Carbon price adoption hazard | `regress_carbon_price_adoption.py` | `output/regressions/carbon_price_adoption_hazard.csv` |
@@ -318,8 +319,9 @@ Each spec drops instruments but keeps this structure: pillars stay equally weigh
 | `eps_no_air` | NOx/SOx taxes, all emission limits (the whole non-market pillar) | market-based + technology support |
 | `eps_climate` | also the diesel tax (a fuel excise, not a carbon price) | CO2 tax, CO2 ETS, renewable trading, solar/wind support, low-carbon R&D |
 | `eps_carbon_price` | also renewable trading and technology support | CO2 tax and CO2 ETS only |
+| `eps_nonprice` | the complement of `eps_carbon_price` within `eps_climate`: drops the CO2 tax and CO2 ETS instead | renewable trading, low-carbon R&D, solar/wind support |
 
-In 2020, `eps_no_air` and `eps_climate` are nearly identical (correlation 0.99) and correlate ~0.9 with the headline EPS. `eps_carbon_price` correlates only 0.57–0.68 with the others: the US, China, India, Australia and Brazil score 0–0.5, while Ireland and Iceland (3.5) and the Nordics and Switzerland (4.5) score highest.
+In 2020, `eps_no_air` and `eps_climate` are nearly identical (correlation 0.99) and correlate ~0.9 with the headline EPS. `eps_carbon_price` correlates only 0.57–0.68 with the others: the US, China, India, Australia and Brazil score 0–0.5, while Ireland and Iceland (3.5) and the Nordics and Switzerland (4.5) score highest. The two halves of `eps_climate` barely move together: `eps_carbon_price` and `eps_nonprice` correlate 0.17.
 
 `regress_eps_stringency.py` regresses each spec, one regressor at a time, on Nash abatement (`noncoop_optimal_mu_spec2`), cooperative abatement (`coop_optimal_mu_spec2`) and population share, with HC1 SEs.
 
@@ -329,12 +331,56 @@ In 2020, `eps_no_air` and `eps_climate` are nearly identical (correlation 0.99) 
 | `eps_no_air` | −0.028 (p = 0.16) | −0.034 (p = 0.27) | −0.042\*\* |
 | `eps_climate` | −0.016 (p = 0.45) | −0.023 (p = 0.47) | −0.028 (p = 0.18) |
 | `eps_carbon_price` | −0.106\*\*\* (R² 0.10) | −0.037 (p = 0.28) | −0.125\*\*\* (R² 0.12) |
+| `eps_nonprice` | +0.061\* (p = 0.09) | −0.008 (p = 0.83) | +0.043 (p = 0.42) |
 
 n = 40. Without the US, China and India (n = 37):
-- Every population-share slope is negative and significant (−0.41 to −0.88).
-- The Nash slope on `eps_carbon_price` steepens to −0.71\*\*\*.
+- Every population-share slope on the first four specs is negative and significant (−0.41 to −0.88). On `eps_nonprice` it is −0.24 (p = 0.20).
+- The Nash slope on `eps_carbon_price` steepens to −0.71\*\*\*. On `eps_nonprice` it is ≈ 0 (p = 0.92).
 
-No spec rises with Nash or cooperative abatement. Explicit carbon pricing is lower where predicted Nash abatement is higher. Those are mostly the large countries (Nash μ correlates 0.62 with population), so the two effects can't be separated with 40 countries.
+No spec rises significantly with Nash or cooperative abatement. Explicit carbon pricing is lower where predicted Nash abatement is higher. Non-price support rises slightly (p < 0.1), but only with the US, China and India included. Those are mostly the large countries (Nash μ correlates 0.62 with population), so the two effects can't be separated with 40 countries.
+
+### 6a. Carbon prices vs non-price support
+
+`eps_climate` mixes two kinds of instrument that respond to country characteristics in opposite directions. `regress_eps_price_split.py` regresses each half, and each non-price instrument, on own CSCC (specs 1–4) or population share, one at a time, under three control sets: none, GDP per capita, and the six kitchen-sink controls of section 10 (corruption, democracy, Gini, 1995 fossil assets, land area, GDP per capita). HC1 SEs. Outcome and regressors are standardised within each sample → `output/regressions/eps_price_split_regressions.csv`.
+
+The non-price instruments are renewable trading schemes (`TRADESCH_RENEW`, green certificates and portfolio standards), low-carbon public R&D (`RD_SUB`, scored by size relative to GDP; the EPS R&D score of section 9) and solar and wind support (`FIT_SOLAR`, `FIT_WIND`, averaged here as `eps_fit`).
+
+**Standardised coefficients, full sample (n = 40; 39 with kitchen-sink controls):**
+
+| Outcome | Controls | Spec 1 | Spec 2 | Spec 3 | Spec 4 | Pop share |
+|---|---|---|---|---|---|---|
+| EPS climate | none | −0.10 | −0.02 | −0.06 | −0.00 | −0.10 |
+| | kitchen sink | +0.11\*\* | +0.12 | +0.11\*\* | +0.13\*\* | +0.21\*\* |
+| Carbon price part | none | −0.37\*\*\* | −0.27\*\* | −0.31\*\*\* | −0.25 | −0.34\*\*\* |
+| | GDP per capita | −0.26\*\* | −0.28\*\*\* | −0.19\* | −0.15 | −0.20\*\* |
+| | kitchen sink | −0.15\*\*\* | −0.15\* | −0.14\*\*\* | −0.14\*\*\* | −0.07 |
+| Non-price part | none | +0.22\*\* | +0.24\*\*\* | +0.22\*\*\* | +0.21\* | +0.13 |
+| | GDP per capita | +0.32\*\*\* | +0.23\*\*\* | +0.33\*\*\* | +0.30\*\*\* | +0.28 |
+| | kitchen sink | +0.35\*\*\* | +0.29\*\* | +0.36\*\*\* | +0.35\*\*\* | +0.35\* |
+| Renewable trading | kitchen sink | +0.38\*\*\* | +0.24\* | +0.39\*\*\* | +0.35\*\*\* | +0.28 |
+| Low-carbon R&D | none | −0.24\*\* | −0.02 | −0.24\*\*\* | −0.22 | −0.29\*\*\* |
+| | kitchen sink | −0.05 | +0.08 | −0.07 | −0.04 | +0.06 |
+| Solar/wind support | kitchen sink | +0.15\*\*\* | +0.16\* | +0.15\*\*\* | +0.19\*\*\* | +0.25\*\*\* |
+
+**Without the US, China and India (n = 37; 36 with kitchen-sink controls):**
+
+| Outcome | Controls | Spec 1 | Spec 2 | Spec 3 | Spec 4 | Pop share |
+|---|---|---|---|---|---|---|
+| Carbon price part | none | −0.35\*\* | −0.34\*\* | −0.32\*\* | −0.05 | −0.49\*\*\* |
+| | kitchen sink | −0.19 | −0.08 | −0.19 | −0.39\* | −0.16 |
+| Non-price part | none | −0.20 | +0.05 | −0.21 | +0.03 | −0.14 |
+| | GDP per capita | −0.09 | +0.16 | −0.11 | +0.04 | +0.07 |
+| | kitchen sink | +0.13 | +0.31\* | +0.08 | +0.52\* | +0.44\*\* |
+| Low-carbon R&D | kitchen sink | −0.23 | +0.42\*\*\* | −0.31\* | −0.36 | +0.26 |
+| Solar/wind support | kitchen sink | +0.01 | +0.28\* | +0.04 | +0.30 | +0.51\*\*\* |
+
+**Findings:**
+- **Carbon prices fall with size and own CSCC; non-price support rises.** In the full sample the price part is negative for every size or damages measure and control set (20 of 30 significant across both samples), and the non-price part is positive in all 15 full-sample regressions (13 significant). The two cancel in `eps_climate`, which is why it is flat without controls and turns positive only once the controls absorb part of the price side (section 10).
+- **The non-price effect is deployment support, not R&D.** Renewable trading schemes and solar/wind support carry it. Low-carbon R&D, the EPS measure in section 9, is negative without controls and ≈ 0 with them. Deployment support is largely financed by electricity consumers rather than budgets, so this doesn't conflict with section 9's finding that public green spending relative to GDP doesn't rise with own CSCC.
+- **Without the US, China and India, the damages effect goes.** Without controls, every non-price coefficient is ≈ 0 or negative. With the kitchen-sink controls it is positive only for the size-like measures: spec 2 (+0.31, p < 0.1; rank correlation 0.93 with log GDP), spec 4 (+0.52, p < 0.1) and population share (+0.44, p < 0.05). Specs 1 and 3 are ≈ 0. So the positive non-price association is driven by the three largest countries or by size, not by own damages.
+- **Carbon prices never rise with size or own CSCC** in any spec, sample or control set.
+
+**Caveats:** 40 mostly OECD countries; up to 8 parameters on 36 observations with the kitchen-sink controls; EPS scores are ordinal 0–6 policy-design scores, not spending or effective prices.
 
 ## 7. Abatement implied by structural breaks
 
@@ -459,7 +505,7 @@ The EPS stops in 2020 and the spending tracker starts in 2020, so only the RD&D 
 - **Relative to GDP, spending falls with own CSCC in specs 1, 3 and 4.** The EPS R&D score, RD&D as % of GDP and clean commitments as % of GDP all fall with own CSCC (ρ ≈ −0.3 to −0.55, mostly significant). Norway, France, Finland and Switzerland are among the most RD&D-intensive countries and have low CSCCs. Mexico, Spain and Türkiye are among the least and have high ones. Japan is the exception (high on both).
 - **Mostly income.** Richer countries have lower CSCCs (ρ = −0.23 to −0.38 with log GDP per capita) and spend more relative to GDP. With a GDP per capita control, the OLS slopes are mostly insignificant, but the partial rank correlations stay at about −0.3 and never turn positive.
 - **Excluding the US, China and India doesn't change this.** None of the three is in the RD&D data after 2015 (see caveats), and dropping them from the spending tracker leaves the negative intensity results intact or stronger.
-- Together with section 8, outside spec 2's size effect, nothing suggests that countries with higher own damages support green technology more, as a Nash model would predict.
+- Together with section 8, outside spec 2's size effect, nothing suggests that countries with higher own damages support green technology more, as a Nash model would predict. Off-budget deployment support (renewable trading schemes, solar/wind support) is the one exception in the full sample, and it rests on the US, China and India (section 6a).
 
 **Caveats:**
 - **The US has no RD&D data after 2015.** The IEA estimates US budgets from 2016 onwards, and the explorer API doesn't serve those estimates. China and India aren't IEA members, so the RD&D sample is OECD-heavy (29 countries).
@@ -469,12 +515,12 @@ The EPS stops in 2020 and the spending tracker starts in 2020, so only the RD&D 
 
 ## 10. Kitchen sink
 
-`regress_kitchen_sink.py` regresses each outcome jointly on eight country characteristics, with HC1 SEs → `output/regressions/kitchen_sink_regressions.csv` (spec `main`). The outcome and all regressors are standardised (mean 0, SD 1) within each estimation sample, so coefficients are the SDs of outcome change per 1 SD of the regressor. Multiply by the outcome SD in the table to get $/t, €/t or EPS points. A sensitivity check (spec `interactions`) adds interactions of corruption and inequality with fossil-fuel assets.
+`regress_kitchen_sink.py` regresses each outcome jointly on seven country characteristics, with HC1 SEs → `output/regressions/kitchen_sink_regressions.csv` (spec `main`). The first is a size measure, either own CSCC (size `cscc`) or population share (size `pop`). Population is largely a proxy for own CSCC (rank correlation 0.72), so the two are never in the same model and every regression is run once with each. The outcome and all regressors are standardised (mean 0, SD 1) within each estimation sample, so coefficients are the SDs of outcome change per 1 SD of the regressor. Multiply by the outcome SD in the table to get $/t, €/t or EPS points. A sensitivity check (spec `interactions`) adds interactions of corruption and inequality with fossil-fuel assets.
 
 | Regressor | Definition |
 |---|---|
-| Population share | % of world population, 2020 |
-| CSCC, spec 2 | own country SCC (Ricke et al.), $/tCO2 |
+| CSCC, spec 2 (size `cscc`) | own country SCC (Ricke et al.), $/tCO2 |
+| Population share (size `pop`) | % of world population, 2020 |
 | Corruption | V-Dem political corruption index (`v2x_corr`), 2020; 0–1, higher = more corrupt |
 | Democracy | V-Dem electoral democracy index (`v2x_polyarchy`), 2020; 0–1, higher = more democratic |
 | Gini | WB Gini index, latest year 2010–2020 |
@@ -482,103 +528,103 @@ The EPS stops in 2020 and the spending tracker starts in 2020, so only the RD&D 
 | Land area | million km², 2020 |
 | GDP per capita | current US$, 2020 (WB WDI) |
 
-Fossil-fuel wealth is measured by subsoil assets rather than rents. 1995 rents (% of GDP) were dropped: they are noisy and move with fuel prices. They are still computed and saved in `output/data/kitchen_sink_inputs.csv`. A fuel missing from the assets data counts as zero when the country reports either of the other two. New Zealand has no WB Gini, so it drops out. Earlier versions also included the MAC curve coefficient *a* and rents; dropping them adds seven countries to the Dolphin sample.
+Fossil-fuel wealth is measured by subsoil assets rather than rents. 1995 rents (% of GDP) were dropped: they are noisy and move with fuel prices. They are still computed and saved in `output/data/kitchen_sink_inputs.csv`. A fuel missing from the assets data counts as zero when the country reports either of the other two. New Zealand has no WB Gini, so it drops out. Earlier versions also included the MAC curve coefficient *a* and rents; dropping them adds seven countries to the Dolphin sample. Earlier versions also included population share and own CSCC together.
 
 **Standardised coefficients (robust SE), full sample:**
 
-| | Dolphin carbon price (2020) | OECD effective carbon rate (2021) | EPS climate (2020) |
-|---|---|---|---|
-| Population share | +0.07 (0.04) | +0.06 (0.05) | +0.19 (0.11) |
-| CSCC, spec 2 | −0.16\*\* (0.07) | −0.17\*\*\* (0.05) | +0.04 (0.09) |
-| Corruption | −0.10 (0.09) | −0.37\*\*\* (0.12) | −0.04 (0.23) |
-| Democracy | +0.19\*\*\* (0.07) | +0.09 (0.10) | +0.04 (0.25) |
-| Gini | −0.13\*\* (0.06) | −0.18\*\*\* (0.06) | −0.26\*\* (0.12) |
-| Fossil fuel assets, 1995 | +0.03 (0.10) | +0.10 (0.08) | −0.01 (0.13) |
-| Land area | −0.05 (0.07) | −0.27\*\*\* (0.10) | −0.21\*\* (0.10) |
-| GDP per capita | +0.41\* (0.21) | +0.35\*\*\* (0.12) | +0.51\*\*\* (0.18) |
-| n | 128 | 70 | 39 |
-| R² | 0.43 | 0.75 | 0.54 |
-| Outcome SD | $10.8/t | €39.2/t | 1.07 points |
+| | Dolphin (2020): CSCC | Dolphin (2020): pop | OECD rate (2021): CSCC | OECD rate (2021): pop | EPS climate (2020): CSCC | EPS climate (2020): pop |
+|---|---|---|---|---|---|---|
+| CSCC, spec 2 | −0.13\*\* (0.06) | | −0.14\*\* (0.06) | | +0.12 (0.09) | |
+| Population share | | +0.00 (0.03) | | −0.00 (0.06) | | +0.21\*\* (0.09) |
+| Corruption | −0.10 (0.09) | −0.10 (0.09) | −0.38\*\*\* (0.12) | −0.35\*\*\* (0.11) | −0.06 (0.21) | −0.05 (0.22) |
+| Democracy | +0.18\*\*\* (0.07) | +0.18\*\*\* (0.07) | +0.06 (0.10) | +0.09 (0.10) | −0.10 (0.19) | +0.05 (0.24) |
+| Gini | −0.14\*\* (0.06) | −0.15\*\* (0.06) | −0.19\*\*\* (0.06) | −0.21\*\*\* (0.07) | −0.28\*\* (0.12) | −0.25\*\* (0.11) |
+| Fossil fuel assets, 1995 | +0.03 (0.10) | +0.00 (0.09) | +0.10 (0.08) | +0.05 (0.10) | −0.04 (0.13) | +0.00 (0.11) |
+| Land area | −0.03 (0.07) | −0.09 (0.08) | −0.26\*\*\* (0.10) | −0.29\*\*\* (0.09) | −0.21\*\* (0.10) | −0.20\*\* (0.10) |
+| GDP per capita | +0.40\*\* (0.20) | +0.38\*\* (0.19) | +0.34\*\*\* (0.12) | +0.32\*\*\* (0.12) | +0.49\*\*\* (0.17) | +0.51\*\*\* (0.17) |
+| n | 128 | 128 | 70 | 70 | 39 | 39 |
+| R² | 0.43 | 0.42 | 0.75 | 0.74 | 0.52 | 0.53 |
+| Outcome SD | $10.8/t | $10.8/t | €39.2/t | €39.2/t | 1.07 points | 1.07 points |
 
 \* p < 0.1, \*\* p < 0.05, \*\*\* p < 0.01.
 
-**Without the US, China and India** (n = 125, 67, 36), democracy (Dolphin), corruption (OECD), Gini, land area (OECD, EPS) and GDP per capita keep their signs and significance. The spec 2 CSCC coefficients become insignificant on all three outcomes (−0.09, +0.07, +0.23).
+**Without the US, China and India** (n = 125, 67, 36), democracy (Dolphin), corruption (OECD), Gini, land area (OECD, EPS) and GDP per capita keep their signs and significance in both versions (Gini on EPS weakens to p < 0.1 with population share). The spec 2 CSCC coefficients on the two prices become insignificant (−0.06, −0.00), while the one on EPS turns significant (+0.30, p < 0.05). Population share stays insignificant for the prices (−0.01, −0.06) and positive for EPS (+0.33, p < 0.05).
 
 **Positive carbon prices only.** The model is re-estimated on the two carbon prices after dropping countries with a zero price (samples `positive_price` and `positive_price_no_us_chn_ind`; EPS isn't filtered). This drops 88 of 128 countries from the Dolphin sample, leaving 40, mostly European plus a few large emitters such as Canada, China, Japan, Korea, Mexico, South Africa and the US. It drops 4 of 70 from the OECD sample.
 
-| | Dolphin, price > 0 | OECD, price > 0 |
-|---|---|---|
-| Population share | +0.05 (0.09) | +0.05 (0.06) |
-| CSCC, spec 2 | −0.68\*\* (0.27) | −0.17\*\*\* (0.05) |
-| Corruption | −0.31 (0.19) | −0.36\*\*\* (0.13) |
-| Democracy | +0.09 (0.15) | +0.06 (0.10) |
-| Gini | −0.36\*\* (0.15) | −0.18\*\*\* (0.07) |
-| Fossil fuel assets, 1995 | +0.64\*\* (0.33) | +0.13 (0.08) |
-| Land area | +0.03 (0.10) | −0.30\*\*\* (0.10) |
-| GDP per capita | +0.10 (0.19) | +0.36\*\*\* (0.13) |
-| n | 40 | 66 |
-| R² | 0.40 | 0.75 |
-| Outcome SD | $15.5/t | €38.8/t |
+| | Dolphin, price > 0: CSCC | Dolphin, price > 0: pop | OECD, price > 0: CSCC | OECD, price > 0: pop |
+|---|---|---|---|---|
+| CSCC, spec 2 | −0.67\*\* (0.26) | | −0.15\*\* (0.06) | |
+| Population share | | −0.04 (0.14) | | −0.01 (0.06) |
+| Corruption | −0.34\* (0.17) | −0.25 (0.18) | −0.38\*\*\* (0.13) | −0.34\*\*\* (0.12) |
+| Democracy | +0.04 (0.10) | +0.01 (0.15) | +0.03 (0.10) | +0.05 (0.10) |
+| Gini | −0.36\*\* (0.14) | −0.27\* (0.14) | −0.18\*\*\* (0.06) | −0.20\*\*\* (0.07) |
+| Fossil fuel assets, 1995 | +0.64\*\* (0.32) | +0.24 (0.31) | +0.13 (0.08) | +0.08 (0.10) |
+| Land area | +0.04 (0.10) | −0.23 (0.20) | −0.30\*\*\* (0.10) | −0.33\*\*\* (0.09) |
+| GDP per capita | +0.10 (0.18) | +0.11 (0.19) | +0.35\*\*\* (0.12) | +0.33\*\*\* (0.12) |
+| n | 40 | 40 | 66 | 66 |
+| R² | 0.40 | 0.29 | 0.75 | 0.73 |
+| Outcome SD | $15.5/t | $15.5/t | €38.8/t | €38.8/t |
 
-Without the US, China and India the Dolphin positive-price results are unstable (n = 38): Gini weakens to p < 0.1, while population share (−1.06) and spec 2 CSCC (+0.85) flip into significance with opposite signs. The OECD results are unchanged.
+Without the US, China and India (n = 38, 63), the Dolphin positive-price CSCC coefficient becomes insignificant (−0.17) and population share turns significantly negative (−0.25, p < 0.05). Gini (−0.33 to −0.36, p < 0.05) and assets (+0.42 to +0.45, p < 0.05) are significant in both versions. The OECD results are unchanged.
 
 **Findings:**
-- **Income is the strongest predictor.** A 1 SD increase in GDP per capita goes with a 0.4–0.5 SD higher outcome (about $5/t, €14/t and 0.5 EPS points), with or without the US, China and India. Among countries with a positive Dolphin price, though, income doesn't predict the level (+0.10): it mainly predicts *whether* a country prices carbon (section 10b).
-- **Inequality lowers carbon prices with income controlled.** Gini is significant on all three outcomes (−0.13 to −0.26 SD) and among positive prices, with or without the US, China and India.
-- **Democracy and corruption split the institutional effect.** The two correlate −0.72. Democracy carries the Dolphin price (+0.19 SD, p < 0.01), where most of the variation is whether a country prices at all, and corruption becomes insignificant there (−0.10, down from −0.21 without democracy). Corruption carries the OECD rate (−0.37 SD, p < 0.01), a sample of mostly pricing countries where democracy adds nothing (+0.09). Neither predicts EPS.
-- **Own CSCC is negative for both prices, but only because of the US, China and India.** Those three have the highest spec 2 CSCCs ($214, $80 and $47/t) and low or zero carbon prices. Without them, the CSCC coefficients are insignificant on all three outcomes. This is consistent with section 5.
-- **Larger land area goes with a lower OECD rate and EPS score** (−0.28 and −0.22 SD). Population share is significant only for EPS, and only with the US, China and India included.
-- **1995 fossil-fuel assets don't predict carbon pricing or stringency.** The full-sample coefficients are +0.03, +0.10 and −0.01, all insignificant. The one significant result, +0.64 among positive Dolphin prices, is Norway: it has large reserves and the highest Dolphin price ($66/t), and without it the coefficient falls to 0.18 (p = 0.42). The OECD positive-price coefficient (+0.13, p = 0.11) turns negative without Russia.
+- **Income is the strongest predictor.** A 1 SD increase in GDP per capita goes with a 0.3–0.5 SD higher outcome (about $4/t, €13/t and 0.5 EPS points), with either size measure and with or without the US, China and India. Among countries with a positive Dolphin price, though, income doesn't predict the level (+0.10): it mainly predicts *whether* a country prices carbon (section 10b).
+- **Inequality lowers carbon prices with income controlled.** Gini is significant on all three outcomes (−0.14 to −0.28 SD) and among positive prices, with either size measure and with or without the US, China and India.
+- **Democracy and corruption split the institutional effect.** The two correlate −0.72. Democracy carries the Dolphin price (+0.18 SD, p < 0.01), where most of the variation is whether a country prices at all, and corruption becomes insignificant there (−0.10, down from −0.21 without democracy). Corruption carries the OECD rate (−0.35 to −0.38 SD, p < 0.01), a sample of mostly pricing countries where democracy adds nothing (+0.06 to +0.09). Neither predicts EPS.
+- **Own CSCC is negative for both prices, but only because of the US, China and India.** Those three have the highest spec 2 CSCCs ($214, $80 and $47/t) and low or zero carbon prices. Without them, the CSCC coefficients on the prices are insignificant. This is consistent with section 5. On EPS, own CSCC is positive (+0.12, insignificant; +0.30, p < 0.05, without the three, on 36 observations).
+- **Population doesn't predict carbon prices but does predict EPS.** Population share is ≈ 0 for both prices in the full sample and +0.21 to +0.33 SD (p < 0.05) for EPS. The EPS effect comes from non-price support, not the CO2 tax or ETS scores, and it appears only with the controls in (section 6a). Larger land area goes with a lower OECD rate and EPS score (−0.20 to −0.29 SD) in both versions.
+- **1995 fossil-fuel assets don't predict carbon pricing or stringency.** The full-sample coefficients range from −0.04 to +0.10, all insignificant. The one significant result, +0.64 among positive Dolphin prices with CSCC (+0.24, insignificant, with population share), is Norway: it has large reserves and the highest Dolphin price ($66/t), and without it the coefficient falls to 0.18 (p = 0.41). The OECD positive-price coefficients (+0.13 and +0.08, insignificant) turn negative without Russia.
 
-**Sensitivity: interactions.** Spec `interactions` adds corruption × assets and Gini × assets (each the standardised product of the standardised terms, so main effects are at the mean of the terms they interact with). The only consistent interaction is Gini × assets for the full-sample Dolphin price (+0.08 to +0.09, p < 0.05, with or without the US, China and India). That is a floor effect: 69% of the Dolphin sample prices at zero, including 86% of the more-unequal half, so assets have nothing to lower there. Among positive Dolphin prices the interactions change sign and are unstable: corruption × assets −0.27 (p < 0.05) in the full sample, Gini × assets −0.21 (p < 0.05) without the US, China and India, on about 40 observations. For EPS, corruption × assets is −0.41 (p < 0.05) only without the US, China and India (n = 36). Nothing is significant for the OECD rate. Adding the interactions leaves GDP per capita, democracy (Dolphin), corruption (OECD), Gini (both prices) and land area (OECD) with the same signs and significance. The spec 2 CSCC coefficients become insignificant everywhere except among positive Dolphin prices.
+**Sensitivity: interactions.** Spec `interactions` adds corruption × assets and Gini × assets (each the standardised product of the standardised terms, so main effects are at the mean of the terms they interact with). The most consistent interaction is Gini × assets for the full-sample Dolphin price: +0.08 to +0.09 (p < 0.1 or better) with CSCC, with or without the US, China and India, and +0.08 (p < 0.05) with population share only without them. That is a floor effect: 69% of the Dolphin sample prices at zero, including 86% of the more-unequal half, so assets have nothing to lower there. Among positive Dolphin prices no interaction is significant. For EPS, corruption × assets is −0.34 (p < 0.1) with CSCC and −0.47 (p < 0.01) with population share, only without the US, China and India (n = 36). For the OECD rate, corruption × assets is +0.15 to +0.16 (p < 0.05) with population share only. Adding the interactions leaves GDP per capita, democracy (Dolphin), corruption (OECD), Gini (both prices) and land area (OECD) with the same signs and significance. The spec 2 CSCC coefficients become insignificant everywhere except among positive Dolphin prices (−0.84, p < 0.01) and EPS without the US, China and India (+0.28, p < 0.1).
 
 **Caveats:**
-- **The EPS regression has 9 parameters on 39 observations** (11 with interactions), so its coefficients are imprecise.
+- **The EPS regression has 8 parameters on 39 observations** (10 with interactions), so its coefficients are imprecise.
 - **The Dolphin price is zero for most countries,** so the full-sample OLS mixes whether a country prices carbon at all with how much. Section 10b models the two separately.
 - GDP per capita, corruption, democracy and Gini are strongly correlated (corruption correlates −0.68 with GDP per capita and −0.72 with democracy in the Dolphin sample, and more strongly in the smaller OECD and EPS samples), so their separate coefficients are imprecise.
 - Regressors are in levels, so heavy-tailed ones (land area, assets, population, GDP per capita) are driven by a few countries, as the Norway and Russia results show.
 
 ### 10b. Tobit vs double hurdle for the Dolphin price
 
-Two thirds of countries have a zero Dolphin price, so `regress_dolphin_hurdle.py` fits two models built for zero-heavy outcomes on the kitchen-sink regressors, by maximum likelihood with robust (sandwich) SEs:
+Two thirds of countries have a zero Dolphin price, so `regress_dolphin_hurdle.py` fits two models built for zero-heavy outcomes on the kitchen-sink regressors (again once with own CSCC and once with population share), by maximum likelihood with robust (sandwich) SEs:
 
 - **Tobit:** one latent price drives both margins, price = max(0, Xβ + ε). Each regressor has one coefficient for whether a country prices carbon and how high.
 - **Cragg double hurdle:** a probit for whether the price is positive, plus a truncated normal regression for the price given that it is positive, with separate coefficients. Tobit is the special case in which the probit coefficients equal β/σ, so a likelihood-ratio test of Tobit against the hurdle (df = number of probit coefficients) tests whether one process drives both.
 
-Regressors are standardised. The price is divided by its SD ($10.8/t) but not centred, so zero stays the censoring point. Effects are reported as average marginal effects (AMEs, delta-method SEs). The main spec has the eight main effects; as in section 10, a sensitivity spec adds the two interactions.
+Regressors are standardised. The price is divided by its SD ($10.8/t) but not centred, so zero stays the censoring point. Effects are reported as average marginal effects (AMEs, delta-method SEs). The main spec has the seven main effects; as in section 10, a sensitivity spec adds the two interactions.
 
 **Likelihood-ratio tests: Tobit is rejected in every spec.**
 
-| Spec | Sample | n (positive) | LR statistic | df | p |
-|---|---|---|---|---|---|
-| Main effects | full | 128 (40) | 33.4 | 9 | 0.0001 |
-| Main effects | without US, China, India | 125 (38) | 28.2 | 9 | 0.0009 |
-| With interactions | full | 128 (40) | 40.4 | 11 | < 0.0001 |
-| With interactions | without US, China, India | 125 (38) | 36.6 | 11 | 0.0001 |
+| Spec | Sample | n (positive) | LR, CSCC | p, CSCC | LR, pop | p, pop | df |
+|---|---|---|---|---|---|---|---|
+| Main effects | full | 128 (40) | 33.2 | < 0.0001 | 29.8 | 0.0002 | 8 |
+| Main effects | without US, China, India | 125 (38) | 19.1 | 0.014 | 19.3 | 0.013 | 8 |
+| With interactions | full | 128 (40) | 44.8 | < 0.0001 | 42.1 | < 0.0001 | 10 |
+| With interactions | without US, China, India | 125 (38) | 28.3 | 0.002 | 29.2 | 0.001 | 10 |
 
 **Average marginal effects, main effects spec, full sample (robust SE):**
 
-| | Tobit: E[price] (SD) | Hurdle: P(price > 0) | Hurdle: E[price \| price > 0] (SD) |
-|---|---|---|---|
-| Population share | +0.10\* (0.06) | −0.11\*\* (0.05) | −1.82 (1.32) |
-| CSCC, spec 2 | −0.06\* (0.04) | +0.45\*\* (0.18) | −0.27 (0.38) |
-| Corruption | −0.15\*\* (0.07) | −0.01 (0.03) | −0.84 (0.64) |
-| Democracy | +0.29\*\*\* (0.09) | +0.14\*\*\* (0.04) | +0.90 (0.78) |
-| Gini | −0.12\*\* (0.06) | −0.04 (0.03) | −0.43\* (0.24) |
-| Fossil fuel assets, 1995 | +0.07 (0.07) | −0.01 (0.03) | +0.62\*\*\* (0.20) |
-| Land area | −0.01 (0.06) | −0.06 (0.07) | −0.01 (0.07) |
-| GDP per capita | +0.10 (0.07) | +0.07 (0.05) | −0.06 (0.14) |
-| n | 128 | 128 | 40 |
+| | Tobit: E[price] (SD), CSCC | Tobit: pop | Hurdle: P(price > 0), CSCC | Hurdle: P(price > 0), pop | Hurdle: E[price \| price > 0] (SD), CSCC | Hurdle: E[price \| price > 0], pop |
+|---|---|---|---|---|---|---|
+| CSCC, spec 2 | −0.03 (0.04) | | +0.16\*\* (0.08) | | −0.92\*\* (0.46) | |
+| Population share | | +0.08 (0.05) | | +0.04 (0.03) | | −2.43\*\* (1.04) |
+| Corruption | −0.18\*\* (0.08) | −0.15\*\* (0.07) | −0.03 (0.03) | −0.04 (0.04) | −0.79 (0.65) | −0.84 (0.65) |
+| Democracy | +0.23\*\* (0.09) | +0.27\*\*\* (0.09) | +0.13\*\*\* (0.04) | +0.12\*\*\* (0.03) | +1.16 (0.84) | +0.88 (0.78) |
+| Gini | −0.13\*\* (0.06) | −0.13\*\* (0.06) | −0.03 (0.03) | −0.03 (0.03) | −0.51\*\* (0.24) | −0.42\* (0.25) |
+| Fossil fuel assets, 1995 | +0.05 (0.07) | +0.04 (0.07) | −0.00 (0.03) | +0.00 (0.03) | +0.63\*\*\* (0.20) | +0.58\*\*\* (0.20) |
+| Land area | +0.02 (0.06) | −0.04 (0.06) | −0.03 (0.06) | −0.00 (0.04) | +0.04 (0.09) | −0.05 (0.08) |
+| GDP per capita | +0.10 (0.07) | +0.10 (0.07) | +0.10\* (0.05) | +0.11\*\* (0.05) | −0.05 (0.14) | −0.06 (0.14) |
+| n | 128 | 128 | 128 | 128 | 40 | 40 |
 
-The participation column is the change in the probability of pricing carbon per 1 SD of the regressor (e.g. +0.14 = 14 percentage points). The other two columns are in SDs of the price.
+The participation columns are the change in the probability of pricing carbon per 1 SD of the regressor (e.g. +0.13 = 13 percentage points). The other columns are in SDs of the price.
 
 **Findings:**
-- **Whether a country prices carbon and how much are different processes.** The LR test rejects Tobit at p ≤ 0.001 in all four specs, so a single latent price is the wrong model. Tobit's coefficients average two margins that respond to different things.
-- **Participation is about democracy.** A 1 SD increase in democracy raises the probability of pricing carbon by 14 percentage points (p < 0.01), with or without the US, China and India. With democracy controlled, corruption has no participation effect (−0.01; it was −0.12, p < 0.01, without democracy), and GDP per capita is insignificant (+0.07 to +0.08; it was +0.09, p < 0.1).
-- **Own CSCC doesn't predict participation.** The spec 2 CSCC AME is +0.45 (p < 0.05), driven by the US and China, which have high CSCCs and (sub-national or national) carbon prices. Without the US, China and India it is +0.06 (insignificant). Population share (−0.11, p < 0.05) likewise loses significance without them.
-- **Nothing institutional predicts the price level among pricers.** Corruption (−0.84 SD) and democracy (+0.90 SD) are both insignificant once they are in together, and Gini is weakly negative (−0.43, p < 0.1). The asset effect on the price level (+0.62, p < 0.01) is Norway again: without it, −0.35 (p = 0.81).
-- **The intensity stage is poorly identified.** It has 38–40 observations, and prices are very right-skewed (Norway, Sweden and Finland are above $55/t). The truncated model therefore fits them as the far tail of a latent price centred well below zero, which inflates its marginal effects. Without the US, China and India, population share (−4.83 SD), spec 2 CSCC (+2.13 SD) and land area (−0.90 SD) become significant. With so few observations this instability, like the positive-price OLS, shouldn't be read as evidence.
-- **Sensitivity: interactions.** Adding the two interactions doesn't change this, and Tobit is still rejected (p < 0.0001).
+- **Whether a country prices carbon and how much are different processes.** The LR test rejects Tobit at p < 0.02 in all eight specs, so a single latent price is the wrong model. Tobit's coefficients average two margins that respond to different things.
+- **Participation is about democracy.** A 1 SD increase in democracy raises the probability of pricing carbon by 12–14 percentage points (p < 0.01), with either size measure and with or without the US, China and India. With democracy controlled, corruption has no participation effect (−0.02 to −0.04; it was −0.12, p < 0.01, without democracy). GDP per capita is weaker (+0.08 to +0.11; p < 0.05 with population share, insignificant or p < 0.1 with CSCC).
+- **Own CSCC doesn't predict participation.** The spec 2 CSCC AME is +0.16 (p < 0.05), driven by the US and China, which have high CSCCs and (sub-national or national) carbon prices. Without the US, China and India it is +0.06 (insignificant). Population share has no participation effect (+0.03 to +0.04).
+- **Nothing institutional predicts the price level among pricers.** Corruption (about −0.8 SD) and democracy (+0.9 to +1.2 SD) are both insignificant once they are in together, and Gini is negative (−0.42 to −0.57, p < 0.1 or better). The asset effect on the price level (+0.58 to +0.65, p < 0.01) is Norway again: without it, about −0.3 (p ≈ 0.8) in both versions.
+- **The intensity stage is poorly identified.** It has 38–40 observations, and prices are very right-skewed (Norway, Sweden and Finland are above $55/t). The truncated model therefore fits them as the far tail of a latent price centred well below zero, which inflates its marginal effects. The size measures are significantly negative in the full sample (CSCC −0.92, population share −2.43 SD) but insignificant without the US, China and India (−0.11, −0.44). With so few observations this instability, like the positive-price OLS, shouldn't be read as evidence.
+- **Sensitivity: interactions.** Adding the two interactions doesn't change this, and Tobit is still rejected (p ≤ 0.002).
 
 ## 11. Timing of carbon price adoption
 
@@ -593,21 +639,34 @@ Section 10b found that the clearest signal is in *whether* a country prices carb
 **Method:**
 - **Discrete-time hazard.** Each country is at risk from 1990 until its first year with a positive Dolphin price; that year is the event and later years are dropped.
 - **Complementary log-log GLM.** This is the discrete-time analogue of a Cox proportional hazards model, so exp(coef) is a hazard ratio: the proportional change in the yearly adoption probability per 1 SD of the regressor. Standard errors are clustered by country.
-- **Regressors.** Slim: own CSCC, log GDP per capita (t−1), corruption (t−1) and democracy (t−1). Full adds Gini, 1995 fossil assets, land area and population share. All are standardised, and every model includes a cubic in calendar time (the baseline hazard) and an EU ETS coverage dummy.
+- **Regressors.** Slim: one size measure, log GDP per capita (t−1), corruption (t−1) and democracy (t−1). Full adds Gini, 1995 fossil assets and land area. As in section 10, the size measure is either own CSCC (each of specs 1–4, size `cscc`) or population share (size `pop`), never both. All are standardised, and every model includes a cubic in calendar time (the baseline hazard) and an EU ETS coverage dummy.
 - **Samples.** 19 of the 44 adoptions are EU members in 2005, which came with the EU ETS rather than a national decision. The non-EU samples drop ever-EU members (the UK included), leaving 19 adoptions: Norway 1991, Canada 2007, Switzerland and Iceland 2008, the US 2009, New Zealand 2010, Ukraine 2011, Japan and Australia 2012, China 2013, Kazakhstan and Mexico 2014, Korea 2015, Chile and Colombia 2017, Argentina 2018, Singapore and South Africa 2019, Uruguay 2022 and Indonesia 2023.
 
-**Hazard ratios, CSCC spec 2:**
+**Hazard ratios, size = own CSCC (spec 2):**
 
 | | Slim: all | Slim: non-EU | Slim: non-EU, no US/CHN/IND | Full: all | Full: non-EU | Full: non-EU, no US/CHN/IND |
 |---|---|---|---|---|---|---|
-| CSCC, spec 2 | 1.10\* | 1.14\*\* | 1.20 | 0.98 | 0.95 | 0.93 |
-| Log GDP per capita (t−1) | 4.31\*\*\* | 7.86\*\*\* | 9.02\*\*\* | 4.34\*\*\* | 11.04\*\*\* | 10.26\*\*\* |
-| Corruption (t−1) | 1.21 | 1.78 | 2.13\* | 1.20 | 2.08 | 2.18 |
-| Democracy (t−1) | 2.83\*\*\* | 3.02\*\*\* | 4.15\*\*\* | 2.98\* | 3.28\*\* | 5.00\*\*\* |
-| Gini | | | | 0.64 | 0.75 | 0.62 |
-| Fossil fuel assets, 1995 | | | | 1.08 | 1.15 | 1.39 |
-| Land area | | | | 1.14 | 1.09 | 0.92 |
-| Population share | | | | 1.43 | 1.86\*\* | 1.49\*\* |
+| CSCC, spec 2 | 1.10\* | 1.14\*\* | 1.20 | 1.07 | 1.13 | 1.22 |
+| Log GDP per capita (t−1) | 4.31\*\*\* | 7.86\*\*\* | 9.02\*\*\* | 3.35\*\* | 6.23\*\*\* | 8.06\*\*\* |
+| Corruption (t−1) | 1.21 | 1.78 | 2.13\* | 1.15 | 1.69 | 2.50\* |
+| Democracy (t−1) | 2.83\*\*\* | 3.02\*\*\* | 4.15\*\*\* | 2.99 | 2.86 | 5.83\*\*\* |
+| Gini | | | | 0.57 | 0.64 | 0.61 |
+| Fossil fuel assets, 1995 | | | | 1.08 | 1.05 | 1.42 |
+| Land area | | | | 1.18 | 1.20 | 0.91 |
+| Countries | 159 | 134 | 131 | 127 | 103 | 100 |
+| Adoptions | 44 | 19 | 17 | 42 | 18 | 16 |
+
+**Hazard ratios, size = population share:**
+
+| | Slim: all | Slim: non-EU | Slim: non-EU, no US/CHN/IND | Full: all | Full: non-EU | Full: non-EU, no US/CHN/IND |
+|---|---|---|---|---|---|---|
+| Population share | 1.59\*\*\* | 1.95\*\*\* | 1.43\* | 1.42\* | 1.81\*\* | 1.41\*\* |
+| Log GDP per capita (t−1) | 5.56\*\*\* | 13.12\*\*\* | 10.21\*\*\* | 4.31\*\*\* | 10.52\*\*\* | 9.76\*\*\* |
+| Corruption (t−1) | 1.23 | 2.08\* | 1.76 | 1.20 | 2.05 | 2.22 |
+| Democracy (t−1) | 2.95\*\*\* | 3.43\*\*\* | 3.48\*\*\* | 2.94\* | 3.19\*\* | 5.15\*\*\* |
+| Gini | | | | 0.63 | 0.73 | 0.62 |
+| Fossil fuel assets, 1995 | | | | 1.06 | 1.09 | 1.40 |
+| Land area | | | | 1.14 | 1.10 | 0.90 |
 | Countries | 159 | 134 | 131 | 127 | 103 | 100 |
 | Adoptions | 44 | 19 | 17 | 42 | 18 | 16 |
 
@@ -620,19 +679,19 @@ A hazard ratio above 1 means earlier adoption (e.g. 2.83 = the yearly adoption p
 | Slim | all | 1.08 | 1.10\* | 0.97 | 1.30 |
 | Slim | non-EU | 1.09 | 1.14\*\* | 0.96 | 1.50\* |
 | Slim | non-EU, no US/CHN/IND | 0.71 | 1.20 | 0.73 | 0.90 |
-| Full | all | 0.50\*\* | 0.98 | 0.41\*\*\* | 0.69 |
-| Full | non-EU | 0.43\*\* | 0.95 | 0.32\*\* | 0.62 |
-| Full | non-EU, no US/CHN/IND | 0.58\*\* | 0.93 | 0.55\*\* | 0.87 |
+| Full | all | 0.98 | 1.07 | 0.88 | 1.17 |
+| Full | non-EU | 1.00 | 1.13 | 0.88 | 1.33 |
+| Full | non-EU, no US/CHN/IND | 0.82 | 1.22 | 0.81 | 1.05 |
 
 **Findings:**
-- **Income drives adoption timing.** 1 SD higher GDP per capita multiplies the yearly adoption probability by 4.3–11 (p < 0.01) in every sample and covariate set. Rich countries adopt carbon pricing first. The ratios are larger than without democracy (2.8–5.7), because income and democracy pull in the same direction while corruption, which correlates negatively with both, now carries an HR above 1.
-- **Democracies adopt earlier.** 1 SD higher democracy multiplies the yearly adoption probability by 2.8–5.0 (p < 0.1 in the full model on all countries, p < 0.05 or better elsewhere). This matches section 10b, where democracy is the only robust predictor of pricing at all.
-- **Corruption no longer delays adoption.** It had HR 0.53 (p < 0.1) without democracy. With democracy controlled it is 1.2–2.2 and insignificant, except 2.13 (p < 0.1) in the slim model without the EU, US, China and India. Corruption's earlier effect was democracy's.
-- **Own CSCC doesn't speed adoption.** Spec 2 (HR 1.10–1.14) is significant only in the slim model with the US and China included, both early large adopters with high spec 2 CSCCs. It vanishes once size is controlled (full: 0.93–0.98) or the US, China and India are dropped. Specs 1 and 3 point the other way: in the full model, higher-CSCC countries adopt *later* (HR 0.32–0.58, p < 0.05) in every sample.
-- **More populous countries adopt earlier outside the EU** (population share HR 1.5–1.9, p < 0.05) once income is controlled. Land area is no longer significant (0.92–1.14). That is consistent with section 3's finding that larger countries have more climate policies, and the opposite of a free-rider story in which small countries hold back. 1995 fossil assets and Gini are insignificant.
+- **Income drives adoption timing.** 1 SD higher GDP per capita multiplies the yearly adoption probability by 3.4–13 (p < 0.05) in every sample, size measure and covariate set. Rich countries adopt carbon pricing first. The ratios are larger than without democracy (2.8–5.7), because income and democracy pull in the same direction while corruption, which correlates negatively with both, now carries an HR above 1.
+- **Democracies adopt earlier.** 1 SD higher democracy multiplies the yearly adoption probability by 2.8–5.8, significant (p < 0.1 or better) everywhere except the full CSCC model on all and non-EU countries (2.99 and 2.86, insignificant). This matches section 10b, where democracy is the only robust predictor of pricing at all.
+- **Corruption no longer delays adoption.** It had HR 0.53 (p < 0.1) without democracy. With democracy controlled it is 1.2–2.5 and mostly insignificant (p < 0.1 in three of twelve models). Corruption's earlier effect was democracy's.
+- **Own CSCC doesn't speed adoption.** Spec 2 (HR 1.07–1.22) is significant only in the slim model with the US and China included, both early large adopters with high spec 2 CSCCs. Across specs, the only other significant ratio is spec 4 in the slim non-EU model (1.50, p < 0.1). With population share out of the model, specs 1 and 3 no longer show higher-CSCC countries adopting *later* in the full model (0.81–1.00, insignificant): that earlier result came from including CSCC and population together.
+- **More populous countries adopt earlier** (population share HR 1.4–2.0, p < 0.1 or better, in every sample and covariate set) once income is controlled. Land area is not significant (0.90–1.20). That is consistent with section 3's finding that larger countries have more climate policies, and the opposite of a free-rider story in which small countries hold back. 1995 fossil assets and Gini are insignificant.
 
 **Caveats:**
-- **Only 16–19 adoptions outside the EU,** with 8–11 regressors plus the time cubic, so the non-EU full models are thin.
+- **Only 16–19 adoptions outside the EU,** with 4–7 regressors plus the time cubic, so the non-EU full models are thin.
 - **Adoption is any positive Dolphin price,** including sub-national schemes (RGGI for the US, provincial schemes for Canada, pilot ETSs for China) and very low coverage. The adoption year therefore marks a country's first carbon price, however small.
 - The Gini, land area and population share regressors are measured around 2020, after many adoptions.
 
