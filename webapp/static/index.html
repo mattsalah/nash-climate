@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abatement vs. Nash Optimum</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <h1>Realized abatement vs. the Nash optimum</h1>
+    <p class="sub">
+      Where a country's marginal abatement cost curve crosses its marginal
+      abatement benefit &mdash; and where its observed policy-driven abatement
+      actually sits.
+    </p>
+  </div>
+  <div id="demo-banner" class="banner hidden">
+    <strong>Demo data.</strong> These numbers are synthetic and generated for
+    testing the interface. Run without <code>--demo</code> to use
+    <code>output/data/</code>.
+  </div>
+</header>
+
+<main>
+  <form id="controls" class="controls" autocomplete="off">
+    <label class="field wide">
+      <span>Country</span>
+      <select id="country" name="country"></select>
+    </label>
+
+    <label class="field">
+      <span>Year</span>
+      <select id="year" name="year"></select>
+    </label>
+
+    <label class="field">
+      <span>Specification</span>
+      <select id="spec" name="spec"></select>
+    </label>
+
+    <label class="field">
+      <span>Realized abatement</span>
+      <select id="measure" name="measure">
+        <option value="den">Policy density</option>
+        <option value="strng">Policy stringency</option>
+        <option value="den,strng">Both</option>
+      </select>
+    </label>
+
+    <fieldset class="field checks">
+      <legend>Benchmarks</legend>
+      <label><input type="checkbox" id="bm-nash" value="nash" checked> Nash (non-cooperative)</label>
+      <label><input type="checkbox" id="bm-coop" value="coop" checked> Cooperative (global)</label>
+    </fieldset>
+
+    <label class="field">
+      <span>Axis scale</span>
+      <select id="focus" name="focus">
+        <option value="all">Fit all markers</option>
+        <option value="nash">Zoom to Nash</option>
+      </select>
+    </label>
+  </form>
+
+  <section id="status" class="status hidden" role="status"></section>
+
+  <section id="verdicts" class="verdicts"></section>
+
+  <section class="chart-wrap">
+    <div id="chart" class="chart" aria-live="polite"></div>
+    <div id="tooltip" class="tooltip hidden"></div>
+  </section>
+
+  <section id="details" class="details"></section>
+
+  <section class="notes">
+    <h2>How to read this</h2>
+    <ul>
+      <li>
+        The <strong>MAC</strong> curve is
+        <code>a&middot;&mu; + d&middot;&mu;<sup>4</sup></code> in $/tCO<sub>2</sub>,
+        with &mu; the abatement fraction and <code>a</code>, <code>d</code> the
+        Enerdata coefficients from <code>macc_ed_early.csv</code>.
+      </li>
+      <li>
+        The <strong>local MAB</strong> is the country-level SCC. Where it meets
+        the MAC curve is that country's best response when it only counts damage
+        to itself &mdash; the <em>Nash</em> abatement level.
+      </li>
+      <li>
+        The <strong>global MAB</strong> is the global SCC; its crossing is the
+        globally efficient (cooperative) abatement level.
+      </li>
+      <li>
+        The vertical bands are <strong>realized abatement</strong>: emissions
+        avoided relative to a counterfactual that freezes policy at its 2015
+        level, with the shaded region showing the 95% confidence interval from
+        the counterfactual regression.
+      </li>
+      <li>
+        The cooperative optimum is often far to the right of realized abatement.
+        Set <strong>axis scale</strong> to <em>Zoom to Nash</em> to rescale the
+        chart around the Nash and realized markers; series that fall outside
+        the window are marked <em>off scale</em> in the legend.
+      </li>
+      <li>
+        <strong>Forgone net benefit</strong> is the net benefit at the benchmark
+        minus the net benefit at realized abatement, per tonne of BAU emissions:
+        <code>SCC&middot;&mu; &minus; (a&mu;<sup>2</sup>/2 + d&mu;<sup>5</sup>/5)</code>.
+      </li>
+    </ul>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -65,6 +65,8 @@ outcome = args.outcome
 if dataset == 'cscc':
     df = pd.read_csv(f'output/data/mitigation_cscc_v_cntfc_{year}.csv')
     # For cscc, countries are already iso3, no need for mapping
+    # drop the EU aggregate pseudo-row, its members are already in the sample
+    df = df[df['n'] != 'eu']
 else:
     df = pd.read_csv(f'output/data/mitigation_rice_v_cntfc_{year}.csv')
     # only keep countries that have counterfactuals if any do

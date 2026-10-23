@@ -19,16 +19,19 @@ EU_ISO3 = [ "aut", "bel", "bgr", "hrv", "cyp", "cze", "dnk", "est", "fin", "fra"
             "pol", "prt", "rou", "svk", "svn", "esp", "swe",
 ]
 
+# Every sample drops the EU aggregate pseudo-row (n = 'eu') except eu_bloc, which treats the EU
+# as one cooperative player: the members are replaced by the aggregate
 EXCLUDE_GROUPS = [
-    ("full", []),
-    ("no_us_chn_ind", ["usa", "chn", "ind"]),
-    ("no_eu", EU_ISO3)
+    ("full", ["eu"]),
+    ("no_us_chn_ind", ["usa", "chn", "ind", "eu"]),
+    ("no_eu", EU_ISO3 + ["eu"]),
+    ("eu_bloc", EU_ISO3),
 ]
 
 OUTCOME_COLS = ["policy_den_cntfc", "policy_strng_cntfc", "pol_dens_cum", "pol_dens_cum_diff", "strng_wght_ind", "strng_wght_ind_diff"]
 
 CONTROLS = [
-    [], ["gdppc"], ["log_gdppc"]
+    [], ["gdppc"], ["log_gdppc"], ["lobby_pressure"], ["log_gdppc", "lobby_pressure"]
 ]
 
 Y_COL_DISP = {
@@ -57,6 +60,13 @@ X_COL_DISP = {
 }
 
 REPORT_ROWS = []
+
+# LobbyMap engagement-weighted score (0-100, higher = more pro-climate) times total engagement
+# intensity of the orgs headquartered in each country. Countries without rated orgs drop out
+# of the regressions that use it
+lobby_df = pd.read_csv("output/data/lobbymap_country_scores.csv")
+lobby_df["lobby_pressure"] = lobby_df["lobby_score"] * lobby_df["lobby_engagement_total"]
+lobby_df = lobby_df[["n", "lobby_pressure"]]
 
 def save_regression_plot(
     model,
@@ -224,6 +234,15 @@ def add_regression_row(
     reg_cols = required_cols
     data = df_sub[reg_cols].apply(pd.to_numeric, errors="coerce").dropna()
 
+    # Without the aggregate the eu_bloc sample is just no_eu, so skip it
+    if sample == "eu_bloc" and "eu" not in df_sub.loc[data.index, "n"].values:
+        data = data.iloc[0:0]
+        eu_row = df_sub[df_sub["n"] == "eu"][reg_cols].apply(pd.to_numeric, errors="coerce")
+        if eu_row.empty:
+            note = "no EU aggregate row"
+        else:
+            note = "no EU aggregate value for " + ", ".join(eu_row.columns[eu_row.isna().all()])
+
     if data.empty:
         REPORT_ROWS.append({
             "dataset": dataset,
@@ -291,6 +310,7 @@ for exclude_group in EXCLUDE_GROUPS:
     # CSCC 2020: noncoop_optimal_mu_spec{spec}
     filename = "output/data/mitigation_cscc_v_cntfc_2020.csv"
     df = pd.read_csv(filename)
+    df = pd.merge(df, lobby_df, on="n", how="left")
     for spec in ["1", "2", "3", "4"]:
         x_col = f"noncoop_optimal_mu_spec{spec}"
         for controls in CONTROLS:
@@ -339,6 +359,7 @@ for exclude_group in EXCLUDE_GROUPS:
     df_rice = pd.read_csv(rice_filename)
     country_mapping = pd.read_json("input/policy_int_to_iso3.json", typ="series")
     df_rice = df_rice[df_rice["n"].isin(country_mapping.values)]
+    df_rice = pd.merge(df_rice, lobby_df, on="n", how="left")
     
     for spec in ["1", "2", "3", "4"]:
         scenario = SPEC_MAP[spec]
