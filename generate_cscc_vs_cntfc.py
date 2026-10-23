@@ -226,7 +226,9 @@ pivoted_df = pd.merge(pivoted_df, carbon_price_df, on='n', how='left')
 ################ DOLPHIN CARBON PRICING ################
 
 # read carbon_pricing_dolphin.csv
-# take jurisdiction, ecp_all_jurGHG_usd_k, ecp_tax_jurCO2_usd_k filtering for (year=2021, country in our list)
+# take jurisdiction, ecp_all_jurGHG_usd_k, ecp_all_jurCO2_usd_k filtering for (year=2020, country in our list).
+# Both are prices on CO2 from taxes and ETSs combined ('all'); the suffix is the coverage denominator,
+# the jurisdiction's total GHG emissions or its CO2 emissions
 carbon_price_df_dolphin = pd.read_csv('input/carbon_pricing/carbon_pricing_dolphin.csv')
 
 dolphin_to_iso3 = json.load(open('input/dolphin_to_iso3.json'))
@@ -238,10 +240,10 @@ carbon_price_df_dolphin = carbon_price_df_dolphin[
 ]
 
 # Select and rename columns
-carbon_price_df_dolphin = carbon_price_df_dolphin[['jurisdiction', 'ecp_all_jurGHG_usd_k', 'ecp_tax_jurCO2_usd_k']].rename(columns={
+carbon_price_df_dolphin = carbon_price_df_dolphin[['jurisdiction', 'ecp_all_jurGHG_usd_k', 'ecp_all_jurCO2_usd_k']].rename(columns={
     'jurisdiction': 'n',
     'ecp_all_jurGHG_usd_k': 'carbon_price_dolphin_ghg',
-    'ecp_tax_jurCO2_usd_k': 'carbon_price_dolphin_co2'
+    'ecp_all_jurCO2_usd_k': 'carbon_price_dolphin_co2'
 })
 
 # Convert jurisdictions to iso3
