@@ -1,0 +1,231 @@
+:root {
+  --bg: #f7f7f8;
+  --panel: #ffffff;
+  --ink: #1f2430;
+  --muted: #63697a;
+  --line: #e2e4ea;
+  --accent: #4c78a8;
+  --mac: #e45756;
+  --mab-local: #4c78a8;
+  --mab-global: #8452b5;
+  --nash: #59a14f;
+  --coop: #8452b5;
+  --den: #f58518;
+  --strng: #10919b;
+  /* Deliberately non-judgemental hues: whether over- or under-abating is
+     "good" depends on which benchmark you are comparing against. */
+  --over: #3d6fa8;
+  --under: #b4451f;
+  --ontarget: #63697a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161c;
+    --panel: #1c1f27;
+    --ink: #e9ebf0;
+    --muted: #9aa1b2;
+    --line: #2c3140;
+    --mac: #ff7b7a;
+    --mab-local: #78a5d6;
+    --mab-global: #b48ce0;
+    --nash: #7cc274;
+    --coop: #b48ce0;
+    --den: #ffa64d;
+    --strng: #4dc3cd;
+    --over: #7fb3e8;
+    --under: #ff9a72;
+    --ontarget: #9aa1b2;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 0 3rem;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+
+main { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; }
+
+.topbar {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 1.25rem;
+}
+
+h1 { font-size: 1.5rem; margin: 0 0 .35rem; letter-spacing: -0.01em; }
+h2 { font-size: 1rem; margin: 0 0 .5rem; }
+.sub { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.banner {
+  margin-top: 1rem;
+  padding: .6rem .8rem;
+  border-radius: 8px;
+  border: 1px solid #d8a200;
+  background: rgba(216, 162, 0, .12);
+  font-size: .9rem;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .92em;
+}
+
+.hidden { display: none !important; }
+
+/* ---------- controls ---------- */
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: .85rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.field { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+/* country names are long; give that select room once there is room to give */
+@media (min-width: 900px) { .field.wide { grid-column: span 2; } }
+.field > span, .field legend {
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+}
+
+select {
+  font: inherit;
+  padding: .45rem .5rem;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  width: 100%;
+}
+
+fieldset.checks {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+fieldset.checks legend { padding: 0; margin-bottom: .3rem; }
+fieldset.checks label {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .9rem;
+  padding: .1rem 0;
+}
+
+/* ---------- status ---------- */
+
+.status {
+  margin-top: 1rem;
+  padding: .7rem .9rem;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+.status.error { border-color: var(--under); color: var(--under); }
+
+/* ---------- verdicts ---------- */
+
+.verdicts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: .85rem;
+  margin-top: 1rem;
+}
+.verdicts:empty { display: none; }
+
+.verdict {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--ontarget);
+  border-radius: 10px;
+  padding: .85rem .95rem;
+}
+.verdict.over { border-left-color: var(--over); }
+.verdict.under { border-left-color: var(--under); }
+
+.verdict .head { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.verdict .call { font-size: 1.05rem; font-weight: 650; margin: .25rem 0; }
+.verdict.over .call { color: var(--over); }
+.verdict.under .call { color: var(--under); }
+.verdict .detail { font-size: .88rem; color: var(--muted); }
+
+/* ---------- chart ---------- */
+
+.chart-wrap { position: relative; margin-top: 1rem; }
+
+.chart {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: .5rem;
+}
+.chart { overflow-x: auto; }
+/* Below ~640px the SVG's own labels stop being legible, so scroll instead. */
+.chart svg { display: block; width: 100%; min-width: 620px; height: auto; }
+
+.footnote { color: var(--muted); font-size: .85rem; margin: .6rem 0 0; }
+
+.axis line, .axis path { stroke: var(--line); }
+.axis text { fill: var(--muted); font-size: 11px; }
+.grid line { stroke: var(--line); stroke-dasharray: 2 3; }
+.axis-title { fill: var(--muted); font-size: 12px; }
+
+.mac-curve { fill: none; stroke: var(--mac); stroke-width: 2.5; }
+.mab-line { stroke-width: 2; }
+.marker-line { stroke-width: 2; }
+.ci-band { opacity: .13; }
+.legend text { fill: var(--ink); font-size: 12px; }
+.chart-title { fill: var(--ink); font-size: 14px; font-weight: 650; }
+
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--ink);
+  color: var(--bg);
+  padding: .35rem .5rem;
+  border-radius: 6px;
+  font-size: .8rem;
+  white-space: nowrap;
+  transform: translate(-50%, -130%);
+  z-index: 5;
+}
+
+/* ---------- details / notes ---------- */
+
+.details:empty { display: none; }
+.details {
+  margin-top: 1rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: .5rem 1rem 1rem;
+  overflow-x: auto;
+}
+
+table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.notes {
+  margin-top: 1.25rem;
+  color: var(--muted);
+  font-size: .9rem;
+}
+.notes ul { margin: 0; padding-left: 1.1rem; }
+.notes li { margin-bottom: .35rem; }
+.notes h2 { color: var(--ink); }
+
+.warnings { color: var(--under); font-size: .88rem; margin-top: .6rem; }

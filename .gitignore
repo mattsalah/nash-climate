@@ -1,12 +1,14 @@
 .DS_Store
 .env
-annual-co2-emissions/
-policy_intensity/
-RICE50xmodel/
-structural_breaks/
-NC2021_results_dataset/
-country_scc/
-carbon_pricing/
 output/*
 __pycache__/
-wb_controls/
+
+# input data is downloaded (see README), not committed; keep the country-name mappings
+input/**
+!input/**/
+!input/*_to_iso3.json
+!input/lobbymap/lobbymap_country_to_iso3.json
+!input/country_scc/chiani_et_al_2026_global.csv
+!input/country_scc/chiani_et_al_2026_national.csv
+!input/country_scc/chiani_et_al_2026.md
+input/RICE50xmodel/
