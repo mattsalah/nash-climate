@@ -47,7 +47,7 @@ Overall, observed policy sits well below the cooperative benchmark and doesn't t
 | IEA Government Energy Spending Tracker | [IEA policy database](https://www.iea.org/data-and-statistics/data-tools/government-energy-spending-tracker-policy-database) (archived Jan 2025), raw file [policies.json](https://iea.blob.core.windows.net/scripts/tsr-tracker/data/policies.json) (snapshot of 26 Sep 2024) | `input/iea_spending_tracker/policies.json` |
 | Fossil fuel rents | WDI bulk CSVs (World Bank "Download CSV") for oil [`NY.GDP.PETR.RT.ZS`](https://data.worldbank.org/indicator/NY.GDP.PETR.RT.ZS), natural gas [`NY.GDP.NGAS.RT.ZS`](https://data.worldbank.org/indicator/NY.GDP.NGAS.RT.ZS) and coal [`NY.GDP.COAL.RT.ZS`](https://data.worldbank.org/indicator/NY.GDP.COAL.RT.ZS) rents, see below | `input/fossil_rents/API_NY.GDP.{PETR,NGAS,COAL}.RT.ZS_DS2_*.csv` |
 | Fossil fuel subsoil assets | World Bank Data360 [Changing Wealth of Nations](https://data360.worldbank.org/en/dataset/WB_CWON) dataset, full CSV download (uses `WB_CWON_SAOI`, `WB_CWON_SAGA`, `WB_CWON_SACO`), see below | `input/fossil_rents/WB_CWON.csv` |
-| Gini, land area, GDP per capita (constant), corruption, democracy | Downloaded by `python fetch_kitchen_sink_inputs.py`: WB API (`SI.POV.GINI`, [`AG.LND.TOTL.K2`](https://data.worldbank.org/indicator/AG.LND.TOTL.K2), `NY.GDP.PCAP.KD`) and the V-Dem political corruption (`v2x_corr`) and electoral democracy (`v2x_polyarchy`) indices via Our World in Data ([corruption](https://ourworldindata.org/grapher/political-corruption-index), [democracy](https://ourworldindata.org/grapher/electoral-democracy-index)) | `input/kitchen_sink/wb_indicators.csv`, `input/kitchen_sink/vdem_corruption.csv`, `input/kitchen_sink/vdem_democracy.csv` |
+| Gini, land area, GDP per capita (constant), trade (% of GDP), corruption, democracy | Downloaded by `python fetch_kitchen_sink_inputs.py`: WB API (`SI.POV.GINI`, [`AG.LND.TOTL.K2`](https://data.worldbank.org/indicator/AG.LND.TOTL.K2), `NY.GDP.PCAP.KD`, [`NE.TRD.GNFS.ZS`](https://data.worldbank.org/indicator/NE.TRD.GNFS.ZS)) and the V-Dem political corruption (`v2x_corr`) and electoral democracy (`v2x_polyarchy`) indices via Our World in Data ([corruption](https://ourworldindata.org/grapher/political-corruption-index), [democracy](https://ourworldindata.org/grapher/electoral-democracy-index)) | `input/kitchen_sink/wb_indicators.csv`, `input/kitchen_sink/vdem_corruption.csv`, `input/kitchen_sink/vdem_democracy.csv` |
 | World Bank WDI population and GDP per capita | `WB_WDI_SP_POP_TOTL`, `WB_WDI_NY_GDP_PCAP_CD` | `input/wb_controls/pop_gdp_2015_2025.csv` |
 | OECD Environmental Policy Stringency (EPS) | [OECD data explorer](https://data-explorer.oecd.org/vis?lc=en&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_EPS%40DF_EPS&df[ag]=OECD.ECO.MAD&dq=.A..&pd=,&to[TIME_PERIOD]=false&vw=tb), see below | `input/policy_stringency/oecd_eps.csv` |
 | WHO Air Quality Standards (3rd edition, Jan 2026) | [WHO Air Quality Standards database](https://www.who.int/tools/air-quality-standards), microdata via the request form on that page; one cross-section | `input/local_air/aqs_clean_v2.3_webpage.csv` |
@@ -69,7 +69,7 @@ done
 
 **Fossil fuel subsoil assets.** On the [WB_CWON dataset page](https://data360.worldbank.org/en/dataset/WB_CWON), download the full dataset as CSV and save it as `input/fossil_rents/WB_CWON.csv` (~200 MB). The script uses the oil, natural gas and coal subsoil components (`WB_CWON_SAOI`, `WB_CWON_SAGA`, `WB_CWON_SACO`) of nonrenewable natural capital, aggregation total, in real chained 2019 US$.
 
-**Gini, land area, constant GDP per capita, corruption and democracy** are downloaded by `python fetch_kitchen_sink_inputs.py` into `input/kitchen_sink/`. It needs no manual steps.
+**Gini, land area, constant GDP per capita, trade (% of GDP), corruption and democracy** are downloaded by `python fetch_kitchen_sink_inputs.py` into `input/kitchen_sink/`. It needs no manual steps.
 
 **Country-name mappings** (`input/*_to_iso3.json`, `input/lobbymap/lobbymap_country_to_iso3.json`) are part of the repo. Everything else under `input/` is gitignored, so download it as above.
 
@@ -100,6 +100,7 @@ First run `gams extract_macc.gms`, `python generate_eps_stringency.py` (the do-f
 | Kitchen sink regressions | `regress_kitchen_sink.py` | `output/regressions/kitchen_sink_regressions.csv`, `output/data/kitchen_sink_inputs.csv` |
 | EPS carbon price vs non-price support | `regress_eps_price_split.py` | `output/regressions/eps_price_split_regressions.csv` |
 | Price / non-price sensitivity | `regress_eps_price_split_sensitivity.py` | `output/regressions/eps_price_split_sensitivity.csv` |
+| Size gradient by 5-year period | `regress_eps_period_gradient.py` | `output/regressions/eps_period_gradient.csv` |
 | EPS pillars and instruments | `regress_eps_subindex.py` | `output/regressions/eps_subindex_regressions.csv`, `output/regressions/eps_subindex_decomposition.csv` |
 | Price / non-price clusters | `generate_eps_clusters.py` | `output/data/eps_clusters.csv`, `output/data/eps_cluster_centroids.csv`, `output/regressions/eps_cluster_diagnostics.csv` |
 | Tobit vs double hurdle (Dolphin price) | `regress_dolphin_hurdle.py` | `output/regressions/dolphin_hurdle_regressions.csv`, `output/regressions/dolphin_hurdle_lr_tests.csv` |
@@ -427,6 +428,35 @@ The non-price instruments are renewable trading schemes (`TRADESCH_RENEW`, green
 
 The main finding holds in all 20 full-sample regressions per outcome. Controlling for CO2 per capita roughly doubles the negative price coefficient (to −0.19 to −0.35): high-emitting countries price carbon less, and they also have higher CSCCs and populations. Without the US, China and India, the price part stays negative in all 20 (significant in 9, mostly with CO2 per capita in), and the non-price part is positive in all 20 but significant only for spec 2, spec 4 and population share (+0.31 to +0.51 where significant); for specs 1 and 3 it is +0.03 to +0.13.
 
+**B2. Trade openness.** Leakage runs through trade, so openness could drive both halves: open economies lose more to leakage from carbon prices, and subsidies don't raise their producers' costs. On top of the six kitchen-sink controls (not in "all three" above): real openness, trade in US$ as a % of PPP GDP (World Bank, mean 2015–2019; section 10), and its log as a robustness check. n = 39 (36).
+
+| Outcome | Added to kitchen sink | Spec 1 | Spec 2 | Spec 3 | Spec 4 | Pop share |
+|---|---|---|---|---|---|---|
+| Carbon price part | none (main) | −0.15\*\*\* | −0.15\* | −0.14\*\*\* | −0.14\*\*\* | −0.07 |
+| | real openness | −0.19\*\*\* | −0.23\*\* | −0.17\*\*\* | −0.17\*\* | −0.10 |
+| | log real openness | −0.19\*\* | −0.18 | −0.18\* | −0.17\* | −0.08 |
+| Non-price part | none (main) | +0.35\*\*\* | +0.29\*\* | +0.36\*\*\* | +0.35\*\*\* | +0.35\* |
+| | real openness | +0.31\*\*\* | +0.21 | +0.32\*\*\* | +0.31\*\*\* | +0.31 |
+| | log real openness | +0.18 | +0.10 | +0.20\*\* | +0.18 | +0.12 |
+
+Without the US, China and India (n = 36):
+
+| Outcome | Added to kitchen sink | Spec 1 | Spec 2 | Spec 3 | Spec 4 | Pop share |
+|---|---|---|---|---|---|---|
+| Carbon price part | none (main) | −0.19 | −0.08 | −0.19 | −0.39\* | −0.16 |
+| | real openness | −0.23 | −0.26 | −0.20 | −0.48\* | −0.32 |
+| | log real openness | −0.23 | −0.18 | −0.22 | −0.47\* | −0.47 |
+| Non-price part | none (main) | +0.13 | +0.31\* | +0.08 | +0.52\* | +0.44\*\* |
+| | real openness | +0.10 | +0.25 | +0.07 | +0.46 | +0.37 |
+| | log real openness | +0.02 | +0.15 | −0.01 | +0.37 | +0.23 |
+
+The openness coefficient itself, across the five size/damages measures: on the price part −0.26 to −0.36 (insignificant; −0.37 to −0.56 without the US, China and India, significant in 4/5), on the non-price part −0.35 to −0.41 (insignificant). In logs it is ≈ 0 on the price part (−0.02 to −0.16) and −0.66 to −0.77 (p < 0.05 in 5/5) on the non-price part.
+
+- **The carbon price side gets stronger.** Holding real openness fixed, the negative price coefficient grows by a quarter to a half (−0.14/−0.15 → −0.17 to −0.23, all significant). Without the US, China and India, population share goes from −0.16 to −0.32 and spec 2 from −0.08 to −0.26 (both insignificant).
+- **The non-price side survives the level for damages.** Specs 1, 3 and 4 barely move (+0.31 to +0.32, p < 0.01); spec 2 (+0.29\*\* → +0.21) and population share (+0.35\* → +0.31) lose significance. Without the US, China and India nothing on the non-price side is significant, as before for specs 1 and 3, but now also for population share (+0.44\*\* → +0.37) and spec 4.
+- **In logs, openness takes over the non-price result.** Less open economies use more non-price support (−0.66 to −0.77 SD, p < 0.05), the non-price coefficient roughly halves (+0.10 to +0.20) and stays significant only for spec 3. The level and the log differ because the log spreads out the closed large economies (India 13%, Indonesia 14%, Brazil 16%, China 22%) and compresses Luxembourg and Ireland. Dropping Luxembourg and Ireland instead (n = 37), the level gives price coefficients of −0.14 to −0.21 (p < 0.1 or better, except population share −0.06) and non-price +0.29 to +0.31 (p < 0.05 for specs 1, 3, 4; spec 2 +0.19 and population +0.29 insignificant), with openness itself ≈ 0 on price and −0.33 to −0.39 (insignificant) on non-price.
+- **Caveat: openness and size overlap.** In the 39-country sample real openness rank-correlates −0.84 with population share, −0.50 with spec 1 CSCC, −0.69 with spec 2 and +0.74 with GDP per capita: big economies trade less relative to GDP mechanically. The level hides this (Pearson −0.32 with population share) because Luxembourg and Ireland dominate its variance. With 39 countries the data can't fully separate "large" from "closed"; a geography-based instrument for openness (Frankel & Romer 1999) would.
+
 **C. Chiani et al. (2026) national SCCs.** Six 2020 measures: RICE50+ and WITCH, each at 2%, 2.5% and 3% discounting. The discount rate barely changes country rankings, so the three rates give near-identical coefficients within each model. Ranges across the six:
 
 | Sample | Controls | Carbon price part | Non-price part |
@@ -559,6 +589,39 @@ Means of members' scores. The centroid paths are in `eps_cluster_centroids.csv`.
 - **Large economies are spread across three of the four groups:** the US, India, Japan and the UK in non-price-led, Germany, France, Italy, Canada and Korea in moderate price, and China, Brazil, Russia and Indonesia in low on both. So the size effect in sections 6a–6c comes from where the largest countries fall, not from a single bloc of big countries.
 
 **Caveats:** clustering always returns groups. A silhouette of about 0.3 means weak separation, with groups closer to regions of a continuum than distinct types. The 21 yearly values of each part are strongly correlated, so in practice the clustering mostly reflects levels in the 2010s.
+
+### 6e. Has the size gradient changed over time?
+
+If the free-rider game is intensifying on subsidies and loosening on carbon prices, the non-price gradient (large countries do more) should steepen over time and the price gradient (large countries do less) should flatten. `regress_eps_period_gradient.py` averages each part of the EPS over four 5-year periods (2001–2005, 2006–2010, 2011–2015, 2016–2020; same 40 countries throughout) and reruns the section 6a regressions in each → `output/regressions/eps_period_gradient.csv`. Size measures are the 2020 values. The controls are the kitchen sink with GDP per capita replaced by its period mean (constant 2015 US$). Both parts become far more dispersed over time (the cross-country SD of the price part goes from 0.68 to 1.22 points, the non-price part from 0.50 to 1.18). So the table reports the **slope in EPS points per 1 SD of the size measure**, which is comparable across periods, rather than the standardised coefficient of section 6a. The trend column is the change in that slope per 5-year period, from a country × period regression with period fixed effects, the controls interacted with period, and SEs clustered by country.
+
+**Slope (EPS points per SD), full sample (n = 40; 39 with kitchen-sink controls):**
+
+| Outcome | Controls | Size | 2001–05 | 2006–10 | 2011–15 | 2016–20 | Trend / period |
+|---|---|---|---|---|---|---|---|
+| Carbon price part | none | Pop share | −0.12\*\* | −0.36\*\*\* | −0.29\*\*\* | −0.37\*\*\* | −0.07\*\*\* |
+| | | Spec 1 | −0.12\*\* | −0.36\*\*\* | −0.29\*\*\* | −0.41\*\*\* | −0.08\*\*\* |
+| | kitchen sink | Pop share | −0.05 | −0.17\* | −0.05 | −0.04 | +0.01 |
+| | | Spec 1 | −0.06 | −0.18\*\*\* | −0.10\*\* | −0.16\*\*\* | −0.02\*\* |
+| | | Spec 2 | −0.11\* | −0.17\*\* | −0.16\*\* | −0.16\* | −0.01 |
+| | | Spec 3 | −0.06 | −0.18\*\*\* | −0.10\*\* | −0.16\*\*\* | −0.02\* |
+| | | Spec 4 | −0.05 | −0.17\*\*\* | −0.09 | −0.14\*\* | −0.02 |
+| Non-price part | none | Pop share | −0.11\*\*\* | −0.19\*\*\* | −0.07 | +0.09 | +0.07 |
+| | | Spec 1 | −0.04 | −0.10 | +0.02 | +0.20\* | +0.08\*\* |
+| | kitchen sink | Pop share | +0.07 | −0.03 | +0.23\* | +0.38\* | +0.12\* |
+| | | Spec 1 | +0.06 | +0.05 | +0.22\*\*\* | +0.38\*\*\* | +0.11\*\*\* |
+| | | Spec 2 | +0.17\*\*\* | +0.29\*\*\* | +0.29\*\*\* | +0.35\*\*\* | +0.05 |
+| | | Spec 3 | +0.04 | +0.01 | +0.20\*\*\* | +0.38\*\*\* | +0.12\*\*\* |
+| | | Spec 4 | +0.04 | +0.01 | +0.22\*\*\* | +0.37\*\*\* | +0.12\*\*\* |
+
+With GDP per capita as the only control the pattern is the same: the non-price trend is +0.06 to +0.13 per period (significant for all five measures), and the price slopes are −0.05 to −0.11 in 2001–05 and −0.15 to −0.29 in 2016–20.
+
+- **The subsidy gradient has steepened.** In the 2000s larger economies did *no more* non-price support than small ones (without controls, population share was significantly negative: −0.11 to −0.19). From 2011–15 the gradient turns positive, and by 2016–20 a 1 SD larger economy scores about 0.35–0.38 points higher with the kitchen-sink controls. The trend is about +0.12 points per 5 years (p < 0.1 or better) for population share and specs 1, 3 and 4. Spec 2, the measure closest to GDP, already had a positive gradient in 2001–05 (+0.17) and grows only slowly (+0.05, insignificant).
+- **The carbon price gradient has not loosened.** It steepened once, from 2001–05 to 2006–10, when the EU ETS started (2005) and gave most of the small European countries a carbon price at once. Since then it has been flat: with the kitchen-sink controls −0.16 to −0.18 in 2006–10 and −0.14 to −0.16 in 2016–20 for the CSCC measures, and back to ≈ 0 for population share. Without controls it keeps steepening (trend −0.07 to −0.08, p < 0.01), so there's no sign of large countries catching up on carbon prices.
+- **In standardised terms** (section 6a scale), the non-price coefficient with kitchen-sink controls goes from +0.08 to +0.13 in 2001–05 to +0.31 to +0.33 in 2016–20 for population share and specs 1, 3 and 4. The price coefficient is −0.07 to −0.17 in 2001–05 and −0.04 to −0.13 in 2016–20.
+
+**Without the US, China and India (n = 37; 36 with kitchen-sink controls)** the steepening mostly goes. Without controls or with GDP per capita, no non-price trend is significant, and specs 1 and 3 are negative in every period. With the kitchen-sink controls, population share rises from +0.13 to +0.49 (p < 0.05 in 2016–20; trend +0.13, insignificant) and spec 4 has a trend of +0.22 (p < 0.05), but specs 1 and 3 are ≈ 0. So much of the steepening is the three largest economies taking up renewable support in the 2010s (China's feed-in tariffs from 2009, India's National Solar Mission from 2010, US state renewable portfolio standards and tax credits). The price gradient without them is negative in every period without controls (population share −0.19 in 2001–05, about −0.50 from 2006) and insignificant with the kitchen-sink controls.
+
+**Caveats:** size and the kitchen-sink controls other than GDP per capita are fixed at about 2020 values, so the change in the gradient comes from policy, not from changes in size. 40 countries, mostly OECD. EPS scores are ordinal policy-design scores, so a steeper slope means a larger gap in scores, not necessarily in spending or effective prices.
 
 ## 7. Abatement implied by structural breaks
 
@@ -693,7 +756,7 @@ The EPS stops in 2020 and the spending tracker starts in 2020, so only the RD&D 
 
 ## 10. Kitchen sink
 
-`regress_kitchen_sink.py` regresses each outcome jointly on seven country characteristics, with HC1 SEs → `output/regressions/kitchen_sink_regressions.csv` (spec `main`). The first is a size measure, either own CSCC (size `cscc`) or population share (size `pop`). Population is largely a proxy for own CSCC (rank correlation 0.72), so the two are never in the same model and every regression is run once with each. The outcome and all regressors are standardised (mean 0, SD 1) within each estimation sample, so coefficients are the SDs of outcome change per 1 SD of the regressor. Multiply by the outcome SD in the table to get $/t, €/t or EPS points. A sensitivity check (spec `interactions`) adds interactions of corruption and inequality with fossil-fuel assets. Two more (specs `local_air` and `local_aqs`) add a control for general environmental stringency: the EPS local air pollution index, or the stringency of national ambient air quality standards.
+`regress_kitchen_sink.py` regresses each outcome jointly on seven country characteristics, with HC1 SEs → `output/regressions/kitchen_sink_regressions.csv` (spec `main`). The first is a size measure, either own CSCC (size `cscc`) or population share (size `pop`). Population is largely a proxy for own CSCC (rank correlation 0.72), so the two are never in the same model and every regression is run once with each. The outcome and all regressors are standardised (mean 0, SD 1) within each estimation sample, so coefficients are the SDs of outcome change per 1 SD of the regressor. Multiply by the outcome SD in the table to get $/t, €/t or EPS points. A sensitivity check (spec `interactions`) adds interactions of corruption and inequality with fossil-fuel assets. Two more (specs `local_air` and `local_aqs`) add a control for general environmental stringency: the EPS local air pollution index, or the stringency of national ambient air quality standards. Spec `trade` adds trade openness in PPP terms, the channel for carbon leakage.
 
 | Regressor | Definition |
 |---|---|
@@ -789,6 +852,23 @@ Without the US, China and India (n = 38, 63), the Dolphin positive-price CSCC co
 - **The one exception is positive Dolphin prices** (n = 39): AQS stringency is +0.58 to +0.63 (p < 0.01) and the CSCC coefficient goes from −0.68\*\*\* to +0.26 (insignificant). That is Norway, which has both the strictest standards and the highest price. Without it, AQS stringency falls to +0.37 to +0.38 (p = 0.12 with CSCC, p < 0.05 with population share).
 - **The standards measure something other than the EPS local index.** Across the 40 EPS countries, the two rank-correlate −0.36, and `aqs_local` is uncorrelated with `eps_climate` (0.01). Across the 99 Dolphin countries it is uncorrelated with GDP per capita, democracy and corruption (|ρ| ≤ 0.15). Norway, Israel and New Zealand are at or close to the WHO guidelines. Japan, Chile, Brazil, China and the US have the laxest standards in the EPS sample, even though Japan, Korea and the US score high on the EPS local index.
 - **Caveats.** These are legal limits, not enforcement or air quality. EU members share one set of limit values (−0.71; 19 of the 40 EPS countries, Sweden is a little stricter). Missing standards are skipped, so countries that set few (Canada has two of the four pollutants) are scored on those only. The CO standards of India and Indonesia are stricter than the WHO guideline, which makes them look stricter overall than their PM and NO2 limits alone would.
+
+**Sensitivity: trade openness.** Carbon leakage runs through trade: a country that prices carbon alone loses more output and emissions to unpriced competitors the more open it is, so openness should lower unilateral carbon prices. Spec `trade` adds `real_open`, *real openness* (Alcalá & Ciccone 2004): exports plus imports of goods and services in US$ as a % of GDP in PPP $, from the World Bank (`NE.TRD.GNFS.ZS` × `NY.GDP.MKTP.CD` / `NY.GDP.MKTP.PP.CD`), averaged over 2015–2019 because 2020 trade was distorted by COVID. Nominal trade/GDP overstates openness in poor countries, where non-traded goods are cheap, and deflating by PPP GDP removes that. India, Indonesia and Brazil are the least open (13–16%) and Luxembourg and Ireland the most (346%, 212%; median 56% in the EPS sample). Spec `trade_log` uses its log, which damps those two. Burundi, Jamaica, Jordan, Liberia and Nigeria have no 2015–2019 trade data, so the Dolphin sample falls from 128 to 123 and the OECD sample from 70 to 68. (Nominal trade/GDP, `trade_open`, is still saved in `kitchen_sink_inputs.csv`.)
+
+| | Dolphin: CSCC | Dolphin: pop | OECD rate: CSCC | OECD rate: pop | EPS climate: CSCC | EPS climate: pop |
+|---|---|---|---|---|---|---|
+| Real openness | −0.33 | −0.25 | +0.07 | +0.14 | −0.44\* | −0.42\* |
+| CSCC, spec 2 / pop share | −0.20\*\* | −0.00 | −0.13\* | +0.00 | +0.03 | +0.17\* |
+| *same, main spec* | −0.13\*\* | +0.00 | −0.14\*\* | −0.00 | +0.12 | +0.21\*\* |
+| GDP per capita | +0.68\*\* | +0.58\*\* | +0.26 | +0.18 | +0.90\*\*\* | +0.90\*\*\* |
+| *same, main spec* | +0.40\*\* | +0.38\*\* | +0.34\*\*\* | +0.32\*\*\* | +0.49\*\*\* | +0.51\*\*\* |
+| n | 123 | 123 | 68 | 68 | 39 | 39 |
+
+- **Openness goes with lower climate stringency, not a lower OECD rate.** Real openness is −0.25 to −0.33 on the Dolphin price (insignificant) and −0.42 to −0.44 on EPS climate (p < 0.1). On the OECD rate, a sample of mostly pricing countries, it is ≈ 0. Without the US, China and India the signs are the same and nothing is significant.
+- **Among positive Dolphin prices it is large:** −0.60 to −0.73 (p < 0.1 or better), and −1.0 (p < 0.01) without the US, China and India, where population share also turns more negative (−0.25\*\* → −0.49\*\*\*).
+- **The CSCC coefficient on the Dolphin price grows** (−0.13 → −0.20, p < 0.05; −0.67 → −0.80 among positive prices). On EPS climate the size coefficients shrink (CSCC +0.12 → +0.03, population +0.21\*\* → +0.17\*).
+- **It works through income.** Real openness correlates 0.79 with GDP per capita in the EPS sample (rich countries have both high trade and high price levels), so adding it pushes the income coefficient up (EPS +0.49 → +0.90) and the two partly offset. On the OECD rate income loses significance. Gini, land area and corruption keep their signs and significance.
+- **Caveat: Luxembourg and Ireland.** The level is heavy-tailed, and the positive-price results lean on them. Section 6b (B2) has the log version and a version without the two.
 
 **Caveats:**
 - **The EPS regression has 8 parameters on 39 observations** (10 with interactions), so its coefficients are imprecise.

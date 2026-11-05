@@ -31,6 +31,7 @@ python regress_green_spending.py
 python regress_kitchen_sink.py
 python regress_eps_price_split.py
 python regress_eps_price_split_sensitivity.py
+python regress_eps_period_gradient.py
 python regress_eps_subindex.py
 python generate_eps_clusters.py
 python regress_dolphin_hurdle.py

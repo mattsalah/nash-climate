@@ -11,6 +11,11 @@ import statsmodels.api as sm
 #                     eu_member      EU member in 2020 (the UK left in January 2020)
 #                     log_co2_pc     log territorial CO2 per capita, 2020 (OWID)
 #                     macc_a         RICE50x MAC curve linear coefficient, 2020 (abatement cost)
+#                   or, one at a time (not in all_extra), trade openness, which mediates leakage
+#                   (regress_kitchen_sink.py; mean 2015-2019):
+#                     real_open      real openness, trade in US$ as a % of PPP GDP (Alcala &
+#                                    Ciccone 2004)
+#                     log_real_open  its log, which damps the entrepots
 #                   own CSCC specs 1-4 and population share
 #   chiani          Chiani et al. (2026) national SCC for 2020, RICE50+ and WITCH at 2%, 2.5%
 #                   and 3% discounting (6 measures)
@@ -28,6 +33,8 @@ EXTRA = ['eu_member', 'log_co2_pc', 'macc_a']
 CONTROLS = {'none': [], 'gdppc': ['gdppc'], 'kitchen_sink': KITCHEN_SINK}
 EXTRA_CONTROLS = {f'kitchen_sink+{c}': KITCHEN_SINK + [c] for c in EXTRA}
 EXTRA_CONTROLS['kitchen_sink+all_extra'] = KITCHEN_SINK + EXTRA
+TRADE = ['real_open', 'log_real_open']
+EXTRA_CONTROLS.update({f'kitchen_sink+{c}': KITCHEN_SINK + [c] for c in TRADE})
 SAMPLES = {
     'full': [],
     'no_us_chn_ind': ['usa', 'chn', 'ind'],
@@ -46,7 +53,7 @@ df['pop_share'] = 100 * df['pop'] / world_pop
 df['macc_a'] = df['macc_a'].where(df['macc_a'] > 0)
 df = df[['n', 'pop', 'macc_a'] + SPECS]
 
-controls = pd.read_csv('output/data/kitchen_sink_inputs.csv')[['n'] + KITCHEN_SINK]
+controls = pd.read_csv('output/data/kitchen_sink_inputs.csv')[['n'] + KITCHEN_SINK + TRADE]
 df = df.merge(controls, on='n', how='left')
 
 df['eu_member'] = df['n'].isin(EU_2020).astype(int)

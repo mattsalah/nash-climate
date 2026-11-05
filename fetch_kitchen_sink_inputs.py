@@ -9,6 +9,8 @@ import pandas as pd
 #     SI.POV.GINI                       Gini index
 #     AG.LND.TOTL.K2                    land area (sq. km)
 #     NY.GDP.PCAP.KD                    GDP per capita (constant 2015 US$), for the panels
+#     NE.TRD.GNFS.ZS                    trade (exports + imports of goods and services, % of GDP)
+#     NY.GDP.MKTP.CD, NY.GDP.MKTP.PP.CD GDP in current US$ and current PPP $, for real openness
 #   V-Dem, via Our World in Data:
 #     political corruption index (v2x_corr, 0-1, higher = more corrupt)
 #     electoral democracy index (v2x_polyarchy, 0-1, higher = more democratic)
@@ -19,6 +21,9 @@ WB_INDICATORS = {
     'SI.POV.GINI': None,
     'AG.LND.TOTL.K2': None,
     'NY.GDP.PCAP.KD': None,
+    'NE.TRD.GNFS.ZS': None,
+    'NY.GDP.MKTP.CD': None,
+    'NY.GDP.MKTP.PP.CD': None,
 }
 OWID_URL = 'https://ourworldindata.org/grapher/{}.csv?v=1&csvType=full&useColumnShortNames=true'
 VDEM = {

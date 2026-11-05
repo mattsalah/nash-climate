@@ -1,5 +1,6 @@
 import os
 import glob
+import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 
@@ -27,6 +28,15 @@ import statsmodels.api as sm
 #   aqs_local          stringency of national ambient air quality standards for CO, NO2, PM10 and
 #                      PM2.5 (WHO AQS database; minus the mean log ratio to the WHO guidelines,
 #                      generate_local_air_standards.py). It covers 135 countries
+# Spec 'trade' instead adds
+#   real_open          real trade openness (Alcala & Ciccone 2004): exports + imports of goods and
+#                      services in US$ as a % of GDP in PPP $ (WB NE.TRD.GNFS.ZS x NY.GDP.MKTP.CD /
+#                      NY.GDP.MKTP.PP.CD), mean 2015-2019 (2020 is distorted by COVID)
+# carbon leakage runs through trade: a more open economy loses more output and emissions to
+# unpriced competitors when it prices carbon, so it has less reason to act alone. Nominal
+# trade/GDP is inflated in poor countries, where non-traded goods are cheap, and deflating by PPP
+# GDP removes that. Spec 'trade_log' uses log_real_open instead, which damps the entrepots
+# (Luxembourg, Ireland). Nominal trade/GDP (trade_open) is saved but not used
 # Robust (HC1) standard errors. The outcome and all regressors are standardised (mean 0, SD 1)
 # within each estimation sample, so coefficients are the SDs of outcome change per 1 SD of the
 # regressor (with interactions, main effects are their effects at the mean of the interacted terms)
@@ -47,7 +57,8 @@ INTERACTIONS = {
 }
 # spec -> (add interactions, extra controls)
 SPECS = {'main': (False, []), 'interactions': (True, []), 'local_air': (False, ['eps_local_air']),
-         'local_aqs': (False, ['aqs_local'])}
+         'local_aqs': (False, ['aqs_local']), 'trade': (False, ['real_open']),
+         'trade_log': (False, ['log_real_open'])}
 # (excluded countries, positive prices only); most countries have no carbon price, so the
 # positive samples drop zero prices for the two carbon price outcomes (EPS is never filtered)
 SAMPLES = {
@@ -107,6 +118,14 @@ df['gini'] = df['n'].map(gini)
 df['ff_rents_1995'] = df['n'].map(rents.sum(axis=1, min_count=1))
 df['ff_assets_1995'] = df['n'].map(assets.sum(axis=1, min_count=1) / 1e12)
 df['land_area'] = df['n'].map(wb_year('AG.LND.TOTL.K2', 2020) / 1e6)
+trade = wb[(wb['indicator'] == 'NE.TRD.GNFS.ZS') & wb['year'].between(2015, 2019)]
+df['trade_open'] = df['n'].map(trade.groupby('n')['value'].mean())
+# real openness: trade % of GDP x nominal GDP / PPP GDP, year by year, then averaged
+real = (wb[wb['year'].between(2015, 2019)]
+        .pivot_table(index=['n', 'year'], columns='indicator', values='value')
+        .eval('`NE.TRD.GNFS.ZS` * `NY.GDP.MKTP.CD` / `NY.GDP.MKTP.PP.CD`').groupby('n').mean())
+df['real_open'] = df['n'].map(real)
+df['log_real_open'] = np.log(df['real_open'])
 
 os.makedirs(os.path.dirname(data_filename), exist_ok=True)
 df.to_csv(data_filename, index=False)
