@@ -50,6 +50,10 @@ SPECS = {
     # 5. the complement of 4 within eps_climate: drop the carbon prices instead, leaving non-price
     #    support (renewable trading schemes, low-carbon R&D, solar and wind support)
     'eps_nonprice': AIR_POLLUTION + ['TAXDIESEL', 'TAXCO2', 'TRADESCH_CO2'],
+    # 6. the complement of 2: only the local air pollutant policies (NOx/SOx taxes, NOx/SOx/PM/diesel
+    #    sulphur limits). Their benefits stay at home, so it measures general environmental
+    #    stringency without the free-riding problem; used as a control in regress_kitchen_sink.py
+    'eps_local_air': [k for w in PILLARS.values() for k in w if k not in AIR_POLLUTION],
 }
 
 ###### DATA #######

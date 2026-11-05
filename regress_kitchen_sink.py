@@ -18,6 +18,11 @@ import statsmodels.api as sm
 # standardised terms, itself standardised)
 #   corruption_x_ff_assets   vdem_corruption x ff_assets_1995
 #   gini_x_ff_assets         gini x ff_assets_1995
+# Spec 'local_air' instead adds
+#   eps_local_air      OECD EPS local air pollution stringency (0-6, 2020; NOx/SOx taxes and
+#                      NOx/SOx/PM/diesel sulphur limits, generate_eps_stringency.py)
+# a country keeps all the benefits of local pollution policy, so it holds general environmental
+# stringency fixed. It exists only for the 40 EPS countries, so every sample shrinks to those
 # Robust (HC1) standard errors. The outcome and all regressors are standardised (mean 0, SD 1)
 # within each estimation sample, so coefficients are the SDs of outcome change per 1 SD of the
 # regressor (with interactions, main effects are their effects at the mean of the interacted terms)
@@ -36,7 +41,8 @@ INTERACTIONS = {
     'corruption_x_ff_assets': ('vdem_corruption', 'ff_assets_1995'),
     'gini_x_ff_assets': ('gini', 'ff_assets_1995'),
 }
-SPECS = {'main': False, 'interactions': True}
+# spec -> (add interactions, extra controls)
+SPECS = {'main': (False, []), 'interactions': (True, []), 'local_air': (False, ['eps_local_air'])}
 # (excluded countries, positive prices only); most countries have no carbon price, so the
 # positive samples drop zero prices for the two carbon price outcomes (EPS is never filtered)
 SAMPLES = {
@@ -55,7 +61,7 @@ df['pop_share'] = 100 * df['pop'] / world_pop
 df = df[~df['n'].isin(['eu', 'wld'])]
 df = df[['n', 'pop_share', 'scc_mid_spec2', 'gdppc', 'carbon_price_dolphin_ghg', 'carbon_price_effective']]
 
-eps_df = pd.read_csv('output/data/eps_stringency_2020.csv')[['n', 'eps_climate']]
+eps_df = pd.read_csv('output/data/eps_stringency_2020.csv')[['n', 'eps_climate', 'eps_local_air']]
 df = df.merge(eps_df, on='n', how='left')
 
 for name in ['vdem_corruption', 'vdem_democracy']:
@@ -102,8 +108,8 @@ df.to_csv(data_filename, index=False)
 
 rows = []
 for size, size_col in SIZE.items():
-    X_COLS = [size_col] + CONTROLS
-    for spec, with_interactions in SPECS.items():
+    for spec, (with_interactions, extra) in SPECS.items():
+        X_COLS = [size_col] + CONTROLS + extra
         for y_col, y_label in OUTCOMES.items():
             for sample, (excluded, positive_only) in SAMPLES.items():
                 if positive_only and y_col not in PRICES:
