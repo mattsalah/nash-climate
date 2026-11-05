@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 import numpy as np
 
@@ -19,6 +20,11 @@ YEAR = 2020
 # multi-year averages for sensitivity checks; the EPS ends in 2020
 MEAN_PERIODS = {'2015_2020': range(2015, 2021), '2010_2020': range(2010, 2021)}
 mean_filename = 'output/data/eps_stringency_{}_mean.csv'
+# annual country-year panel of the price / non-price split, merged onto the Arvanitopoulos et al.
+# panel by policy_intensity_counterfactuals.do (which starts in 2000), so this must run before it
+PANEL_YEARS = range(2000, 2021)
+PANEL_SPECS = ['eps_climate', 'eps_carbon_price', 'eps_nonprice']
+panel_filename = 'output/data/eps_stringency_panel.csv'
 
 PILLARS = {
     'market': {'TAXCO2': 1, 'TAXNOX': 1, 'TAXSOX': 1, 'TAXDIESEL': 1, 'TRADESCH_CO2': 1, 'TRADESCH_RENEW': 1},
@@ -91,6 +97,11 @@ for period, years in MEAN_PERIODS.items():
     mean_out.insert(0, 'n_years', yearly.groupby('n').size())
     mean_outs[period] = mean_out.reset_index()
 
+# country-year panel, keyed by the country names used in the Arvanitopoulos et al. data
+iso3_to_policy = {v: k for k, v in json.load(open('input/policy_int_to_iso3.json')).items()}
+panel_out = build(instruments(PANEL_YEARS))[PANEL_SPECS].reset_index()
+panel_out.insert(0, 'country', panel_out['n'].map(iso3_to_policy))
+
 ###### SAVE ################
 
 out.to_csv(output_filename, index=False)
@@ -102,4 +113,7 @@ print(f"OECD EPS {YEAR}: {len(out)} countries")
 print(out[['n'] + list(SPECS)].sort_values('eps', ascending=False).to_string(index=False, float_format='%.2f'))
 print("\nCorrelation between specs")
 print(out[list(SPECS)].corr().round(2).to_string())
-print(f"\nSaved to {output_filename} and " + ', '.join(mean_filename.format(p) for p in MEAN_PERIODS))
+panel_out.to_csv(panel_filename, index=False)
+print(f"\nPanel {PANEL_YEARS[0]}-{PANEL_YEARS[-1]}: {panel_out['n'].nunique()} countries, "
+      f"{panel_out['country'].notna().groupby(panel_out['n']).any().sum()} in the Arvanitopoulos et al. data")
+print(f"\nSaved to {output_filename}, {panel_filename} and " + ', '.join(mean_filename.format(p) for p in MEAN_PERIODS))

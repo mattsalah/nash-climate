@@ -18,12 +18,18 @@ from scipy import stats
 # Run for 2020 and, as a sensitivity check, 2022 (the last year of the policy counterfactuals).
 # The MAC coefficients are identical across the 2015/2020/2025 periods so only abatement changes
 
+# The EPS price / non-price split model ends in 2020, so it has no implied prices for 2022.
+# Its price-only and non-price-only implied prices don't sum to the combined one: the effects
+# multiply in levels and the MAC curve is convex
 YEARS = [2020, 2022]
-CNTFCS = ['policy_den_cntfc', 'policy_strng_cntfc']
 CNTFC_SOURCE = {  # counterfactual columns in country_year_counterfactual_CO2.csv
     'policy_den_cntfc': '',
     'policy_strng_cntfc': '_strng',
+    'policy_eps_cntfc': '_eps',                    # EPS carbon price + non-price, jointly
+    'policy_eps_price_cntfc': '_eps_price',        # EPS carbon price part only
+    'policy_eps_nonprice_cntfc': '_eps_nonprice',  # EPS non-price part only
 }
+CNTFCS = list(CNTFC_SOURCE)
 EU_CODE = 'eu'
 EU27 = ['aut', 'bel', 'bgr', 'hrv', 'cyp', 'cze', 'dnk', 'est', 'fin',
         'fra', 'deu', 'grc', 'hun', 'irl', 'ita', 'lva', 'ltu', 'lux',
@@ -98,6 +104,8 @@ def build(year):
     eu_row = {'n': EU_CODE}
     for cntfc, src in CNTFC_SOURCE.items():
         m = members.dropna(subset=[f'avoided_CO2_2015{src}'])
+        if m.empty:  # e.g. the EPS split after 2020
+            continue
         eu_row[cntfc] = 100 * m[f'avoided_CO2_2015{src}'].sum() / m['CO2_mt'].sum()
         eu_row[f'implied_price_{cntfc}'] = eu_implied_price(m, f'avoided_CO2_2015{src}', f'co2_cntfc_2015{src}')
     print(f"{year} EU aggregate: {len(members)} members, missing {sorted(set(EU27) - set(members['n']))}")
@@ -152,6 +160,8 @@ def correlate(df, year):
         for sample, excluded in SAMPLES.items():
             for x_col in X_COLS:
                 data = countries[~countries['n'].isin(excluded)][[x_col, y_col]].dropna()
+                if len(data) < 3:
+                    continue
                 pearson = stats.pearsonr(data[x_col], data[y_col])
                 spearman = stats.spearmanr(data[x_col], data[y_col])
                 rows.append({

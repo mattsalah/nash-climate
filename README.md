@@ -9,7 +9,7 @@ The pipeline compares predicted abatement under both benchmarks with the abateme
 1. **Predicted Nash abatement vs delivered abatement:** policy-density-implied abatement rises with predicted Nash abatement in the full sample (CSCC and RICE, most specs). The relationship is fragile without the US, China and India. Stringency-implied abatement is flat, and turns negative without those three.
 2. **CSCC vs carbon prices:** carbon prices *fall* with own CSCC on all three measures (OECD, Dolphin, EPS carbon pricing score), mostly in ranks (Spearman ρ ≈ −0.4 to −0.6 in specs 1, 3 and 4). Controlling for GDP per capita weakens it but the rank relationship survives (partial ρ ≈ −0.3 to −0.46). It is mostly a contrast between Europe (low CSCCs, high prices) and the rest of the world: within Europe and outside Europe, the relationship is close to zero once GDP per capita is controlled.
 3. **Implied carbon prices:** the abatement policies delivered implies carbon prices of $0–31/t in 2020 ($0–57/t in 2022). That is far below the global SCC ($135–781/t), so no country is near the cooperative benchmark. Implied prices are unrelated to actual carbon prices and show no consistent link with own CSCC.
-4. **Country size:** larger countries have *more* policies but not *more stringent* ones. Population predicts policy counts strongly but not stringency. Explicit carbon pricing on the OECD EPS is lower in large countries, which are also the ones with the most predicted Nash abatement. Non-price support (renewable trading schemes, solar/wind support) goes the other way and is higher in large countries, so the two cancel in the EPS climate score.
+4. **Country size:** larger countries have *more* policies but not *more stringent* ones. Population predicts policy counts strongly but not stringency. Explicit carbon pricing on the OECD EPS is lower in large countries, which are also the ones with the most predicted Nash abatement. Non-price support (renewable trading schemes, solar/wind support) goes the other way and is higher in large countries, so the two cancel in the EPS climate score. Instrument by instrument (section 6c), the flat headline EPS hides 0.2–0.4 SD movements in opposite directions, but only with the US, China and India in the sample; without them almost every instrument is lower in larger and higher-CSCC countries.
 5. **Robustness:** controlling for lobbying (LobbyMap) or treating the EU as one cooperative player doesn't change these conclusions. The lobbying measure mostly proxies economy size, and the EU bloc's predicted Nash abatement is about zero.
 
 6. **Green technology support:** green spending doesn't rise with own CSCC in specs 1, 3 or 4 on any measure (World Bank program counts, OECD EPS R&D scores, IEA public energy RD&D, IEA clean-energy spending commitments). Larger economies spend more in total, which spec 2, a near-proxy for GDP, picks up. Relative to GDP, spending *falls* with own CSCC in specs 1, 3 and 4 (ρ ≈ −0.3 to −0.55), mostly because richer countries spend more and have lower CSCCs; controlling for GDP per capita leaves rank correlations of about −0.3. Splitting the EPS climate score shows the one place support does rise with own CSCC: off-budget deployment support (renewable trading schemes, solar and wind support), +0.2 to +0.4 SD in all four specs, while carbon prices fall. In the full sample this split survives 2015–2020 and 2010–2020 averages, extra controls (EU membership, CO2 per capita, abatement cost), the Chiani et al. national SCCs and 432 of all 486 Ricke et al. configurations. The exceptions are damage functions that concentrate damages in poor countries (section 6b). Without the US, China and India it survives only for size-driven damages measures (population, BHM long-run, Chiani) with controls, so it is better read as a large-economy effect than a damages effect.
@@ -74,7 +74,7 @@ done
 
 # Pipeline
 
-First run `gams extract_macc.gms` and `policy_intensity_counterfactuals.do` (Stata). Then `execute.sh` runs everything else:
+First run `gams extract_macc.gms`, `python generate_eps_stringency.py` (the do-file merges its EPS panel) and `policy_intensity_counterfactuals.do` (Stata). Then `execute.sh` runs everything else:
 
 | Step | Script | Output |
 |---|---|---|
@@ -98,6 +98,7 @@ First run `gams extract_macc.gms` and `policy_intensity_counterfactuals.do` (Sta
 | Kitchen sink regressions | `regress_kitchen_sink.py` | `output/regressions/kitchen_sink_regressions.csv`, `output/data/kitchen_sink_inputs.csv` |
 | EPS carbon price vs non-price support | `regress_eps_price_split.py` | `output/regressions/eps_price_split_regressions.csv` |
 | Price / non-price sensitivity | `regress_eps_price_split_sensitivity.py` | `output/regressions/eps_price_split_sensitivity.csv` |
+| EPS pillars and instruments | `regress_eps_subindex.py` | `output/regressions/eps_subindex_regressions.csv`, `output/regressions/eps_subindex_decomposition.csv` |
 | Tobit vs double hurdle (Dolphin price) | `regress_dolphin_hurdle.py` | `output/regressions/dolphin_hurdle_regressions.csv`, `output/regressions/dolphin_hurdle_lr_tests.csv` |
 | Country-year policy panel | `generate_policy_panel.py` | `output/data/policy_panel.csv` |
 | Carbon price adoption hazard | `regress_carbon_price_adoption.py` | `output/regressions/carbon_price_adoption_hazard.csv` |
@@ -140,6 +141,8 @@ where μ is the abatement rate (0 = none, 1 = full) and MAC is in $/tCO2. Total 
 `policy_intensity_counterfactuals.do` (Stata) uses the policy intensity replication package. It estimates the emissions avoided by each country's policy density and stringency relative to holding policy at 2015 (also 2000, and zero) levels, through 2022. The output is `output/data/country_year_counterfactual_CO2.csv`.
 
 `pct_diff_2015` (density) and `pct_diff_2015_strng` (stringency) are avoided emissions as a % of *actual* emissions, with confidence bounds. In the datasets below these are renamed `policy_den_cntfc` and `policy_strng_cntfc`.
+
+A third model swaps the stringency index for the OECD EPS climate score, split into explicit carbon prices (`eps_carbon_price`: CO2 tax, CO2 ETS) and non-price support (`eps_nonprice`: renewable trading schemes, low-carbon R&D, solar and wind support). Both are 0–6 scores, entered jointly with the same controls and fixed effects. The EPS panel comes from `generate_eps_stringency.py` (`output/data/eps_stringency_panel.csv`). It covers 40 of the 43 countries (not Colombia, Latvia or Lithuania) and ends in 2020, so the model is estimated on 2000–2020 (N = 800). Columns are suffixed `_eps` (both parts, CI from the full covariance matrix), `_eps_price` and `_eps_nonprice` (one part moves, the other is held at baseline). The parts don't sum to the total because the effects multiply in levels.
 
 ## CSCC dataset
 
@@ -241,7 +244,7 @@ Larger countries have more climate policies but not more stringent ones or highe
 This reverses the methodology. Instead of asking how much a country should abate at its SCC, it takes the abatement its policies actually delivered and asks what carbon price would justify it.
 
 - **Method** (`generate_implied_carbon_price.py`):
-  - Abatement is the density- and stringency-implied counterfactual, including CI bounds. It is converted from % of actual emissions to a share of BAU: μ = pct / (100 + pct).
+  - Abatement is the density-, stringency- and EPS-split-implied counterfactual (combined, price-only and non-price-only), including CI bounds. The EPS split has no 2022 values. It is converted from % of actual emissions to a share of BAU: μ = pct / (100 + pct).
   - Implied price = MAC(μ) = a·μ + d·μ⁴.
   - The EU price is the common price at which its 22 members' abatement, each read off its own MAC curve, adds up to the EU's actual abatement.
   - Each price is compared with own CSCC (the Nash benchmark), the global SCC (the cooperative benchmark) and the 2020 Dolphin carbon price.
@@ -467,6 +470,55 @@ By damage function, full sample, kitchen-sink controls:
 - **So the robust statement is about large economies, not own damages.** Large economies, measured by population or by size-driven CSCCs, use non-price support more and carbon prices less. The idea that own damages per se drive non-price support doesn't survive dropping the US, China and India for most damage functions.
 
 **Caveats:** 36–40 countries, mostly OECD; up to 10 parameters with all extra controls. The Chiani dollar year hasn't been checked, but coefficients are standardised so it doesn't matter here. Within a damage function, the Ricke configurations are highly correlated, so the 486 are far from independent tests.
+
+### 6c. Every EPS pillar and instrument
+
+Is the flat headline EPS an artifact of aggregation? `regress_eps_subindex.py` runs the 6a regressions (own CSCC specs 1–4 or population share, one at a time; no controls, GDP per capita, kitchen sink; HC1 SEs; standardised within each sample) on the four aggregates, the three official pillars and all 13 instruments → `output/regressions/eps_subindex_regressions.csv`.
+
+It also decomposes each aggregate exactly. `eps` and `eps_climate` are fixed weighted sums of instruments, so on a common sample the aggregate's OLS slope equals Σ wₖ·bₖ over the instrument slopes bₖ → `output/regressions/eps_subindex_decomposition.csv` (one row per instrument contribution wₖ·bₖ).
+
+**Standardised coefficients, no controls.** Full sample (n = 40) | without the US, China and India (n = 37):
+
+| Outcome | Spec 1 | Spec 2 | Spec 3 | Spec 4 | Pop share | | Spec 1 | Spec 2 | Spec 3 | Spec 4 | Pop share |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **EPS (headline)** | −0.12 | +0.02 | −0.10 | +0.01 | −0.04 | | −0.39\*\* | −0.06 | −0.38\*\* | −0.01 | −0.35\*\*\* |
+| **Market pillar** | −0.22\*\* | −0.10\* | −0.19\*\* | −0.11 | −0.17\* | | −0.32\*\* | −0.17 | −0.30\* | −0.03 | −0.41\*\*\* |
+| CO2 tax | −0.23\*\*\* | −0.18\*\* | −0.19\*\* | −0.18 | −0.22\*\*\* | | −0.20\*\* | −0.15 | −0.19\* | −0.06 | −0.28\*\*\* |
+| CO2 trading scheme | −0.43\*\*\* | −0.28\*\* | −0.36\*\*\* | −0.26 | −0.39\*\*\* | | −0.44\*\* | −0.47\*\*\* | −0.38\* | −0.01 | −0.60\*\*\* |
+| Renewable trading scheme | +0.30\*\*\* | +0.28\*\*\* | +0.29\*\*\* | +0.22\* | +0.15 | | −0.12 | −0.01 | −0.13 | −0.03 | −0.13 |
+| Diesel tax | −0.40\*\*\* | −0.30\*\*\* | −0.35\*\*\* | −0.23 | −0.43\*\*\* | | −0.20 | −0.28\* | −0.18 | +0.14 | −0.54\*\*\* |
+| NOx tax | −0.11 | −0.03 | −0.13\*\* | −0.03 | +0.07 | | −0.18\*\* | −0.08 | −0.17\*\* | −0.09 | −0.16 |
+| SOx tax | −0.08 | +0.01 | −0.10\*\* | −0.01 | +0.07 | | −0.06 | +0.25 | −0.08 | −0.02 | +0.07 |
+| **Non-market pillar** | −0.04 | +0.12\*\* | −0.04 | +0.04 | +0.03 | | −0.46\*\*\* | −0.11 | −0.46\*\*\* | −0.09 | −0.42\*\*\* |
+| NOx limit | +0.06 | +0.20\*\*\* | +0.06 | +0.09 | +0.16\*\*\* | | −0.44\*\*\* | +0.01 | −0.46\*\*\* | −0.19 | −0.28\* |
+| SOx limit | +0.13 | +0.21\*\*\* | +0.11 | +0.24\* | +0.17\*\*\* | | −0.27 | −0.02 | −0.28 | +0.08 | −0.31\*\* |
+| PM limit | −0.14 | +0.04 | −0.13 | −0.05 | −0.13\* | | −0.43\*\* | −0.19 | −0.41\*\* | −0.04 | −0.41\*\*\* |
+| Diesel sulphur limit | −0.41\*\*\* | −0.22\*\*\* | −0.35\*\* | −0.31\*\*\* | −0.22 | | −0.63\*\*\* | −0.32\* | −0.60\*\*\* | −0.34 | −0.65\*\*\* |
+| **Technology support pillar** | −0.06 | +0.00 | −0.04 | +0.05 | −0.00 | | −0.17 | +0.09 | −0.17 | +0.08 | −0.06 |
+| Low-carbon R&D | −0.24\*\* | −0.02 | −0.24\*\*\* | −0.22 | −0.29\*\*\* | | −0.23 | +0.13 | −0.27 | −0.05 | −0.19 |
+| Solar support | +0.13 | +0.02 | +0.14\*\*\* | +0.27\*\*\* | +0.23\*\*\* | | +0.01 | −0.08 | +0.04 | +0.18\*\* | −0.03 |
+| Wind support | +0.15 | +0.03 | +0.18\*\*\* | +0.26\*\*\* | +0.26\*\*\* | | −0.05 | +0.10 | −0.02 | +0.13 | +0.18 |
+
+**Decomposition of the headline EPS slope, no controls**, in EPS points per SD of the regressor (the EPS has SD 1.05). "Up" and "down" are the sums of the positive and negative instrument contributions wₖ·bₖ:
+
+| Sample | | Spec 1 | Spec 2 | Spec 3 | Spec 4 | Pop share |
+|---|---|---|---|---|---|---|
+| Full | up | +0.12 | +0.11 | +0.12 | +0.17 | +0.18 |
+| | down | −0.24 | −0.09 | −0.23 | −0.17 | −0.22 |
+| | **net** | **−0.12** | **+0.02** | **−0.11** | **+0.01** | **−0.05** |
+| No US/CHN/IND | up | +0.00 | +0.09 | +0.01 | +0.08 | +0.04 |
+| | down | −0.42 | −0.16 | −0.42 | −0.10 | −0.43 |
+| | **net** | **−0.42** | **−0.07** | **−0.42** | **−0.01** | **−0.38** |
+
+`eps_climate` looks the same: in the full sample the positive and negative parts are each 0.12–0.31 against a net of −0.11 to 0.00. Without the three, the positive part is ≤ 0.10.
+
+**Findings:**
+- **In the full sample the flat headline is an aggregation artifact.** Individual instruments move by 0.2–0.4 SD with own CSCC and population, but in opposite directions: the positive and negative contributions are each 0.09–0.24 EPS points per SD, against net slopes of −0.12 to +0.02. Both explicit carbon prices (CO2 tax and trading scheme), the diesel tax, the diesel sulphur limit and low-carbon R&D are lower in high-CSCC and populous countries. Renewable trading schemes, solar and wind support (specs 3, 4 and population) and NOx/SOx limits (spec 2 and population) are higher. The offset is mostly within pillars, not between them: the technology support pillar is ≈ 0 because R&D falls while solar and wind support rise, and the market pillar mixes falling carbon prices with rising renewable trading.
+- **Without the US, China and India it isn't.** For specs 1 and 3 and population, nearly every instrument falls (the positive contributions are ≤ 0.04), so the headline slope of about −0.4 is a broad-based decline. The air pollution limits fall most (−0.3 to −0.65), followed by emissions trading. Renewable trading turns slightly negative. The full-sample offset comes from the three large countries, which score low on carbon prices and high on deployment support; this matches 6a and 6b.
+- **Specs 2 and 4 are ≈ 0 in the aggregate in both samples,** but in the full sample they still show the price / deployment split instrument by instrument.
+- **With GDP per capita or kitchen-sink controls** (in the CSV, not shown) the full-sample pattern is the same: the carbon price part, the diesel tax and the diesel sulphur limit fall, and renewable trading and wind support rise. R&D shrinks to −0.11 or less in absolute value with GDP per capita and ≈ 0 with the kitchen sink, as in 6a.
+
+**Caveats:** 17 outcomes × 5 regressors × 3 control sets × 2 samples is 510 regressions on 36–40 countries, so expect false positives at p < 0.1; read across specs, not single stars. The CO2 trading scheme score only reaches 3, and the diesel sulphur limit ranges only from 4 to 6.
 
 ## 7. Abatement implied by structural breaks
 

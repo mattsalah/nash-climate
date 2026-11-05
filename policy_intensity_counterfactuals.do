@@ -144,7 +144,78 @@ preserve
     gen ci_lower_avoided_zero_strng = ci_lower_co2_zero_strng - CO2_mt
     gen ci_upper_avoided_zero_strng = ci_upper_co2_zero_strng - CO2_mt
     gen ci_lower_pct_zero_strng = 100 * ci_lower_avoided_zero_strng / CO2_mt
-    gen ci_upper_pct_zero_strng = 100 * ci_upper_avoided_zero_strng / CO2_mt         
+    gen ci_upper_pct_zero_strng = 100 * ci_upper_avoided_zero_strng / CO2_mt
+
+    *** EPS PRICE / NON-PRICE SPLIT ***
+    * Same specification, with the OECD EPS climate score split into explicit carbon prices
+    * (CO2 tax, CO2 ETS) and non-price support (renewable trading schemes, low-carbon R&D,
+    * solar and wind support), both 0-6, entered jointly. Built by generate_eps_stringency.py,
+    * which must run first. EPS covers 40 of the 43 countries (not Colombia, Latvia, Lithuania)
+    * and ends in 2020, so this model is estimated on 2000-2020 and has no counterfactual after 2020
+    tempfile main eps
+    save `main'
+    import delimited using "output/data/eps_stringency_panel.csv", clear
+    keep country year eps_carbon_price eps_nonprice
+    drop if missing(country)
+    save `eps'
+    use `main', clear
+    decode id, gen(country)
+    merge 1:1 country year using `eps', keep(master match) nogen
+    drop country
+
+    reghdfe CO2GDPPP_ln eps_carbon_price eps_nonprice Ruleoflaw hp_GDPPP ///
+        c.gdp_pc_ppp_ln##c.gdp_pc_ppp_ln ///
+        imp_sh srv_sh temp_var, ///
+        absorb(i.year i.id) vce(robust)
+
+    est store R5
+
+    matrix V_eps = e(V)
+    local b_p = _b[eps_carbon_price]
+    local b_s = _b[eps_nonprice]
+    local v_pp = V_eps[rownumb(V_eps, "eps_carbon_price"), colnumb(V_eps, "eps_carbon_price")]
+    local v_ss = V_eps[rownumb(V_eps, "eps_nonprice"), colnumb(V_eps, "eps_nonprice")]
+    local v_ps = V_eps[rownumb(V_eps, "eps_carbon_price"), colnumb(V_eps, "eps_nonprice")]
+
+    * For each baseline (2015, 2000, zero), three counterfactuals:
+    *   _eps           both parts move, SE from the full covariance matrix
+    *   _eps_price     only the carbon price score moves
+    *   _eps_nonprice  only the non-price score moves
+    * The parts don't sum to the total: the effects multiply in levels
+    foreach base in 2015 2000 zero {
+        if "`base'" == "zero" {
+            gen d_p = eps_carbon_price
+            gen d_s = eps_nonprice
+        }
+        else {
+            bys id: egen base_p = max(cond(year==`base', eps_carbon_price, .))
+            bys id: egen base_s = max(cond(year==`base', eps_nonprice, .))
+            gen d_p = eps_carbon_price - base_p
+            gen d_s = eps_nonprice - base_s
+            drop base_p base_s
+        }
+        foreach part in eps eps_price eps_nonprice {
+            if "`part'" == "eps" {
+                gen b1 = `b_p' * d_p + `b_s' * d_s
+                gen se_ln = sqrt(d_p^2 * `v_pp' + d_s^2 * `v_ss' + 2 * d_p * d_s * `v_ps')
+            }
+            if "`part'" == "eps_price" {
+                gen b1 = `b_p' * d_p
+                gen se_ln = abs(d_p) * sqrt(`v_pp')
+            }
+            if "`part'" == "eps_nonprice" {
+                gen b1 = `b_s' * d_s
+                gen se_ln = abs(d_s) * sqrt(`v_ss')
+            }
+            gen co2_cntfc_`base'_`part' = CO2_mt * exp(-b1)
+            gen avoided_CO2_`base'_`part' = co2_cntfc_`base'_`part' - CO2_mt
+            gen pct_diff_`base'_`part' = 100 * avoided_CO2_`base'_`part' / CO2_mt
+            gen ci_lower_pct_`base'_`part' = 100 * (exp(-b1 - 1.96 * se_ln) - 1)
+            gen ci_upper_pct_`base'_`part' = 100 * (exp(-b1 + 1.96 * se_ln) - 1)
+            drop b1 se_ln
+        }
+        drop d_p d_s
+    }
 
     * Keep relevant variables - all three scenarios for both models
     keep id year CO2_mt strng_wght_ind pol_dens_cum ///
@@ -153,7 +224,8 @@ preserve
          co2_cntfc_zero avoided_CO2_zero pct_diff_zero ci_lower_pct_zero ci_upper_pct_zero ///
          co2_cntfc_2015_strng avoided_CO2_2015_strng pct_diff_2015_strng ci_lower_pct_2015_strng ci_upper_pct_2015_strng ///
          co2_cntfc_2000_strng avoided_CO2_2000_strng pct_diff_2000_strng ci_lower_pct_2000_strng ci_upper_pct_2000_strng ///
-         co2_cntfc_zero_strng avoided_CO2_zero_strng pct_diff_zero_strng ci_lower_pct_zero_strng ci_upper_pct_zero_strng
+         co2_cntfc_zero_strng avoided_CO2_zero_strng pct_diff_zero_strng ci_lower_pct_zero_strng ci_upper_pct_zero_strng ///
+         eps_carbon_price eps_nonprice *_eps *_eps_price *_eps_nonprice
 
     * Export country-year panel
     export delimited using "output/data/country_year_counterfactual_CO2.csv", replace
