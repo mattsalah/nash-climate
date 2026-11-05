@@ -7,6 +7,7 @@ python generate_green_subsidies.py
 python generate_green_spending.py
 python generate_lobbymap_country_scores.py
 python generate_rice_vs_cntfc.py
+python generate_local_air_standards.py
 python plot_MAC_MAB.py ind 1 --outcome both
 python plot_MAC_MAB.py nld 2 --outcome both
 python plot_MAC_MAB.py eu 2 --outcome both

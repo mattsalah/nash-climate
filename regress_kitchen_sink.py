@@ -23,6 +23,10 @@ import statsmodels.api as sm
 #                      NOx/SOx/PM/diesel sulphur limits, generate_eps_stringency.py)
 # a country keeps all the benefits of local pollution policy, so it holds general environmental
 # stringency fixed. It exists only for the 40 EPS countries, so every sample shrinks to those
+# Spec 'local_aqs' instead adds
+#   aqs_local          stringency of national ambient air quality standards for CO, NO2, PM10 and
+#                      PM2.5 (WHO AQS database; minus the mean log ratio to the WHO guidelines,
+#                      generate_local_air_standards.py). It covers 135 countries
 # Robust (HC1) standard errors. The outcome and all regressors are standardised (mean 0, SD 1)
 # within each estimation sample, so coefficients are the SDs of outcome change per 1 SD of the
 # regressor (with interactions, main effects are their effects at the mean of the interacted terms)
@@ -42,7 +46,8 @@ INTERACTIONS = {
     'gini_x_ff_assets': ('gini', 'ff_assets_1995'),
 }
 # spec -> (add interactions, extra controls)
-SPECS = {'main': (False, []), 'interactions': (True, []), 'local_air': (False, ['eps_local_air'])}
+SPECS = {'main': (False, []), 'interactions': (True, []), 'local_air': (False, ['eps_local_air']),
+         'local_aqs': (False, ['aqs_local'])}
 # (excluded countries, positive prices only); most countries have no carbon price, so the
 # positive samples drop zero prices for the two carbon price outcomes (EPS is never filtered)
 SAMPLES = {
@@ -63,6 +68,8 @@ df = df[['n', 'pop_share', 'scc_mid_spec2', 'gdppc', 'carbon_price_dolphin_ghg',
 
 eps_df = pd.read_csv('output/data/eps_stringency_2020.csv')[['n', 'eps_climate', 'eps_local_air']]
 df = df.merge(eps_df, on='n', how='left')
+aqs_df = pd.read_csv('output/data/local_air_standards.csv')[['n', 'aqs_local']]
+df = df.merge(aqs_df, on='n', how='left')
 
 for name in ['vdem_corruption', 'vdem_democracy']:
     vdem = pd.read_csv(f'input/kitchen_sink/{name}.csv')
