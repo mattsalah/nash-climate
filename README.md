@@ -99,6 +99,7 @@ First run `gams extract_macc.gms`, `python generate_eps_stringency.py` (the do-f
 | EPS carbon price vs non-price support | `regress_eps_price_split.py` | `output/regressions/eps_price_split_regressions.csv` |
 | Price / non-price sensitivity | `regress_eps_price_split_sensitivity.py` | `output/regressions/eps_price_split_sensitivity.csv` |
 | EPS pillars and instruments | `regress_eps_subindex.py` | `output/regressions/eps_subindex_regressions.csv`, `output/regressions/eps_subindex_decomposition.csv` |
+| Price / non-price clusters | `generate_eps_clusters.py` | `output/data/eps_clusters.csv`, `output/data/eps_cluster_centroids.csv`, `output/regressions/eps_cluster_diagnostics.csv` |
 | Tobit vs double hurdle (Dolphin price) | `regress_dolphin_hurdle.py` | `output/regressions/dolphin_hurdle_regressions.csv`, `output/regressions/dolphin_hurdle_lr_tests.csv` |
 | Country-year policy panel | `generate_policy_panel.py` | `output/data/policy_panel.csv` |
 | Carbon price adoption hazard | `regress_carbon_price_adoption.py` | `output/regressions/carbon_price_adoption_hazard.csv` |
@@ -519,6 +520,42 @@ It also decomposes each aggregate exactly. `eps` and `eps_climate` are fixed wei
 - **With GDP per capita or kitchen-sink controls** (in the CSV, not shown) the full-sample pattern is the same: the carbon price part, the diesel tax and the diesel sulphur limit fall, and renewable trading and wind support rise. R&D shrinks to −0.11 or less in absolute value with GDP per capita and ≈ 0 with the kitchen sink, as in 6a.
 
 **Caveats:** 17 outcomes × 5 regressors × 3 control sets × 2 samples is 510 regressions on 36–40 countries, so expect false positives at p < 0.1; read across specs, not single stars. The CO2 trading scheme score only reaches 3, and the diesel sulphur limit ranges only from 4 to 6.
+
+### 6d. Clusters of price and non-price paths
+
+Do countries fall into groups that moved in a price or a non-price direction? `generate_eps_clusters.py` treats each country's 2000–2020 path of the two `eps_climate` parts as one point: the carbon price score and the non-price score in each of 21 years, 42 features on the same 0–6 scale, left unstandardised. It runs k-means (k-means++ starts, best of 500 by within-cluster sum of squares) for k = 2–6 and keeps k = 4 → `output/data/eps_clusters.csv` (membership with 2000 and 2020 scores), `output/data/eps_cluster_centroids.csv` (each cluster's mean path by year) and `output/regressions/eps_cluster_diagnostics.csv`. Clusters are named from their 2020 centroids by a fixed rule, so the names follow the data rather than the run order.
+
+| k | Silhouette | Agreement with Ward (ARI) | Smallest cluster |
+|---|---|---|---|
+| 2 | 0.42 | 0.48 | 7 |
+| 3 | 0.28 | 0.22 | 5 |
+| **4** | **0.33** | **0.88** | **5** |
+| 5 | 0.32 | 0.87 | 3 |
+| 6 | 0.33 | 0.96 | 3 |
+
+k = 4 is the smallest k that Ward hierarchical clustering reproduces. k = 2 separates more cleanly but only splits off the top carbon pricers (the Nordics, Switzerland, France and the UK) from everyone else.
+
+| Cluster | n | Carbon price 2000 → 2020 | Non-price 2000 → 2020 | Members |
+|---|---|---|---|---|
+| High price | 5 | 1.40 → 4.20 | 0.75 → 2.58 | Switzerland, Denmark, Finland, Norway, Sweden |
+| Moderate price | 17 | 0.09 → 2.18 | 0.38 → 1.12 | Austria, Canada, Czechia, Germany, Spain, Estonia, France, Greece, Hungary, Ireland, Iceland, Italy, Korea, Netherlands, Portugal, Slovakia, Slovenia |
+| Non-price-led | 8 | 0.06 → 1.00 | 0.55 → 3.59 | Australia, Belgium, UK, India, Japan, Luxembourg, Poland, US |
+| Low on both | 10 | 0.00 → 0.30 | 0.05 → 0.62 | Brazil, Chile, China, Indonesia, Israel, Mexico, New Zealand, Russia, Turkey, South Africa |
+
+Means of members' scores. The centroid paths are in `eps_cluster_centroids.csv`.
+
+**Stability across k:**
+- **Non-price-led** keeps the same members from k = 4 to 6, except that the UK moves to a group with Switzerland and France at k = 6. At k = 3 it absorbs the continental EU core (Germany, France, Italy, Netherlands, Austria, Estonia) and Korea.
+- **Low on both** is identical from k = 3 to 6, though at k = 3 it also takes the remaining ten moderate-price countries.
+- **High price** splits at k = 5: Finland, Norway and Sweden stay together, while Switzerland and Denmark join France, Ireland, Iceland and Slovenia.
+- **Moderate price** is the least stable and splits by k = 5–6.
+
+**Findings:**
+- **There is a non-price group, and the US and India are in it, but China isn't.** The non-price-led group is defined by renewable trading schemes (portfolio standards and green certificates, scored 5.8 on average in 2020; section 6c). China's EPS scores are low on both parts in every year (0.5 carbon price, 1.1 non-price in 2020), so it clusters with the other large emerging economies.
+- **Most of the EU is moderate price, not price-led.** The EU ETS gives every member a similar carbon price score, so what separates the high-price group is a CO2 tax (the Nordics and Switzerland). Germany, Italy and the Netherlands sit in the moderate-price group despite heavy solar and wind support, because their non-price score averages that support with low renewable trading scores.
+- **Large economies are spread across three of the four groups:** the US, India, Japan and the UK in non-price-led, Germany, France, Italy, Canada and Korea in moderate price, and China, Brazil, Russia and Indonesia in low on both. So the size effect in sections 6a–6c comes from where the largest countries fall, not from a single bloc of big countries.
+
+**Caveats:** clustering always returns groups. A silhouette of about 0.3 means weak separation, with groups closer to regions of a continuum than distinct types. The 21 yearly values of each part are strongly correlated, so in practice the clustering mostly reflects levels in the 2010s.
 
 ## 7. Abatement implied by structural breaks
 
